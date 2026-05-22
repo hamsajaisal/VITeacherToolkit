@@ -34,6 +34,7 @@ class MyNotesActivity : AppCompatActivity() {
     private lateinit var noteAdapter: NoteAdapter
     private var allNotes: List<Note> = emptyList()
     private var allCategories: List<String> = listOf("All", "General")
+    private var selectedCategory = "All"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +61,10 @@ class MyNotesActivity : AppCompatActivity() {
 
         binding.btnCreateCategory.setOnClickListener {
             showCreateCategoryDialog()
+        }
+
+        binding.btnFilterCategory.setOnClickListener {
+            showCategorySelectionDialog()
         }
 
         // Fetch data
@@ -101,44 +106,68 @@ class MyNotesActivity : AppCompatActivity() {
                         catList.add("General")
                     }
                     allCategories = catList
-                    setupCategorySpinner()
+                    
+                    // Make sure the selected category still exists, otherwise reset to All
+                    if (!allCategories.contains(selectedCategory)) {
+                        selectedCategory = "All"
+                    }
+                    
+                    runOnUiThread {
+                        binding.btnFilterCategory.text = selectedCategory
+                        binding.btnFilterCategory.contentDescription = "Filter notes by category, current filter is $selectedCategory, double tap to change"
+                    }
+                    applyFilter()
                 }
         }
     }
 
-    private fun setupCategorySpinner() {
-        val adapter = CategorySpinnerAdapter(this, android.R.layout.simple_spinner_item, allCategories) { category ->
-            showCategoryOptionsDialog(category)
-        }
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerFilterCategory.adapter = adapter
-
-        binding.spinnerFilterCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selected = allCategories[position]
-                binding.spinnerFilterCategory.contentDescription = "Filter notes by category, $selected, combo box"
-                binding.spinnerFilterCategory.announceForAccessibility("Filter changed to $selected")
-                applyFilter()
+    private fun showCategorySelectionDialog() {
+        var dialog: AlertDialog? = null
+        
+        val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, allCategories) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                val category = allCategories[position]
+                
+                view.setOnClickListener {
+                    dialog?.dismiss()
+                    selectedCategory = category
+                    binding.btnFilterCategory.text = category
+                    binding.btnFilterCategory.contentDescription = "Filter notes by category, current filter is $category, double tap to change"
+                    binding.root.announceForAccessibility("Filter changed to $category")
+                    applyFilter()
+                }
+                
+                view.setOnLongClickListener {
+                    dialog?.dismiss()
+                    showCategoryOptionsDialog(category)
+                    true
+                }
+                
+                // Accessibility descriptions for TalkBack
+                if (category.equals("General", ignoreCase = true) || category.equals("All", ignoreCase = true)) {
+                    view.contentDescription = "$category category"
+                } else {
+                    view.contentDescription = "$category category, double tap to filter, double tap and hold for options"
+                }
+                
+                return view
             }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                binding.spinnerFilterCategory.contentDescription = "Filter notes by category, nothing selected, combo box"
-            }
         }
+        
+        dialog = AlertDialog.Builder(this)
+            .setTitle("Select Category")
+            .setAdapter(adapter, null)
+            .create()
+            
+        dialog.show()
     }
 
     private fun applyFilter() {
-        val spinnerPosition = binding.spinnerFilterCategory.selectedItemPosition
-        if (spinnerPosition < 0 || spinnerPosition >= allCategories.size) {
-            noteAdapter.updateList(allNotes)
-            return
-        }
-
-        val selected = allCategories[spinnerPosition]
-        val filtered = if (selected == "All") {
+        val filtered = if (selectedCategory == "All") {
             allNotes
         } else {
-            allNotes.filter { it.category.equals(selected, ignoreCase = true) }
+            allNotes.filter { it.category.equals(selectedCategory, ignoreCase = true) }
         }
         noteAdapter.updateList(filtered)
     }
@@ -269,6 +298,13 @@ class MyNotesActivity : AppCompatActivity() {
                         db.noteDao().updateNote(note.copy(category = newName))
                     }
                 }
+                if (selectedCategory.equals(oldName, ignoreCase = true)) {
+                    selectedCategory = newName
+                    runOnUiThread {
+                        binding.btnFilterCategory.text = newName
+                        binding.btnFilterCategory.contentDescription = "Filter notes by category, current filter is $newName, double tap to change"
+                    }
+                }
                 runOnUiThread {
                     val message = "Category renamed to $newName"
                     Toast.makeText(this@MyNotesActivity, message, Toast.LENGTH_SHORT).show()
@@ -306,6 +342,13 @@ class MyNotesActivity : AppCompatActivity() {
                 for (note in notes) {
                     if (note.category.equals(categoryName, ignoreCase = true)) {
                         db.noteDao().updateNote(note.copy(category = "General"))
+                    }
+                }
+                if (selectedCategory.equals(categoryName, ignoreCase = true)) {
+                    selectedCategory = "All"
+                    runOnUiThread {
+                        binding.btnFilterCategory.text = "All"
+                        binding.btnFilterCategory.contentDescription = "Filter notes by category, current filter is All, double tap to change"
                     }
                 }
                 runOnUiThread {
@@ -377,27 +420,7 @@ class MyNotesActivity : AppCompatActivity() {
         }
     }
 
-    // Custom ArrayAdapter to capture long press on dropdown items
-    class CategorySpinnerAdapter(
-        context: Context,
-        resource: Int,
-        items: List<String>,
-        private val onLongClickItem: (String) -> Unit
-    ) : ArrayAdapter<String>(context, resource, items) {
-
-        override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val view = super.getDropDownView(position, convertView, parent)
-            if (view is TextView) {
-                val itemText = getItem(position) ?: ""
-                view.contentDescription = itemText
-                view.setOnLongClickListener {
-                    onLongClickItem(itemText)
-                    true
-                }
-            }
-            return view
-        }
-    }
+    // Removed CategorySpinnerAdapter since we now use an accessible AlertDialog selection menu.
 
     // RecyclerView Note title list adapter
     inner class NoteAdapter(

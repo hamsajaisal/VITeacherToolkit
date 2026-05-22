@@ -36,7 +36,7 @@
         android:text="Timetable"
         android:textColor="#000000"
         android:backgroundTint="@color/lavender"
-        android:contentDescription="Go to Timetable"
+        android:contentDescription="Timetable"
         android:layout_marginBottom="16dp" />
 
     <Button
@@ -47,7 +47,7 @@
         android:text="Password Saver"
         android:textColor="#000000"
         android:backgroundTint="@color/lavender"
-        android:contentDescription="Go to Password Saver"
+        android:contentDescription="Password Saver"
         android:layout_marginBottom="16dp" />
 
     <Button
@@ -58,7 +58,7 @@
         android:text="My Notes"
         android:textColor="#000000"
         android:backgroundTint="@color/lavender"
-        android:contentDescription="Go to My Notes"
+        android:contentDescription="My Notes"
         android:layout_marginBottom="16dp" />
 
     <!-- Conditionally Visible: My Class Button -->
@@ -70,7 +70,7 @@
         android:text="My Class"
         android:textColor="#000000"
         android:backgroundTint="@color/lavender"
-        android:contentDescription="My Class button"
+        android:contentDescription="My Class"
         android:layout_marginBottom="16dp"
         android:visibility="gone" />
 
@@ -82,7 +82,7 @@
         android:text="Settings"
         android:textColor="#000000"
         android:backgroundTint="@color/lavender"
-        android:contentDescription="Go to Settings"
+        android:contentDescription="Settings"
         android:layout_marginBottom="16dp" />
 
 </LinearLayout>

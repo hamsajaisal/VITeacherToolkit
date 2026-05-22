@@ -139,25 +139,19 @@ class AttendanceRegisterActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        studentAdapter = StudentAttendanceAdapter(studentList) { position ->
-            toggleStudentAttendance(position)
+        studentAdapter = StudentAttendanceAdapter(studentList) { position, isPresent ->
+            val item = studentList[position]
+            
+            // Generate accessible announcement
+            val statusAnnouncement = if (isPresent) "marked present" else "marked absent"
+            val announcement = "${item.student.name} $statusAnnouncement"
+            binding.root.announceForAccessibility(announcement)
+
+            // Vibrate to provide haptic feedback
+            triggerHapticFeedback()
         }
         binding.rvStudents.layoutManager = LinearLayoutManager(this)
         binding.rvStudents.adapter = studentAdapter
-    }
-
-    private fun toggleStudentAttendance(position: Int) {
-        val item = studentList[position]
-        item.isPresent = !item.isPresent
-        studentAdapter.notifyItemChanged(position)
-
-        // Generate accessible announcement
-        val statusAnnouncement = if (item.isPresent) "marked present" else "marked absent"
-        val announcement = "${item.student.name} $statusAnnouncement"
-        binding.root.announceForAccessibility(announcement)
-
-        // Vibrate to provide haptic feedback
-        triggerHapticFeedback()
     }
 
     private fun triggerHapticFeedback() {
@@ -578,7 +572,7 @@ data class StudentAttendanceItem(
 // Custom Recycler View Adapter for Student Attendance
 class StudentAttendanceAdapter(
     private val list: List<StudentAttendanceItem>,
-    private val onItemClick: (Int) -> Unit
+    private val onItemClick: (Int, Boolean) -> Unit
 ) : RecyclerView.Adapter<StudentAttendanceAdapter.ViewHolder>() {
 
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
@@ -597,6 +591,16 @@ class StudentAttendanceAdapter(
         holder.tvRoll.text = item.student.rollNumber.toString()
         holder.tvName.text = item.student.name
         
+        updateViewHolderUI(holder, item)
+
+        holder.view.setOnClickListener {
+            item.isPresent = !item.isPresent
+            updateViewHolderUI(holder, item)
+            onItemClick(position, item.isPresent)
+        }
+    }
+
+    private fun updateViewHolderUI(holder: ViewHolder, item: StudentAttendanceItem) {
         if (item.isPresent) {
             holder.tvStatus.text = "Present"
             holder.tvStatus.setTextColor(Color.parseColor("#FFCCCCCC")) // light grey
@@ -611,10 +615,6 @@ class StudentAttendanceAdapter(
             
             // Set content description for TalkBack
             holder.view.contentDescription = "Roll number ${item.student.rollNumber}, ${item.student.name}, Absent"
-        }
-
-        holder.view.setOnClickListener {
-            onItemClick(position)
         }
     }
 

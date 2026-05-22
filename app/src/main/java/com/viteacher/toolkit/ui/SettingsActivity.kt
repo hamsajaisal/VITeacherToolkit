@@ -22,6 +22,7 @@ class SettingsActivity : AppCompatActivity() {
 
         setupLanguageSpinner()
         loadClassSettings()
+        setupFocusAutoScroll()
 
         binding.btnSchoolHours.setOnClickListener {
             startActivity(Intent(this, SchoolHoursActivity::class.java))
@@ -104,5 +105,19 @@ class SettingsActivity : AppCompatActivity() {
         val message = "Reminder language set to $selectedName"
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         binding.root.announceForAccessibility(message)
+    }
+
+    private fun setupFocusAutoScroll() {
+        val focusListener = android.view.View.OnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                binding.root.post {
+                    // Smoothly scroll the ScrollView to center or show the focused view above the keyboard
+                    binding.root.smoothScrollTo(0, view.top)
+                }
+            }
+        }
+        binding.etClassStandard.onFocusChangeListener = focusListener
+        binding.etClassDivision.onFocusChangeListener = focusListener
+        binding.etClassAcademicYear.onFocusChangeListener = focusListener
     }
 }

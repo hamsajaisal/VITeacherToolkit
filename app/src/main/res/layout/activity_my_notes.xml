@@ -29,12 +29,16 @@
             android:layout_marginEnd="8dp"
             android:importantForAccessibility="no"/>
 
-        <Spinner
-            android:id="@+id/spinnerFilterCategory"
+        <Button
+            android:id="@+id/btnFilterCategory"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:contentDescription="Filter notes by category, combo box"
+            style="?android:attr/spinnerStyle"
+            android:text="All"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:contentDescription="Filter notes by category, current filter is All, double tap to change"
             android:importantForAccessibility="yes"/>
 
         <ImageButton
