@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Top Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="8dp"
+        android:background="#EEEEEE">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_revert"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Go back button"
+            android:importantForAccessibility="yes"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Note Editor"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes"/>
+
+        <ImageButton
+            android:id="@+id/btnAdvancedEdit"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_edit"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Open advanced edit mode screen"
+            android:importantForAccessibility="yes"/>
+
+        <ImageButton
+            android:id="@+id/btnMoreOptions"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_more"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="More options button"
+            android:importantForAccessibility="yes"/>
+
+    </LinearLayout>
+
+    <!-- Font Size Controls Panel -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:background="#F5F5F5">
+
+        <TextView
+            android:id="@+id/tvFontSizeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Font Size: 18"
+            android:textSize="16sp"
+            android:layout_marginEnd="16dp"
+            android:importantForAccessibility="yes"/>
+
+        <Button
+            android:id="@+id/btnDecreaseFontSize"
+            android:layout_width="64dp"
+            android:layout_height="48dp"
+            android:text="A-"
+            android:contentDescription="Decrease font size button"
+            android:layout_marginEnd="8dp"
+            android:importantForAccessibility="yes"/>
+
+        <Button
+            android:id="@+id/btnIncreaseFontSize"
+            android:layout_width="64dp"
+            android:layout_height="48dp"
+            android:text="A+"
+            android:contentDescription="Increase font size button"
+            android:importantForAccessibility="yes"/>
+
+    </LinearLayout>
+
+    <!-- Main EditText Input Area -->
+    <EditText
+        android:id="@+id/etNoteContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="top|start"
+        android:padding="16dp"
+        android:background="@android:color/white"
+        android:hint="Start typing your note here..."
+        android:textSize="18sp"
+        android:inputType="textMultiLine"
+        android:scrollbars="vertical"
+        android:contentDescription="Note writing area"
+        android:importantForAccessibility="yes"/>
+
+    <!-- Bottom Scrollable Formatting Toolbar -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#EEEEEE"
+        android:paddingVertical="4dp"
+        android:scrollbars="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/btnBold"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="B"
+                android:textStyle="bold"
+                android:contentDescription="Bold button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnItalic"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="I"
+                android:textStyle="italic"
+                android:contentDescription="Italic button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnUnderline"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="U"
+                android:contentDescription="Underline button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnStrikethrough"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="S"
+                android:contentDescription="Strikethrough button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnHighlight"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="High"
+                android:contentDescription="Highlight button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnTextColor"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Color"
+                android:contentDescription="Text color button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBulletList"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="• List"
+                android:contentDescription="Bullet list button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnNumberedList"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="1. List"
+                android:contentDescription="Numbered list button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnAlignment"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Align"
+                android:contentDescription="Text alignment button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnAllCaps"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="CAPS"
+                android:contentDescription="All caps button"
+                android:importantForAccessibility="yes"/>
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+</LinearLayout>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Timetable"
+        android:textSize="26sp"
+        android:layout_marginBottom="24dp"
+        android:accessibilityHeading="true"/>
+
+    <Button
+        android:id="@+id/btnAddEntry"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add New Timetable Entry"
+        android:contentDescription="Add a new timetable entry"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnViewByDay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View by Day"
+        android:contentDescription="View timetable grouped by day"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnViewByClass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View by Class"
+        android:contentDescription="View timetable grouped by class"
+        android:layout_marginBottom="16dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvTimetable"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:contentDescription="Timetable entries list"/>
+
+</LinearLayout>

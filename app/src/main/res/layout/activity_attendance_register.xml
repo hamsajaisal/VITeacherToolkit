@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:padding="24dp">
+
+    <!-- Header layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="?android:attr/actionModeCloseDrawable"
+            android:background="?android:attr/selectableItemBackground"
+            android:tint="#FFFFFF"
+            android:contentDescription="Go back button"
+            android:importantForAccessibility="yes" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Attendance Register"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/border_green"
+            android:layout_marginStart="8dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+        <ImageButton
+            android:id="@+id/btnMoreOptions"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_more"
+            android:background="?android:attr/selectableItemBackground"
+            android:tint="#FFFFFF"
+            android:contentDescription="More options button"
+            android:layout_marginStart="8dp"
+            android:importantForAccessibility="yes" />
+
+    </LinearLayout>
+
+    <!-- Date display -->
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Friday, 22 May 2026"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"
+        android:importantForAccessibility="yes" />
+
+    <!-- Session Toggles -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <Button
+            android:id="@+id/btnForenoon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="48dp"
+            android:text="Forenoon"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender_dark"
+            android:contentDescription="Forenoon session button"
+            android:layout_marginEnd="8dp"
+            android:importantForAccessibility="yes" />
+
+        <Button
+            android:id="@+id/btnAfternoon"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="48dp"
+            android:text="Afternoon"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/grey_dark"
+            android:contentDescription="Afternoon session button"
+            android:layout_marginStart="8dp"
+            android:importantForAccessibility="yes" />
+
+    </LinearLayout>
+
+    <!-- Empty State Message -->
+    <TextView
+        android:id="@+id/tvEmptyState"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textColor="#CCCCCC"
+        android:textSize="18sp"
+        android:lineSpacingExtra="6dp"
+        android:padding="16dp"
+        android:text="No students found in your register.\n\nTo add your students:\n1. Tap the 'More Options' button at the top-right.\n2. Select 'Download Sample Excel Template' to save a blank spreadsheet to your Downloads.\n3. Fill out your student details in that file, and select 'Import Student List' to upload it."
+        android:visibility="gone" />
+
+    <!-- Recycler View for Students -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvStudents"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="List of students"
+        android:importantForAccessibility="yes" />
+
+    <!-- Bottom Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btnSaveAttendance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Save Attendance"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Save attendance button"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnShareAbsentees"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="48dp"
+                android:text="Share Absentees"
+                android:textColor="#000000"
+                android:backgroundTint="@color/lavender"
+                android:contentDescription="Share absentees button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes" />
+
+            <Button
+                android:id="@+id/btnViewHistory"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="48dp"
+                android:text="View History"
+                android:textColor="#000000"
+                android:backgroundTint="@color/lavender"
+                android:contentDescription="View attendance history button"
+                android:layout_marginStart="4dp"
+                android:importantForAccessibility="yes" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

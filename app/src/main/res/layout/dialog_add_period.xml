@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add School Period"
+            android:textSize="20sp"
+            android:layout_marginBottom="16dp"
+            android:accessibilityHeading="true"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Period Number"
+            android:layout_marginBottom="4dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerPeriodNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="Period number, combo box"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Time"
+            android:layout_marginBottom="4dp"/>
+
+        <Button
+            android:id="@+id/btnSelectStartTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Start Time: 09:00 AM"
+            android:contentDescription="Select start time, currently 09:00 AM"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="End Time"
+            android:layout_marginBottom="4dp"/>
+
+        <Button
+            android:id="@+id/btnSelectEndTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select End Time: 10:00 AM"
+            android:contentDescription="Select end time, currently 10:00 AM"
+            android:layout_marginBottom="24dp"/>
+
+        <CheckBox
+            android:id="@+id/cbIsException"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="This timing is for a specific day only (exception)"
+            android:contentDescription="Check this if this period timing applies to a specific day only, such as Friday"
+            android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+            android:id="@+id/layoutExceptionDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Which day is this exception for?"
+                android:layout_marginBottom="4dp"/>
+
+            <Spinner
+                android:id="@+id/spinnerExceptionDay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="Exception day, combo box"
+                android:layout_marginBottom="16dp"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSavePeriod"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Period"
+            android:contentDescription="Save this school period"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:contentDescription="Cancel and go back"/>
+
+    </LinearLayout>
+
+</ScrollView>

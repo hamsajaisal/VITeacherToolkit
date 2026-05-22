@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="VI Teacher Toolkit"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.VITeacherToolkit">
+
+        <activity
+            android:name=".ui.PinLoginActivity"
+            android:exported="true"
+            android:label="VI Teacher Toolkit">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.SetupProfileActivity"
+            android:exported="false"
+            android:label="Setup Profile"/>
+
+        <activity
+            android:name=".ui.HomeActivity"
+            android:exported="false"
+            android:label="Home"/>
+
+        <activity
+            android:name=".ui.TimetableActivity"
+            android:exported="false"
+            android:label="Timetable"/>
+
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:label="Settings"/>
+
+        <activity
+            android:name=".ui.MyClassActivity"
+            android:exported="false"
+            android:label="My Class"/>
+
+        <activity
+            android:name=".ui.AttendanceRegisterActivity"
+            android:exported="false"
+            android:label="Attendance Register"/>
+
+        <activity
+            android:name=".ui.AttendanceHistoryActivity"
+            android:exported="false"
+            android:label="Attendance History"/>
+
+        <activity
+            android:name=".ui.HistoryDetailActivity"
+            android:exported="false"
+            android:label="History Detail"/>
+
+        <activity
+            android:name=".ui.PasswordSaverActivity"
+            android:exported="false"
+            android:label="Password Saver"/>
+
+        <activity
+            android:name=".ui.SchoolHoursActivity"
+            android:exported="false"
+            android:label="School Hours"/>
+
+        <activity
+            android:name=".ui.AddCredentialActivity"
+            android:exported="false"
+            android:label="Add Credential"/>
+
+        <activity
+            android:name=".ui.AddTimetableEntryActivity"
+            android:exported="false"
+            android:label="Add Timetable Entry"/>
+
+        <activity
+            android:name=".ui.EditTimetableEntryActivity"
+            android:exported="false"
+            android:label="Edit Timetable Entry"/>
+
+        <activity
+            android:name=".ui.EditCredentialActivity"
+            android:exported="false"
+            android:label="Edit Credential"/>
+
+        <activity
+            android:name=".ui.SetupGuideActivity"
+            android:exported="false"
+            android:label="Setup Guide"/>
+
+        <activity
+            android:name=".ui.MyNotesActivity"
+            android:exported="false"
+            android:label="My Notes"/>
+
+        <activity
+            android:name=".ui.NoteEditorActivity"
+            android:exported="false"
+            android:label="Note Editor"/>
+
+        <activity
+            android:name=".ui.EditModeActivity"
+            android:exported="false"
+            android:label="Edit Mode"/>
+
+        <service
+            android:name=".util.TTSReminderService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"/>
+
+        <receiver
+            android:name=".util.ReminderReceiver"
+            android:exported="false"/>
+
+        <receiver
+            android:name=".util.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

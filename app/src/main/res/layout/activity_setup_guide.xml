@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvWizardTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Setup Reminders"
+            android:textSize="26sp"
+            android:layout_marginBottom="8dp"
+            android:accessibilityHeading="true"/>
+
+        <TextView
+            android:id="@+id/tvStepIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Step 1 of 3"
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:id="@+id/tvStepTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:accessibilityHeading="true"/>
+
+        <TextView
+            android:id="@+id/tvStepDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="16sp"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnDirectAction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Open Setting"
+            android:contentDescription="Open the required setting directly"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/tvPermissionStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="16sp"
+            android:layout_marginBottom="24dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnPreviousStep"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Previous"
+                android:contentDescription="Go to previous step"
+                android:layout_marginEnd="8dp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btnNextStep"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Next"
+                android:contentDescription="Go to next step"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSkipWizard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Skip Setup and Continue"
+            android:contentDescription="Skip this setup and go to the app"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+
+</ScrollView>

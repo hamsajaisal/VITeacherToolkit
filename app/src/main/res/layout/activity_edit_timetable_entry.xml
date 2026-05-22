@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Edit Timetable Entry"
+            android:textSize="26sp"
+            android:layout_marginBottom="24dp"
+            android:accessibilityHeading="true"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Day"
+            android:layout_marginBottom="4dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerDay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="Select the day of the week"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Period Number"
+            android:layout_marginBottom="4dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerPeriod"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="Select the period number"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Subject"
+            android:layout_marginBottom="4dp"/>
+
+        <EditText
+            android:id="@+id/etSubject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Example: Malayalam"
+            android:contentDescription="Subject name, required"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Class"
+            android:layout_marginBottom="4dp"/>
+
+        <EditText
+            android:id="@+id/etClass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Example: 7"
+            android:contentDescription="Class number, required"
+            android:inputType="text"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Division"
+            android:layout_marginBottom="4dp"/>
+
+        <EditText
+            android:id="@+id/etDivision"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Example: A"
+            android:contentDescription="Division, required"
+            android:inputType="textCapCharacters"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Remind me before class"
+            android:layout_marginBottom="4dp"/>
+
+        <Spinner
+            android:id="@+id/spinnerReminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="Select when to be reminded before class"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnUpdateEntry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Timetable Entry"
+            android:contentDescription="Save changes to this timetable entry"
+            android:layout_marginBottom="8dp"/>
+
+        <Button
+            android:id="@+id/btnCancelEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:contentDescription="Cancel and go back"/>
+
+    </LinearLayout>
+
+</ScrollView>

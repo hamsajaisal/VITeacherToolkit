@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Welcome"
+        android:textColor="#FFFFFF"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        android:accessibilityHeading="true"
+        android:importantForAccessibility="yes" />
+
+    <TextView
+        android:id="@+id/tvSchoolName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textColor="#CCCCCC"
+        android:textSize="16sp"
+        android:layout_marginBottom="32dp"
+        android:importantForAccessibility="yes" />
+
+    <Button
+        android:id="@+id/btnTimetable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Timetable"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="Go to Timetable"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnPasswordSaver"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Password Saver"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="Go to Password Saver"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnMyNotes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="My Notes"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="Go to My Notes"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Conditionally Visible: My Class Button -->
+    <Button
+        android:id="@+id/btnMyClass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="My Class"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="My Class button"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnSettings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Settings"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="Go to Settings"
+        android:layout_marginBottom="16dp" />
+
+</LinearLayout>

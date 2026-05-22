@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvTimePickerTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select Time"
+        android:textSize="20sp"
+        android:layout_marginBottom="24dp"
+        android:accessibilityHeading="true"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Hour Picker -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnHourUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+"
+                android:textSize="24sp"
+                android:contentDescription="Increase hour"/>
+
+            <EditText
+                android:id="@+id/etHour"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="09"
+                android:textSize="28sp"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:contentDescription="Hour"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnHourDown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-"
+                android:textSize="24sp"
+                android:contentDescription="Decrease hour"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=":"
+            android:textSize="28sp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:importantForAccessibility="no"/>
+
+        <!-- Minute Picker -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnMinuteUp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+"
+                android:textSize="24sp"
+                android:contentDescription="Increase minute by 5"/>
+
+            <EditText
+                android:id="@+id/etMinute"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="00"
+                android:textSize="28sp"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:contentDescription="Minute"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnMinuteDown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-"
+                android:textSize="24sp"
+                android:contentDescription="Decrease minute by 5"/>
+
+        </LinearLayout>
+
+        <!-- AM PM -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnAm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="AM"
+                android:contentDescription="Select AM"
+                android:layout_marginBottom="8dp"/>
+
+            <Button
+                android:id="@+id/btnPm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PM"
+                android:contentDescription="Select PM"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvSelectedTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Selected time: 09:00 AM"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:importantForAccessibility="yes"/>
+
+    <Button
+        android:id="@+id/btnTimeOk"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="OK"
+        android:contentDescription="Confirm selected time"/>
+
+    <Button
+        android:id="@+id/btnTimeCancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:contentDescription="Cancel time selection"/>
+
+</LinearLayout>

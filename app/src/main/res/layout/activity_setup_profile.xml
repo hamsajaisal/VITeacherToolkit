@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:spacing="16dp">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Welcome! Let us set up your profile."
+            android:textSize="22sp"
+            android:layout_marginBottom="24dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes"/>
+
+        <EditText
+            android:id="@+id/etFirstName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="First Name"
+            android:contentDescription="First Name, required"
+            android:inputType="textPersonName"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/etLastName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Last Name"
+            android:contentDescription="Last Name, required"
+            android:inputType="textPersonName"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/etSchoolName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="School Name"
+            android:contentDescription="School Name, required"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="24dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create a 4-digit PIN to protect your app"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+        <EditText
+            android:id="@+id/etPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter 4-digit PIN"
+            android:contentDescription="Enter 4-digit PIN, required"
+            android:inputType="numberPassword"
+            android:maxLength="4"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/etConfirmPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Confirm PIN"
+            android:contentDescription="Confirm PIN, required"
+            android:inputType="numberPassword"
+            android:maxLength="4"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnSaveProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Profile and Continue"
+            android:contentDescription="Save Profile and Continue"/>
+
+    </LinearLayout>
+
+</ScrollView>

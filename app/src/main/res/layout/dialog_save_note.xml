@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save Note"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:accessibilityHeading="true"
+        android:importantForAccessibility="yes"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Note Title"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp"
+        android:importantForAccessibility="no"/>
+
+    <EditText
+        android:id="@+id/etNoteTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter note title"
+        android:contentDescription="Note title, required"
+        android:inputType="text"
+        android:minHeight="48dp"
+        android:layout_marginBottom="16dp"
+        android:importantForAccessibility="yes"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Category"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp"
+        android:importantForAccessibility="no"/>
+
+    <Spinner
+        android:id="@+id/spinnerNoteCategory"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:contentDescription="Select note category, combo box"
+        android:layout_marginBottom="12dp"
+        android:importantForAccessibility="yes"/>
+
+    <Button
+        android:id="@+id/btnDialogCreateCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Create New Category"
+        android:contentDescription="Create new category button"
+        android:backgroundTint="#888888"
+        android:textColor="@android:color/white"
+        android:importantForAccessibility="yes"/>
+
+</LinearLayout>

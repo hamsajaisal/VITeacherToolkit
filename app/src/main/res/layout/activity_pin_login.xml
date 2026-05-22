@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Welcome Back"
+        android:textSize="26sp"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"
+        android:accessibilityHeading="true"/>
+
+    <TextView
+        android:id="@+id/tvSchoolName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="16sp"
+        android:gravity="center"
+        android:layout_marginBottom="32dp"/>
+
+    <EditText
+        android:id="@+id/etPin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter your PIN"
+        android:contentDescription="Enter your 4-digit PIN"
+        android:inputType="numberPassword"
+        android:maxLength="4"
+        android:gravity="center"
+        android:textSize="24sp"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login with PIN"
+        android:contentDescription="Login with PIN"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnFingerprint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login with Fingerprint"
+        android:contentDescription="Login with fingerprint sensor"
+        android:visibility="gone"/>
+
+</LinearLayout>

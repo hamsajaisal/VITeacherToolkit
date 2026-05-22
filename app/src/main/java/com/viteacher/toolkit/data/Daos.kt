@@ -1,0 +1,135 @@
+package com.viteacher.toolkit.data
+
+import androidx.room.*
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface UserProfileDao {
+    @Query("SELECT * FROM user_profile LIMIT 1")
+    suspend fun getProfile(): UserProfile?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveProfile(profile: UserProfile)
+}
+
+@Dao
+interface TimetableDao {
+    @Query("SELECT * FROM timetable_entries ORDER BY dayOfWeek, periodNumber")
+    fun getAllEntries(): Flow<List<TimetableEntry>>
+
+    @Query("SELECT * FROM timetable_entries ORDER BY dayOfWeek, periodNumber")
+    suspend fun getAllEntriesOnce(): List<TimetableEntry>
+
+    @Query("SELECT * FROM timetable_entries WHERE dayOfWeek = :day ORDER BY periodNumber")
+    fun getEntriesForDay(day: String): Flow<List<TimetableEntry>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEntry(entry: TimetableEntry)
+
+    @Update
+    suspend fun updateEntry(entry: TimetableEntry)
+
+    @Delete
+    suspend fun deleteEntry(entry: TimetableEntry)
+
+    @Query("SELECT * FROM school_periods ORDER BY periodNumber")
+    fun getAllPeriods(): Flow<List<SchoolPeriod>>
+
+    @Query("SELECT * FROM school_periods ORDER BY periodNumber")
+    suspend fun getAllPeriodsOnce(): List<SchoolPeriod>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPeriod(period: SchoolPeriod)
+
+    @Delete
+    suspend fun deletePeriod(period: SchoolPeriod)
+}
+
+@Dao
+interface CredentialDao {
+    @Query("SELECT * FROM credentials ORDER BY title")
+    fun getAllCredentials(): Flow<List<Credential>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCredential(credential: Credential)
+
+    @Update
+    suspend fun updateCredential(credential: Credential)
+
+    @Delete
+    suspend fun deleteCredential(credential: Credential)
+}
+
+@Dao
+interface NoteDao {
+    @Query("SELECT * FROM notes ORDER BY isPinned DESC, lastEdited DESC")
+    fun getAllNotesFlow(): Flow<List<Note>>
+
+    @Query("SELECT * FROM notes ORDER BY isPinned DESC, lastEdited DESC")
+    suspend fun getAllNotesOnce(): List<Note>
+
+    @Query("SELECT * FROM notes WHERE id = :id LIMIT 1")
+    suspend fun getNoteById(id: Int): Note?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertNote(note: Note): Long
+
+    @Update
+    suspend fun updateNote(note: Note)
+
+    @Delete
+    suspend fun deleteNote(note: Note)
+}
+
+@Dao
+interface CategoryDao {
+    @Query("SELECT * FROM categories ORDER BY name ASC")
+    fun getAllCategoriesFlow(): Flow<List<Category>>
+
+    @Query("SELECT * FROM categories WHERE name = :name LIMIT 1")
+    suspend fun getCategoryByName(name: String): Category?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertCategory(category: Category): Long
+
+    @Update
+    suspend fun updateCategory(category: Category)
+
+    @Delete
+    suspend fun deleteCategory(category: Category)
+}
+
+@Dao
+interface StudentDao {
+    @Query("SELECT * FROM students ORDER BY rollNumber ASC")
+    fun getAllStudentsFlow(): Flow<List<Student>>
+
+    @Query("SELECT * FROM students ORDER BY rollNumber ASC")
+    suspend fun getAllStudentsOnce(): List<Student>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStudents(students: List<Student>)
+
+    @Query("DELETE FROM students")
+    suspend fun deleteAllStudents()
+}
+
+@Dao
+interface AttendanceDao {
+    @Query("SELECT * FROM attendance_records WHERE date = :date AND session = :session ORDER BY rollNumber ASC")
+    suspend fun getAttendanceForDateAndSession(date: String, session: String): List<AttendanceRecord>
+
+    @Query("SELECT DISTINCT session FROM attendance_records WHERE date = :date")
+    suspend fun getSavedSessionsForDate(date: String): List<String>
+
+    @Query("SELECT DISTINCT date, session FROM attendance_records ORDER BY date DESC, session ASC")
+    fun getAllSavedDatesAndSessionsFlow(): Flow<List<DateSessionDto>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAttendanceRecords(records: List<AttendanceRecord>)
+}
+
+data class DateSessionDto(
+    val date: String,
+    val session: String
+)

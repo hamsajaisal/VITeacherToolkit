@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Notes"
+        android:textSize="26sp"
+        android:layout_marginBottom="20dp"
+        android:accessibilityHeading="true"
+        android:importantForAccessibility="yes"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Filter: "
+            android:textSize="16sp"
+            android:layout_marginEnd="8dp"
+            android:importantForAccessibility="no"/>
+
+        <Spinner
+            android:id="@+id/spinnerFilterCategory"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:contentDescription="Filter notes by category, combo box"
+            android:importantForAccessibility="yes"/>
+
+        <ImageButton
+            android:id="@+id/btnCreateCategory"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_input_add"
+            android:contentDescription="Create new category button"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_marginStart="8dp"
+            android:importantForAccessibility="yes"/>
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvNotes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:contentDescription="List of saved notes"
+        android:layout_marginBottom="16dp"
+        android:importantForAccessibility="yes"/>
+
+    <Button
+        android:id="@+id/btnCreateNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Create New Note"
+        android:contentDescription="Create New Note button"
+        android:importantForAccessibility="yes"/>
+
+</LinearLayout>

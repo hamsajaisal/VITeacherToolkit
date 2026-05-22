@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+        <!-- Existing Button: Set School Hour Schedule -->
+        <Button
+            android:id="@+id/btnSchoolHours"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Set School Hour Schedule"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Set up your school period timings"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Existing Heading: Reminder Announcement Language -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reminder Announcement Language"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+        <!-- Existing Label: Description -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose the language for TTS class reminders"
+            android:textColor="#CCCCCC"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Existing Spinner: Language Select -->
+        <Spinner
+            android:id="@+id/spinnerLanguage"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:contentDescription="Select reminder language, English or Malayalam"
+            android:layout_marginBottom="16dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Existing Button: Save Language Setting -->
+        <Button
+            android:id="@+id/btnSaveLanguage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Save Language Setting"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Save the selected reminder language"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Visual Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#333333"
+            android:layout_marginBottom="24dp" />
+
+        <!-- New Section: My Class Settings Heading -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="My Class Settings"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+        <!-- Text Input Field: Standard or Class -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Standard or Class"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/etClassStandard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="e.g. 6"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#666666"
+            android:contentDescription="Standard or Class input field"
+            android:inputType="text"
+            android:layout_marginBottom="16dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Text Input Field: Division -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Division"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/etClassDivision"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="e.g. B"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#666666"
+            android:contentDescription="Division input field"
+            android:inputType="text"
+            android:layout_marginBottom="16dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Text Input Field: Academic Year -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Academic Year"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/etClassAcademicYear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="e.g. 2025-26"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#666666"
+            android:contentDescription="Academic Year input field"
+            android:inputType="text"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Button: Save Class Settings -->
+        <Button
+            android:id="@+id/btnSaveClassSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Save Class Settings"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Save Class Settings button"
+            android:layout_marginBottom="16dp" />
+
+    </LinearLayout>
+</ScrollView>

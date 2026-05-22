@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="School Hour Schedule"
+            android:textSize="26sp"
+            android:layout_marginBottom="24dp"
+            android:accessibilityHeading="true"/>
+
+        <Button
+            android:id="@+id/btnAddPeriod"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add New Period"
+            android:contentDescription="Add a new school period"
+            android:layout_marginBottom="16dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPeriods"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="School periods list"/>
+
+    </LinearLayout>
+
+</ScrollView>

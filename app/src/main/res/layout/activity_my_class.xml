@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:padding="24dp">
+
+    <!-- Header bar with back button and green border title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="?android:attr/actionModeCloseDrawable"
+            android:background="?android:attr/selectableItemBackground"
+            android:tint="#FFFFFF"
+            android:contentDescription="Go back button"
+            android:importantForAccessibility="yes" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Class"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/border_green"
+            android:layout_marginStart="8dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+    </LinearLayout>
+
+    <!-- Class details header -->
+    <TextView
+        android:id="@+id/tvClassDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Class 6B — 2025-26"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="32dp"
+        android:importantForAccessibility="yes" />
+
+    <!-- Attendance Register Option -->
+    <Button
+        android:id="@+id/btnAttendanceRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Attendance Register"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="Attendance Register button"
+        android:importantForAccessibility="yes" />
+
+</LinearLayout>

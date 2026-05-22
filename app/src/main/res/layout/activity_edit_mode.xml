@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Block Editor Mode"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp"
+        android:accessibilityHeading="true"
+        android:importantForAccessibility="yes"/>
+
+    <!-- Selection Dropdown -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select by: "
+            android:textSize="16sp"
+            android:layout_marginEnd="8dp"
+            android:importantForAccessibility="no"/>
+
+        <Spinner
+            android:id="@+id/spinnerSelectionMode"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:contentDescription="Selection mode, combo box"
+            android:importantForAccessibility="yes"/>
+
+    </LinearLayout>
+
+    <!-- Checklist RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvBlockChecklist"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:contentDescription="Note content checklist"
+        android:layout_marginBottom="12dp"
+        android:importantForAccessibility="yes"/>
+
+    <!-- Lower Actions Horizontal Toolbar -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#EEEEEE"
+        android:paddingVertical="4dp"
+        android:layout_marginBottom="12dp"
+        android:scrollbars="horizontal">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/btnBlockBold"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="B"
+                android:textStyle="bold"
+                android:contentDescription="Bold button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockUnderline"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="U"
+                android:contentDescription="Underline button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockStrikethrough"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="S"
+                android:contentDescription="Strikethrough button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockHighlight"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="High"
+                android:contentDescription="Highlight button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockTextColor"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Color"
+                android:contentDescription="Text color button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Delete"
+                android:contentDescription="Delete button"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockCut"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Cut"
+                android:contentDescription="Cut button"
+                android:importantForAccessibility="yes"/>
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <!-- Bottom OK and Cancel Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnBlockOK"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="48dp"
+            android:text="OK"
+            android:contentDescription="OK button"
+            android:layout_marginEnd="8dp"
+            android:importantForAccessibility="yes"/>
+
+        <Button
+            android:id="@+id/btnBlockCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="48dp"
+            android:text="Cancel"
+            android:contentDescription="Cancel button"
+            android:importantForAccessibility="yes"/>
+
+    </LinearLayout>
+
+</LinearLayout>
