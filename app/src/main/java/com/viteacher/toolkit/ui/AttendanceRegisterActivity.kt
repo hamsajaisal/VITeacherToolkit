@@ -50,6 +50,7 @@ class AttendanceRegisterActivity : AppCompatActivity() {
     private lateinit var studentAdapter: StudentAttendanceAdapter
     private var studentList: MutableList<StudentAttendanceItem> = mutableListOf()
     private var selectedSession = "Forenoon" // "Forenoon" or "Afternoon"
+    private val sessionAttendanceCache = mutableMapOf<String, MutableMap<Int, Boolean>>()
     
     private lateinit var displayDate: String  // e.g., "Friday, 22 May 2026"
     private lateinit var savedDate: String    // e.g., "22 May 2026"
@@ -101,6 +102,7 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             if (selectedSession != "Forenoon") {
                 selectedSession = "Forenoon"
                 updateSessionToggleUI()
+                loadStudentListFromCache()
             }
         }
 
@@ -108,6 +110,7 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             if (selectedSession != "Afternoon") {
                 selectedSession = "Afternoon"
                 updateSessionToggleUI()
+                loadStudentListFromCache()
             }
         }
 
@@ -124,6 +127,12 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             binding.btnAfternoon.backgroundTintList = ColorStateList.valueOf(resources.getColor(R.color.grey_dark, theme))
             binding.btnAfternoon.setTextColor(Color.WHITE)
 
+            // Dynamic selection announcements for TalkBack touch and focus
+            binding.btnForenoon.isSelected = true
+            binding.btnAfternoon.isSelected = false
+            binding.btnForenoon.contentDescription = "Forenoon session, selected"
+            binding.btnAfternoon.contentDescription = "Afternoon session, not selected"
+
             binding.root.announceForAccessibility("Forenoon session selected")
         } else {
             // Visual highlight for Afternoon (lavender background, black text)
@@ -134,13 +143,30 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             binding.btnForenoon.backgroundTintList = ColorStateList.valueOf(resources.getColor(R.color.grey_dark, theme))
             binding.btnForenoon.setTextColor(Color.WHITE)
 
+            // Dynamic selection announcements for TalkBack touch and focus
+            binding.btnForenoon.isSelected = false
+            binding.btnAfternoon.isSelected = true
+            binding.btnForenoon.contentDescription = "Forenoon session, not selected"
+            binding.btnAfternoon.contentDescription = "Afternoon session, selected"
+
             binding.root.announceForAccessibility("Afternoon session selected")
         }
+    }
+
+    private fun loadStudentListFromCache() {
+        val cache = sessionAttendanceCache[selectedSession] ?: return
+        studentList.forEach { item ->
+            item.isPresent = cache[item.student.rollNumber] ?: true
+        }
+        studentAdapter.notifyDataSetChanged()
     }
 
     private fun setupRecyclerView() {
         studentAdapter = StudentAttendanceAdapter(studentList) { position, isPresent ->
             val item = studentList[position]
+            
+            // Sync with cache
+            sessionAttendanceCache[selectedSession]?.put(item.student.rollNumber, isPresent)
             
             // Generate accessible announcement
             val statusAnnouncement = if (isPresent) "marked present" else "marked absent"
@@ -190,6 +216,11 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
             val dbStudents = db.studentDao().getAllStudentsOnce()
+            
+            // Load existing attendance records for today from DB to pre-populate cache if they exist
+            val existingForenoon = db.attendanceDao().getAttendanceForDateAndSession(savedDate, "Forenoon")
+            val existingAfternoon = db.attendanceDao().getAttendanceForDateAndSession(savedDate, "Afternoon")
+            
             runOnUiThread {
                 studentList.clear()
                 if (dbStudents.isEmpty()) {
@@ -202,7 +233,26 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                 } else {
                     binding.rvStudents.visibility = View.VISIBLE
                     binding.tvEmptyState.visibility = View.GONE
-                    dbStudents.forEach { studentList.add(StudentAttendanceItem(it, isPresent = true)) }
+                    
+                    // Initialize or rebuild caches
+                    sessionAttendanceCache["Forenoon"] = mutableMapOf()
+                    sessionAttendanceCache["Afternoon"] = mutableMapOf()
+                    
+                    dbStudents.forEach { student ->
+                        // Rebuild Forenoon cache status
+                        val forenoonRecord = existingForenoon.find { it.rollNumber == student.rollNumber }
+                        val forenoonPresent = forenoonRecord?.isPresent ?: true
+                        sessionAttendanceCache["Forenoon"]?.put(student.rollNumber, forenoonPresent)
+                        
+                        // Rebuild Afternoon cache status
+                        val afternoonRecord = existingAfternoon.find { it.rollNumber == student.rollNumber }
+                        val afternoonPresent = afternoonRecord?.isPresent ?: true
+                        sessionAttendanceCache["Afternoon"]?.put(student.rollNumber, afternoonPresent)
+                        
+                        // Populate active studentList
+                        val currentPresent = if (selectedSession == "Forenoon") forenoonPresent else afternoonPresent
+                        studentList.add(StudentAttendanceItem(student, isPresent = currentPresent))
+                    }
                     studentAdapter.notifyDataSetChanged()
                 }
             }

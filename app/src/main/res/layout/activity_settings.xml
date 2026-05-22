@@ -3,6 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:isScrollContainer="true"
+    android:importantForAccessibility="yes"
     android:background="#000000">
 
     <LinearLayout
@@ -84,104 +86,15 @@
             android:background="#333333"
             android:layout_marginBottom="24dp" />
 
-        <!-- New Section: My Class Settings Heading -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="My Class Settings"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp"
-            android:accessibilityHeading="true"
-            android:importantForAccessibility="yes" />
-
-        <!-- Text Input Field: Standard or Class -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Standard or Class"
-            android:textColor="#CCCCCC"
-            android:textSize="14sp"
-            android:layout_marginBottom="4dp" />
-
-        <EditText
-            android:id="@+id/etClassStandard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:hint="e.g. 6"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#666666"
-            android:contentDescription="Standard or Class input field"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:imeOptions="actionNext"
-            android:layout_marginBottom="16dp"
-            android:importantForAccessibility="yes" />
-
-        <!-- Text Input Field: Division -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Division"
-            android:textColor="#CCCCCC"
-            android:textSize="14sp"
-            android:layout_marginBottom="4dp" />
-
-        <EditText
-            android:id="@+id/etClassDivision"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:hint="e.g. B"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#666666"
-            android:contentDescription="Division input field"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:imeOptions="actionNext"
-            android:layout_marginBottom="16dp"
-            android:importantForAccessibility="yes" />
-
-        <!-- Text Input Field: Academic Year -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Academic Year"
-            android:textColor="#CCCCCC"
-            android:textSize="14sp"
-            android:layout_marginBottom="4dp" />
-
-        <EditText
-            android:id="@+id/etClassAcademicYear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:hint="e.g. 2025-26"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#666666"
-            android:contentDescription="Academic Year input field"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            android:layout_marginBottom="24dp"
-            android:importantForAccessibility="yes" />
-
-        <!-- Button: Save Class Settings -->
         <Button
-            android:id="@+id/btnSaveClassSettings"
+            android:id="@+id/btnClassroomSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:text="Save Class Settings"
+            android:text="Classroom Settings"
             android:textColor="#000000"
             android:backgroundTint="@color/lavender"
-            android:contentDescription="Save Class Settings button"
+            android:contentDescription="Classroom Settings button. Configure class, division, and academic year. This is a feature for class teachers."
             android:layout_marginBottom="16dp" />
-
     </LinearLayout>
 </ScrollView>

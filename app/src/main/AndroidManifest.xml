@@ -52,6 +52,12 @@
             android:windowSoftInputMode="adjustResize"/>
 
         <activity
+            android:name=".ui.ClassroomSettingsActivity"
+            android:exported="false"
+            android:label="Classroom Settings"
+            android:windowSoftInputMode="adjustResize"/>
+
+        <activity
             android:name=".ui.MyClassActivity"
             android:exported="false"
             android:label="My Class"/>

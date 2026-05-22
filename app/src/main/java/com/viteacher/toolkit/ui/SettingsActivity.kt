@@ -3,9 +3,13 @@ package com.viteacher.toolkit.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import android.view.View
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import com.viteacher.toolkit.databinding.ActivitySettingsBinding
 import com.viteacher.toolkit.util.setAccessibleSelection
 
@@ -21,8 +25,6 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupLanguageSpinner()
-        loadClassSettings()
-        setupFocusAutoScroll()
 
         binding.btnSchoolHours.setOnClickListener {
             startActivity(Intent(this, SchoolHoursActivity::class.java))
@@ -32,54 +34,9 @@ class SettingsActivity : AppCompatActivity() {
             saveLanguage()
         }
 
-        binding.btnSaveClassSettings.setOnClickListener {
-            saveClassSettings()
+        binding.btnClassroomSettings.setOnClickListener {
+            startActivity(Intent(this, ClassroomSettingsActivity::class.java))
         }
-    }
-
-    private fun loadClassSettings() {
-        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
-        binding.etClassStandard.setText(prefs.getString("class_standard", ""))
-        binding.etClassDivision.setText(prefs.getString("class_division", ""))
-        binding.etClassAcademicYear.setText(prefs.getString("class_academic_year", ""))
-    }
-
-    private fun saveClassSettings() {
-        val standard = binding.etClassStandard.text.toString().trim()
-        val division = binding.etClassDivision.text.toString().trim()
-        val academicYear = binding.etClassAcademicYear.text.toString().trim()
-
-        if (standard.isEmpty()) {
-            binding.etClassStandard.error = "Please enter standard or class"
-            binding.etClassStandard.requestFocus()
-            binding.root.announceForAccessibility("Error: Standard or Class field is empty. Please enter class.")
-            return
-        }
-
-        if (division.isEmpty()) {
-            binding.etClassDivision.error = "Please enter division"
-            binding.etClassDivision.requestFocus()
-            binding.root.announceForAccessibility("Error: Division field is empty. Please enter division.")
-            return
-        }
-
-        if (academicYear.isEmpty()) {
-            binding.etClassAcademicYear.error = "Please enter academic year"
-            binding.etClassAcademicYear.requestFocus()
-            binding.root.announceForAccessibility("Error: Academic year field is empty. Please enter academic year.")
-            return
-        }
-
-        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
-        prefs.edit()
-            .putString("class_standard", standard)
-            .putString("class_division", division)
-            .putString("class_academic_year", academicYear)
-            .apply()
-
-        val message = "Class settings saved successfully"
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        binding.root.announceForAccessibility(message)
     }
 
     private fun setupLanguageSpinner() {
@@ -105,19 +62,5 @@ class SettingsActivity : AppCompatActivity() {
         val message = "Reminder language set to $selectedName"
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         binding.root.announceForAccessibility(message)
-    }
-
-    private fun setupFocusAutoScroll() {
-        val focusListener = android.view.View.OnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                binding.root.post {
-                    // Smoothly scroll the ScrollView to center or show the focused view above the keyboard
-                    binding.root.smoothScrollTo(0, view.top)
-                }
-            }
-        }
-        binding.etClassStandard.onFocusChangeListener = focusListener
-        binding.etClassDivision.onFocusChangeListener = focusListener
-        binding.etClassAcademicYear.onFocusChangeListener = focusListener
     }
 }
