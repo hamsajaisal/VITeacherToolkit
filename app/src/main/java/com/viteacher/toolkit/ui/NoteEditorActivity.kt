@@ -6,10 +6,13 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.graphics.pdf.PdfDocument
 import android.text.Editable
 import android.text.Layout
 import android.text.Spannable
 import android.text.Spanned
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.text.style.AlignmentSpan
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
@@ -33,6 +36,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
+import com.viteacher.toolkit.util.StorageUtils
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
 import com.viteacher.toolkit.R
@@ -46,6 +51,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -255,7 +262,7 @@ class NoteEditorActivity : AppCompatActivity() {
 
         binding.btnAllCaps.setOnClickListener {
             triggerHapticFeedback(it)
-            applyAllCaps()
+            showChangeCaseMenu()
         }
     }
 
@@ -400,7 +407,31 @@ class NoteEditorActivity : AppCompatActivity() {
         binding.root.announceForAccessibility("Text alignment changed to $name")
     }
 
-    private fun applyAllCaps() {
+    private fun showChangeCaseMenu() {
+        val options = arrayOf(
+            "UPPERCASE (all letters capitalized)",
+            "lowercase (all small letters)",
+            "Sentence case (first letter of each sentence capitalized)",
+            "Title Case (first letter of each word capitalized)"
+        )
+        AlertDialog.Builder(this)
+            .setTitle("Change Case")
+            .setItems(options) { _, which ->
+                val caseType = when (which) {
+                    0 -> "UPPERCASE"
+                    1 -> "lowercase"
+                    2 -> "Sentence case"
+                    3 -> "Title Case"
+                    else -> ""
+                }
+                applyChangeCase(caseType)
+            }
+            .create()
+            .show()
+        binding.root.announceForAccessibility("Change Case options. Select UPPERCASE, lowercase, Sentence case, or Title Case.")
+    }
+
+    private fun applyChangeCase(caseType: String) {
         val editable = binding.etNoteContent.text
         val start = binding.etNoteContent.selectionStart
         val end = binding.etNoteContent.selectionEnd
@@ -410,8 +441,47 @@ class NoteEditorActivity : AppCompatActivity() {
         if (actualStart == actualEnd && editable.isEmpty()) return
 
         val text = editable.substring(actualStart, actualEnd)
-        editable.replace(actualStart, actualEnd, text.uppercase())
-        binding.root.announceForAccessibility("All caps applied")
+        val converted = when (caseType) {
+            "UPPERCASE" -> text.uppercase()
+            "lowercase" -> text.lowercase()
+            "Sentence case" -> toSentenceCase(text)
+            "Title Case" -> toTitleCase(text)
+            else -> text
+        }
+        editable.replace(actualStart, actualEnd, converted)
+        binding.root.announceForAccessibility("$caseType applied")
+    }
+
+    private fun toSentenceCase(s: String): String {
+        if (s.isEmpty()) return s
+        val sb = StringBuilder(s.lowercase())
+        var capitalizeNext = true
+        for (i in sb.indices) {
+            val c = sb[i]
+            if (capitalizeNext && Character.isLetter(c)) {
+                sb.setCharAt(i, Character.toUpperCase(c))
+                capitalizeNext = false
+            } else if (c == '.' || c == '?' || c == '!') {
+                capitalizeNext = true
+            }
+        }
+        return sb.toString()
+    }
+
+    private fun toTitleCase(s: String): String {
+        if (s.isEmpty()) return s
+        val sb = StringBuilder(s.lowercase())
+        var capitalizeNext = true
+        for (i in sb.indices) {
+            val c = sb[i]
+            if (Character.isWhitespace(c)) {
+                capitalizeNext = true
+            } else if (capitalizeNext && Character.isLetter(c)) {
+                sb.setCharAt(i, Character.toUpperCase(c))
+                capitalizeNext = false
+            }
+        }
+        return sb.toString()
     }
 
     private fun startAutoSaveTimer() {
@@ -475,19 +545,167 @@ class NoteEditorActivity : AppCompatActivity() {
     }
 
     private fun showEditorOptionsMenu() {
-        val options = arrayOf("Save Note", "Discard")
+        val options = arrayOf("Save Note", "Export as PDF", "Export as TXT", "Discard")
         AlertDialog.Builder(this)
             .setTitle("Options")
             .setItems(options) { _, which ->
-                if (which == 0) {
-                    showSaveNoteDialog()
-                } else {
-                    finish()
+                when (which) {
+                    0 -> showSaveNoteDialog()
+                    1 -> exportNoteAsPdf()
+                    2 -> exportNoteAsTxt()
+                    3 -> finish()
                 }
             }
             .create()
             .show()
-        binding.root.announceForAccessibility("Editor options dialog. Select Save Note or Discard.")
+        binding.root.announceForAccessibility("Editor options dialog. Select Save Note, Export as PDF, Export as TXT, or Discard.")
+    }
+
+    private fun exportNoteAsPdf() {
+        val title = if (noteTitle.trim().isNotEmpty()) noteTitle.trim() else "Untitled_Note"
+        val exportDir = File(cacheDir, "exports")
+        if (!exportDir.exists()) {
+            exportDir.mkdirs()
+        }
+        val pdfFile = File(exportDir, "${title.replace(" ", "_")}.pdf")
+        val pdfDoc = PdfDocument()
+
+        val spannableText = binding.etNoteContent.text
+
+        // Split text by manual "[Page Break]" indicator to support pagination
+        val chapters = mutableListOf<CharSequence>()
+        val textStr = spannableText.toString()
+        var currentStart = 0
+        while (currentStart < textStr.length) {
+            val idx = textStr.indexOf("[Page Break]", currentStart)
+            if (idx == -1) {
+                chapters.add(spannableText.subSequence(currentStart, textStr.length))
+                break
+            } else {
+                chapters.add(spannableText.subSequence(currentStart, idx))
+                currentStart = idx + "[Page Break]".length
+            }
+        }
+        if (chapters.isEmpty()) {
+            chapters.add("")
+        }
+
+        // Letter Page dimensions: 8.5in * 72pt/in = 612 width, 11in * 72pt/in = 792 height
+        // Margins: 54pt (0.75 inch) -> usable width: 504, usable height: 684
+        val textPaint = TextPaint().apply {
+            isAntiAlias = true
+            textSize = currentFontSize.toFloat()
+            color = Color.BLACK
+        }
+
+        var globalPageNumber = 1
+        for (chapter in chapters) {
+            val layout = StaticLayout(
+                chapter,
+                textPaint,
+                504,
+                Layout.Alignment.ALIGN_NORMAL,
+                1.2f,
+                0f,
+                true
+            )
+
+            val totalHeight = layout.height
+            val maxPageHeight = 684
+            val pagesInChapter = Math.ceil(totalHeight.toDouble() / maxPageHeight.toDouble()).toInt().coerceAtLeast(1)
+
+            for (pageIdx in 0 until pagesInChapter) {
+                val pageInfo = PdfDocument.PageInfo.Builder(612, 792, globalPageNumber).create()
+                val page = pdfDoc.startPage(pageInfo)
+                val canvas = page.canvas
+
+                // Clip and translate canvas to printable area
+                canvas.clipRect(54f, 54f, 558f, 738f)
+                canvas.translate(54f, 54f)
+                canvas.translate(0f, -pageIdx * maxPageHeight.toFloat())
+
+                // Draw layout
+                layout.draw(canvas)
+
+                pdfDoc.finishPage(page)
+                globalPageNumber++
+            }
+        }
+
+        try {
+            val fos = FileOutputStream(pdfFile)
+            pdfDoc.writeTo(fos)
+            fos.close()
+
+            // Save a copy to the public Downloads/VITeacherToolkit folder
+            val pdfBytes = pdfFile.readBytes()
+            val publicFile = StorageUtils.saveFileToPublicDownloads(this, pdfFile.name, "application/pdf", pdfBytes)
+
+            val authority = "${packageName}.fileprovider"
+            val uri = FileProvider.getUriForFile(this, authority, pdfFile)
+
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "application/pdf"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_TITLE, pdfFile.name)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(shareIntent, "Share PDF Note"))
+            
+            val publicSavedMessage = if (publicFile != null) "Note saved to Downloads folder VITeacherToolkit, and sharing dialog opened." else "Note successfully exported as PDF. Sharing dialog opened."
+            binding.root.announceForAccessibility(publicSavedMessage)
+            if (publicFile != null) {
+                Toast.makeText(this, "Saved to Downloads/VITeacherToolkit", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error generating PDF: ${e.message}", Toast.LENGTH_SHORT).show()
+        } finally {
+            pdfDoc.close()
+        }
+    }
+
+    private fun exportNoteAsTxt() {
+        val title = if (noteTitle.trim().isNotEmpty()) noteTitle.trim() else "Untitled_Note"
+        val exportDir = File(cacheDir, "exports")
+        if (!exportDir.exists()) {
+            exportDir.mkdirs()
+        }
+        val txtFile = File(exportDir, "${title.replace(" ", "_")}.txt")
+
+        // Strip manual page breaks for clean text export
+        val rawText = binding.etNoteContent.text.toString().replace("[Page Break]", "\n\n")
+
+        try {
+            val fos = FileOutputStream(txtFile)
+            fos.write(rawText.toByteArray())
+            fos.close()
+
+            // Save a copy to the public Downloads/VITeacherToolkit folder
+            val publicFile = StorageUtils.saveFileToPublicDownloads(this, txtFile.name, "text/plain", rawText.toByteArray())
+
+            val authority = "${packageName}.fileprovider"
+            val uri = FileProvider.getUriForFile(this, authority, txtFile)
+
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_TITLE, txtFile.name)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(shareIntent, "Share TXT Note"))
+            
+            val publicSavedMessage = if (publicFile != null) "Note saved to Downloads folder VITeacherToolkit, and sharing dialog opened." else "Note successfully exported as TXT. Sharing dialog opened."
+            binding.root.announceForAccessibility(publicSavedMessage)
+            if (publicFile != null) {
+                Toast.makeText(this, "Saved to Downloads/VITeacherToolkit", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error exporting TXT: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun showSaveNoteDialog() {

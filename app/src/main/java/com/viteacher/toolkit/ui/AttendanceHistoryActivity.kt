@@ -23,11 +23,14 @@ class AttendanceHistoryActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAttendanceHistoryBinding
     private lateinit var historyAdapter: AttendanceHistoryAdapter
     private val historyList = mutableListOf<HistoryGroupItem>()
+    private var classId: Int = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAttendanceHistoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        classId = intent.getIntExtra("class_id", 1)
 
         binding.btnBack.setOnClickListener {
             finish()
@@ -41,6 +44,7 @@ class AttendanceHistoryActivity : AppCompatActivity() {
         historyAdapter = AttendanceHistoryAdapter(historyList) { item ->
             val intent = Intent(this, HistoryDetailActivity::class.java).apply {
                 putExtra("selected_date", item.date)
+                putExtra("class_id", classId)
             }
             startActivity(intent)
         }
@@ -51,7 +55,7 @@ class AttendanceHistoryActivity : AppCompatActivity() {
     private fun loadHistoryData() {
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
-            db.attendanceDao().getAllSavedDatesAndSessionsFlow().collect { dtos ->
+            db.attendanceDao().getAllSavedDatesAndSessionsFlow(classId).collect { dtos ->
                 val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH)
                 
                 // Group by date string
@@ -116,10 +120,8 @@ class AttendanceHistoryAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = list[position]
         
-        // Pretty formatting for date display (e.g. convert "22 May 2026" to "22 May 2026")
         holder.tvDate.text = item.date
         
-        // Build session text (e.g. "Forenoon and Afternoon" or "Forenoon")
         val sessionText = when {
             item.sessions.contains("Forenoon") && item.sessions.contains("Afternoon") -> "Forenoon and Afternoon"
             item.sessions.contains("Forenoon") -> "Forenoon only"
@@ -128,7 +130,6 @@ class AttendanceHistoryAdapter(
         }
         holder.tvSessions.text = sessionText
 
-        // Set comprehensive content description for visually impaired teachers using TalkBack
         val contentDesc = "${item.date}, $sessionText sessions available. Double tap to view details."
         holder.view.contentDescription = contentDesc
 

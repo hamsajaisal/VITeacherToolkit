@@ -2,10 +2,17 @@ package com.viteacher.toolkit.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.viteacher.toolkit.R
 import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.AttendanceRecord
 import com.viteacher.toolkit.databinding.ActivityHistoryDetailBinding
@@ -15,6 +22,10 @@ class HistoryDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHistoryDetailBinding
     private var selectedDate: String = ""
+    private var classId: Int = 1
+    
+    private val sessionList = mutableListOf<SessionGroupData>()
+    private lateinit var sessionAdapter: HistoryDetailCardAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,6 +33,8 @@ class HistoryDetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         selectedDate = intent.getStringExtra("selected_date") ?: ""
+        classId = intent.getIntExtra("class_id", 1)
+
         if (selectedDate.isEmpty()) {
             Toast.makeText(this, "Error: No date selected.", Toast.LENGTH_SHORT).show()
             finish()
@@ -35,104 +48,52 @@ class HistoryDetailActivity : AppCompatActivity() {
             finish()
         }
 
+        setupRecyclerView()
         loadDetailData()
+    }
+
+    private fun setupRecyclerView() {
+        sessionAdapter = HistoryDetailCardAdapter(selectedDate, sessionList) { records, sessionName ->
+            shareAbsentees(records, sessionName)
+        }
+        binding.rvSessionCards.layoutManager = LinearLayoutManager(this)
+        binding.rvSessionCards.adapter = sessionAdapter
     }
 
     private fun loadDetailData() {
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
-            
-            val forenoonRecords = db.attendanceDao().getAttendanceForDateAndSession(selectedDate, "Forenoon")
-            val afternoonRecords = db.attendanceDao().getAttendanceForDateAndSession(selectedDate, "Afternoon")
+            val allRecords = db.attendanceDao().getAttendanceForDateAndClass(classId, selectedDate)
             
             runOnUiThread {
-                if (forenoonRecords.isEmpty() && afternoonRecords.isEmpty()) {
+                if (allRecords.isEmpty()) {
                     Toast.makeText(this@HistoryDetailActivity, "No records found for this date.", Toast.LENGTH_LONG).show()
                     finish()
                     return@runOnUiThread
                 }
 
-                setupSessionCard(
-                    records = forenoonRecords,
-                    sessionName = "Forenoon",
-                    cardLayout = binding.layoutForenoonCard,
-                    statsView = binding.tvForenoonStats,
-                    absenteesView = binding.tvForenoonAbsentees,
-                    shareButton = binding.btnShareForenoon
-                )
-
-                setupSessionCard(
-                    records = afternoonRecords,
-                    sessionName = "Afternoon",
-                    cardLayout = binding.layoutAfternoonCard,
-                    statsView = binding.tvAfternoonStats,
-                    absenteesView = binding.tvAfternoonAbsentees,
-                    shareButton = binding.btnShareAfternoon
-                )
+                // Group by session name (e.g. "Forenoon", "Afternoon", "Daily", "Hour 1", etc.)
+                val grouped = allRecords.groupBy { it.session }
                 
-                // Accessible announcement of the details loaded
-                val announcement = StringBuilder("Loaded history detail for $selectedDate. ")
-                if (forenoonRecords.isNotEmpty()) {
-                    val absent = forenoonRecords.count { !it.isPresent }
-                    announcement.append("Forenoon has $absent absent. ")
+                sessionList.clear()
+                // Sort keys so sessions are displayed in a clean order (e.g., Forenoon first, Hour 1 before Hour 2)
+                val sortedKeys = grouped.keys.sortedWith(compareBy { it })
+                
+                sortedKeys.forEach { sessionKey ->
+                    val records = grouped[sessionKey] ?: emptyList()
+                    sessionList.add(SessionGroupData(sessionName = sessionKey, records = records))
                 }
-                if (afternoonRecords.isNotEmpty()) {
-                    val absent = afternoonRecords.count { !it.isPresent }
-                    announcement.append("Afternoon has $absent absent.")
+
+                sessionAdapter.notifyDataSetChanged()
+
+                // Accessible vocal announcement summary for TalkBack
+                val announcement = StringBuilder("Loaded history details for $selectedDate. ")
+                sessionList.forEach { group ->
+                    val absent = group.records.count { !it.isPresent }
+                    announcement.append("${group.sessionName} has $absent absent. ")
                 }
                 binding.root.announceForAccessibility(announcement.toString())
             }
-        }
-    }
-
-    private fun setupSessionCard(
-        records: List<AttendanceRecord>,
-        sessionName: String,
-        cardLayout: View,
-        statsView: android.widget.TextView,
-        absenteesView: android.widget.TextView,
-        shareButton: android.widget.Button
-    ) {
-        if (records.isEmpty()) {
-            cardLayout.visibility = View.GONE
-            return
-        }
-
-        cardLayout.visibility = View.VISIBLE
-
-        val total = records.size
-        val absentees = records.filter { !it.isPresent }
-        val totalAbsent = absentees.size
-        val totalPresent = total - totalAbsent
-
-        // Set Stats Text
-        val statsText = "Present: $totalPresent  |  Absent: $totalAbsent"
-        statsView.text = statsText
-        statsView.contentDescription = "$sessionName session status, $totalPresent present and $totalAbsent absent out of $total students."
-
-        // Set Absentees List Text
-        val absenteesTextBuilder = StringBuilder()
-        if (totalAbsent == 0) {
-            absenteesTextBuilder.append("No absentees. Full attendance present!")
-            absenteesView.text = absenteesTextBuilder.toString()
-            absenteesView.contentDescription = "No absentees. Full attendance present."
-        } else {
-            absentees.forEachIndexed { index, record ->
-                absenteesTextBuilder.append("Roll No. ${record.rollNumber} — ${record.name}")
-                if (index < absentees.size - 1) {
-                    absenteesTextBuilder.append("\n")
-                }
-            }
-            absenteesView.text = absenteesTextBuilder.toString()
-            
-            // Build a descriptive label for TalkBack to read absentees list clearly without pausing on newlines
-            val spokenAbsentees = absentees.joinToString(", ") { "Roll number ${it.rollNumber}, ${it.name}" }
-            absenteesView.contentDescription = "Absentees list: $spokenAbsentees"
-        }
-
-        // Set Share Button Action
-        shareButton.setOnClickListener {
-            shareAbsentees(records, sessionName)
         }
     }
 
@@ -147,7 +108,7 @@ class HistoryDetailActivity : AppCompatActivity() {
         } else {
             message.append("Absentees Report\n")
             message.append("Date: $selectedDate\n")
-            message.append("Session: $sessionName\n\n")
+            message.append("Session/Period: $sessionName\n\n")
             
             absentees.forEach {
                 message.append("Roll No. ${it.rollNumber} — ${it.name}\n")
@@ -167,4 +128,74 @@ class HistoryDetailActivity : AppCompatActivity() {
         startActivity(chooser)
         binding.root.announceForAccessibility("Opening share menu for $sessionName absentees report.")
     }
+}
+
+// Helper data class
+data class SessionGroupData(
+    val sessionName: String,
+    val records: List<AttendanceRecord>
+)
+
+// Dynamic Card Adapter
+class HistoryDetailCardAdapter(
+    private val selectedDate: String,
+    private val list: List<SessionGroupData>,
+    private val onShareClick: (List<AttendanceRecord>, String) -> Unit
+) : RecyclerView.Adapter<HistoryDetailCardAdapter.ViewHolder>() {
+
+    class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        val tvSessionName: TextView = view.findViewById(R.id.tvSessionName)
+        val tvStats: TextView = view.findViewById(R.id.tvStats)
+        val tvAbsentees: TextView = view.findViewById(R.id.tvAbsentees)
+        val btnShare: Button = view.findViewById(R.id.btnShare)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val layout = LayoutInflater.from(parent.context).inflate(R.layout.item_history_detail_card, parent, false)
+        return ViewHolder(layout)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = list[position]
+        
+        holder.tvSessionName.text = "${item.sessionName} Session"
+        
+        val total = item.records.size
+        val absentees = item.records.filter { !it.isPresent }
+        val totalAbsent = absentees.size
+        val totalPresent = total - totalAbsent
+
+        // Stats Text
+        val statsText = "Present: $totalPresent  |  Absent: $totalAbsent"
+        holder.tvStats.text = statsText
+        holder.tvStats.contentDescription = "${item.sessionName} session status, $totalPresent present and $totalAbsent absent out of $total students."
+
+        // Absentees List
+        val absenteesTextBuilder = StringBuilder()
+        if (totalAbsent == 0) {
+            absenteesTextBuilder.append("No absentees. Full attendance present!")
+            holder.tvAbsentees.text = absenteesTextBuilder.toString()
+            holder.tvAbsentees.contentDescription = "No absentees. Full attendance present."
+        } else {
+            absentees.forEachIndexed { index, record ->
+                absenteesTextBuilder.append("Roll No. ${record.rollNumber} — ${record.name}")
+                if (index < absentees.size - 1) {
+                    absenteesTextBuilder.append("\n")
+                }
+            }
+            holder.tvAbsentees.text = absenteesTextBuilder.toString()
+            
+            val spokenAbsentees = absentees.joinToString(", ") { "Roll number ${it.rollNumber}, ${it.name}" }
+            holder.tvAbsentees.contentDescription = "Absentees list: $spokenAbsentees"
+        }
+
+        // Share button context and click
+        holder.btnShare.text = "Share ${item.sessionName} Absentees"
+        holder.btnShare.contentDescription = "Share ${item.sessionName} absentees report button"
+        holder.btnShare.setOnClickListener {
+            onShareClick(item.records, item.sessionName)
+        }
+    }
+
+    override fun getItemCount(): Int = list.size
 }

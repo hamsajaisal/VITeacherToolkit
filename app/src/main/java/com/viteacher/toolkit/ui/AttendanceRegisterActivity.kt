@@ -17,10 +17,7 @@ import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.PopupMenu
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -30,9 +27,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.viteacher.toolkit.R
 import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.AttendanceRecord
+import com.viteacher.toolkit.data.Classroom
 import com.viteacher.toolkit.data.Student
 import com.viteacher.toolkit.databinding.ActivityAttendanceRegisterBinding
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
@@ -49,7 +46,10 @@ class AttendanceRegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAttendanceRegisterBinding
     private lateinit var studentAdapter: StudentAttendanceAdapter
     private var studentList: MutableList<StudentAttendanceItem> = mutableListOf()
-    private var selectedSession = "Forenoon" // "Forenoon" or "Afternoon"
+    
+    private var classId: Int = 1
+    private var classroom: Classroom? = null
+    private var selectedSession = "Forenoon" // "Forenoon", "Afternoon", "Daily", "Hour X"
     private val sessionAttendanceCache = mutableMapOf<String, MutableMap<Int, Boolean>>()
     
     private lateinit var displayDate: String  // e.g., "Friday, 22 May 2026"
@@ -71,8 +71,10 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         binding = ActivityAttendanceRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        classId = intent.getIntExtra("class_id", 1)
+
         setupDate()
-        setupSessionToggles()
+        loadClassroomSettings()
         setupRecyclerView()
         setupMenu()
         setupBottomButtons()
@@ -80,9 +82,6 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener {
             finish()
         }
-
-        // Fetch students from local database
-        loadStudentList()
     }
 
     private fun setupDate() {
@@ -97,11 +96,55 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         binding.tvDate.contentDescription = "Today is $displayDate"
     }
 
-    private fun setupSessionToggles() {
+    private fun loadClassroomSettings() {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            val dbClass = db.classroomDao().getClassroomById(classId)
+            
+            if (dbClass == null) {
+                runOnUiThread {
+                    Toast.makeText(this@AttendanceRegisterActivity, "Error: Classroom not found.", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+                return@launch
+            }
+
+            classroom = dbClass
+            runOnUiThread {
+                binding.tvTitle.text = "Class ${dbClass.standard}${dbClass.division} Register"
+                binding.tvTitle.contentDescription = "Class ${dbClass.standard}${dbClass.division} Attendance Register Screen"
+
+                when (dbClass.attendanceType) {
+                    "DoubleSession" -> {
+                        selectedSession = "Forenoon"
+                        binding.layoutDoubleSessionToggles.visibility = View.VISIBLE
+                        binding.layoutHourSessionSelector.visibility = View.GONE
+                        setupDoubleSessionToggles()
+                    }
+                    "OnceADay" -> {
+                        selectedSession = "Daily"
+                        binding.layoutDoubleSessionToggles.visibility = View.GONE
+                        binding.layoutHourSessionSelector.visibility = View.GONE
+                    }
+                    "HourWise" -> {
+                        selectedSession = "Hour 1"
+                        binding.layoutDoubleSessionToggles.visibility = View.GONE
+                        binding.layoutHourSessionSelector.visibility = View.VISIBLE
+                        setupHourSessionSelector(dbClass.totalHours)
+                    }
+                }
+
+                // Now load student list (once layouts are fully structured)
+                loadStudentList()
+            }
+        }
+    }
+
+    private fun setupDoubleSessionToggles() {
         binding.btnForenoon.setOnClickListener {
             if (selectedSession != "Forenoon") {
                 selectedSession = "Forenoon"
-                updateSessionToggleUI()
+                updateDoubleSessionToggleUI()
                 loadStudentListFromCache()
             }
         }
@@ -109,25 +152,22 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         binding.btnAfternoon.setOnClickListener {
             if (selectedSession != "Afternoon") {
                 selectedSession = "Afternoon"
-                updateSessionToggleUI()
+                updateDoubleSessionToggleUI()
                 loadStudentListFromCache()
             }
         }
 
-        updateSessionToggleUI()
+        updateDoubleSessionToggleUI()
     }
 
-    private fun updateSessionToggleUI() {
+    private fun updateDoubleSessionToggleUI() {
         if (selectedSession == "Forenoon") {
-            // Visual highlight for Forenoon (lavender background, black text)
             binding.btnForenoon.backgroundTintList = ColorStateList.valueOf(resources.getColor(R.color.lavender_dark, theme))
             binding.btnForenoon.setTextColor(Color.BLACK)
             
-            // Inactive style for Afternoon (dark grey background, white text)
             binding.btnAfternoon.backgroundTintList = ColorStateList.valueOf(resources.getColor(R.color.grey_dark, theme))
             binding.btnAfternoon.setTextColor(Color.WHITE)
 
-            // Dynamic selection announcements for TalkBack touch and focus
             binding.btnForenoon.isSelected = true
             binding.btnAfternoon.isSelected = false
             binding.btnForenoon.contentDescription = "Forenoon session, selected"
@@ -135,21 +175,41 @@ class AttendanceRegisterActivity : AppCompatActivity() {
 
             binding.root.announceForAccessibility("Forenoon session selected")
         } else {
-            // Visual highlight for Afternoon (lavender background, black text)
             binding.btnAfternoon.backgroundTintList = ColorStateList.valueOf(resources.getColor(R.color.lavender_dark, theme))
             binding.btnAfternoon.setTextColor(Color.BLACK)
             
-            // Inactive style for Forenoon (dark grey background, white text)
             binding.btnForenoon.backgroundTintList = ColorStateList.valueOf(resources.getColor(R.color.grey_dark, theme))
             binding.btnForenoon.setTextColor(Color.WHITE)
 
-            // Dynamic selection announcements for TalkBack touch and focus
             binding.btnForenoon.isSelected = false
             binding.btnAfternoon.isSelected = true
             binding.btnForenoon.contentDescription = "Forenoon session, not selected"
             binding.btnAfternoon.contentDescription = "Afternoon session, selected"
 
             binding.root.announceForAccessibility("Afternoon session selected")
+        }
+    }
+
+    private fun setupHourSessionSelector(totalHours: Int) {
+        val hoursList = mutableListOf<String>()
+        for (i in 1..totalHours) {
+            hoursList.add("Hour $i")
+        }
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, hoursList)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spSessionHour.adapter = adapter
+
+        binding.spSessionHour.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val hourKey = "Hour ${position + 1}"
+                if (selectedSession != hourKey) {
+                    selectedSession = hourKey
+                    loadStudentListFromCache()
+                    binding.root.announceForAccessibility("$hourKey selected")
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
@@ -173,7 +233,7 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             val announcement = "${item.student.name} $statusAnnouncement"
             binding.root.announceForAccessibility(announcement)
 
-            // Vibrate to provide haptic feedback
+            // Vibrate to provide tactile feedback
             triggerHapticFeedback()
         }
         binding.rvStudents.layoutManager = LinearLayoutManager(this)
@@ -213,13 +273,15 @@ class AttendanceRegisterActivity : AppCompatActivity() {
     }
 
     private fun loadStudentList() {
+        val type = classroom?.attendanceType ?: "DoubleSession"
+        val hoursLimit = classroom?.totalHours ?: 0
+
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
-            val dbStudents = db.studentDao().getAllStudentsOnce()
+            val dbStudents = db.studentDao().getAllStudentsOnce(classId)
             
-            // Load existing attendance records for today from DB to pre-populate cache if they exist
-            val existingForenoon = db.attendanceDao().getAttendanceForDateAndSession(savedDate, "Forenoon")
-            val existingAfternoon = db.attendanceDao().getAttendanceForDateAndSession(savedDate, "Afternoon")
+            // Load existing attendance records for today from DB
+            val existingRecords = db.attendanceDao().getAttendanceForDateAndClass(classId, savedDate)
             
             runOnUiThread {
                 studentList.clear()
@@ -227,30 +289,38 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                     binding.rvStudents.visibility = View.GONE
                     binding.tvEmptyState.visibility = View.VISIBLE
                     
-                    // Voice guide for visually impaired teachers
-                    val voiceGuide = "No students found in your register. To add your students, tap the 'More Options' button at the top-right of your screen. You can select 'Download Sample Excel Template' to save a pre-formatted spreadsheet to your Downloads folder. Fill in your student roll numbers and names in that sheet, and then select 'Import Student List' to upload it."
+                    // Onboarding vocal guidelines for visually impaired teachers
+                    val voiceGuide = "No students found in your register. To add your students manually, tap 'Add or Edit Student Roster' on the previous screen. Alternatively, tap the 'More Options' button at the top-right of this screen to download an Excel sheet roster template and upload it."
                     binding.root.announceForAccessibility(voiceGuide)
                 } else {
                     binding.rvStudents.visibility = View.VISIBLE
                     binding.tvEmptyState.visibility = View.GONE
                     
-                    // Initialize or rebuild caches
-                    sessionAttendanceCache["Forenoon"] = mutableMapOf()
-                    sessionAttendanceCache["Afternoon"] = mutableMapOf()
+                    // Initialize cache maps for all available sessions
+                    sessionAttendanceCache.clear()
+                    when (type) {
+                        "DoubleSession" -> {
+                            sessionAttendanceCache["Forenoon"] = mutableMapOf()
+                            sessionAttendanceCache["Afternoon"] = mutableMapOf()
+                        }
+                        "OnceADay" -> {
+                            sessionAttendanceCache["Daily"] = mutableMapOf()
+                        }
+                        "HourWise" -> {
+                            for (i in 1..hoursLimit) {
+                                sessionAttendanceCache["Hour $i"] = mutableMapOf()
+                            }
+                        }
+                    }
                     
                     dbStudents.forEach { student ->
-                        // Rebuild Forenoon cache status
-                        val forenoonRecord = existingForenoon.find { it.rollNumber == student.rollNumber }
-                        val forenoonPresent = forenoonRecord?.isPresent ?: true
-                        sessionAttendanceCache["Forenoon"]?.put(student.rollNumber, forenoonPresent)
-                        
-                        // Rebuild Afternoon cache status
-                        val afternoonRecord = existingAfternoon.find { it.rollNumber == student.rollNumber }
-                        val afternoonPresent = afternoonRecord?.isPresent ?: true
-                        sessionAttendanceCache["Afternoon"]?.put(student.rollNumber, afternoonPresent)
-                        
-                        // Populate active studentList
-                        val currentPresent = if (selectedSession == "Forenoon") forenoonPresent else afternoonPresent
+                        sessionAttendanceCache.keys.forEach { sessionKey ->
+                            val record = existingRecords.find { it.rollNumber == student.rollNumber && it.session == sessionKey }
+                            val isPresent = record?.isPresent ?: true
+                            sessionAttendanceCache[sessionKey]?.put(student.rollNumber, isPresent)
+                        }
+
+                        val currentPresent = sessionAttendanceCache[selectedSession]?.get(student.rollNumber) ?: true
                         studentList.add(StudentAttendanceItem(student, isPresent = currentPresent))
                     }
                     studentAdapter.notifyDataSetChanged()
@@ -269,18 +339,19 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         }
 
         binding.btnViewHistory.setOnClickListener {
-            startActivity(Intent(this, AttendanceHistoryActivity::class.java))
+            val intent = Intent(this, AttendanceHistoryActivity::class.java).apply {
+                putExtra("class_id", classId)
+            }
+            startActivity(intent)
         }
     }
 
-    // PART 5 - IMPORT EXCEL STUDENT LIST
     private fun triggerImportStudentList() {
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
-            val currentStudents = db.studentDao().getAllStudentsOnce()
+            val currentStudents = db.studentDao().getAllStudentsOnce(classId)
             runOnUiThread {
                 if (currentStudents.isNotEmpty()) {
-                    // Show replacement warning dialog
                     val dialog = AlertDialog.Builder(this@AttendanceRegisterActivity)
                         .setTitle("Replace Student List")
                         .setMessage("This will replace your existing student list. Do you want to continue?")
@@ -294,7 +365,6 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                         .create()
                     dialog.show()
                     
-                    // Set custom button content descriptions inside dialog
                     dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Yes button"
                     dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "No button"
                     binding.root.announceForAccessibility("Warning dialog. This will replace your existing student list. Do you want to continue? Select Yes or No.")
@@ -323,15 +393,6 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                 val sheet = workbook.getSheetAt(0)
                 
                 val parsedStudents = mutableListOf<Student>()
-                
-                // Read rows starting from row 1 (Row 0 is title row, Row 1 is description note, student data starts from Row 2)
-                // Wait! Let's check Excel format requirement:
-                // "Row 1 is heading row with Roll Number in A and Name in B. From Row 2 onwards, each row contains roll number in A and name in B."
-                // Remember POI row indexing is 0-based. So Row 1 of template is index 0. Row 2 of template is index 1 (which holds the instruction note).
-                // Wait! Let's check: "Row 1 is heading. From Row 2 onwards, each row contains student details." But wait, in the template:
-                // "Row 2: A note or instruction written in column A. Rows 3 to 5: Three sample rows with example data."
-                // So if the template has the instruction note in row 2, and student details starting from row 3 (index 2), does the import logic check for the note?
-                // Let's handle it gracefully: if column A is not an integer or is an instruction note, we skip it! That way, we support both templates (with/without the note row)!
                 val rowIterator = sheet.rowIterator()
                 
                 // Skip the first row (headers)
@@ -349,7 +410,6 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                                 rollNum = cellA.numericCellValue.toInt()
                             } else {
                                 val text = cellA.stringCellValue.trim()
-                                // If this cell contains instructions or empty text, skip
                                 if (text.isEmpty() || text.contains("Fill student details", ignoreCase = true) || text.contains("Roll", ignoreCase = true)) {
                                     continue
                                 }
@@ -358,10 +418,10 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                             
                             val name = cellB.stringCellValue.trim()
                             if (name.isNotEmpty()) {
-                                parsedStudents.add(Student(rollNum, name))
+                                parsedStudents.add(Student(classId = classId, rollNumber = rollNum, name = name))
                             }
                         } catch (e: Exception) {
-                            // Skip rows that fail to parse (e.g. instruction note row)
+                            // Skip invalid rows
                         }
                     }
                 }
@@ -372,9 +432,8 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                     throw Exception("No valid students found in the file.")
                 }
                 
-                // Save to DB
                 val db = AppDatabase.getDatabase(applicationContext)
-                db.studentDao().deleteAllStudents()
+                db.studentDao().deleteAllStudents(classId)
                 db.studentDao().insertStudents(parsedStudents)
                 
                 runOnUiThread {
@@ -399,12 +458,10 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         }
     }
 
-    // PART 6 - DOWNLOAD SAMPLE EXCEL TEMPLATE
     private fun triggerDownloadSampleTemplate() {
         val workbook = XSSFWorkbook()
         val sheet = workbook.createSheet("Students")
         
-        // Row 0: Headers (Roll Number, Name) - Bold
         val headerFont = workbook.createFont().apply {
             bold = true
         }
@@ -422,12 +479,10 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         cellB1.setCellValue("Name")
         cellB1.setCellStyle(headerStyle)
         
-        // Row 1: Instruction
         val instructionRow = sheet.createRow(1)
         val instructionCell = instructionRow.createCell(0)
         instructionCell.setCellValue("Fill student details from this row onwards. Do not change the heading row.")
         
-        // Rows 2 to 4: Sample rows
         val sample1 = sheet.createRow(2)
         sample1.createCell(0).setCellValue(1.0)
         sample1.createCell(1).setCellValue("Sample Student 1")
@@ -440,7 +495,6 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         sample3.createCell(0).setCellValue(3.0)
         sample3.createCell(1).setCellValue("Sample Student 3")
         
-        // Auto-fit columns
         sheet.setColumnWidth(0, 4000)
         sheet.setColumnWidth(1, 6000)
         
@@ -495,10 +549,9 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         }
     }
 
-    // PART 7 - SAVING ATTENDANCE
     private fun saveAttendanceFlow() {
         if (studentList.isEmpty()) {
-            val emptyMsg = "No students in the list. Please import a student list first."
+            val emptyMsg = "No students in the list. Please setup your student roster first."
             Toast.makeText(this, emptyMsg, Toast.LENGTH_LONG).show()
             binding.root.announceForAccessibility(emptyMsg)
             return
@@ -506,12 +559,10 @@ class AttendanceRegisterActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
-            // Check if already saved for today + session
-            val existing = db.attendanceDao().getAttendanceForDateAndSession(savedDate, selectedSession)
+            val existing = db.attendanceDao().getAttendanceForDateAndSession(classId, savedDate, selectedSession)
             
             runOnUiThread {
                 if (existing.isNotEmpty()) {
-                    // Show overwrite dialog
                     val dialog = AlertDialog.Builder(this@AttendanceRegisterActivity)
                         .setTitle("Overwrite Attendance")
                         .setMessage("$selectedSession attendance for today is already saved. Do you want to overwrite it?")
@@ -539,6 +590,7 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val records = studentList.map {
                 AttendanceRecord(
+                    classId = classId,
                     date = savedDate,
                     session = selectedSession,
                     rollNumber = it.student.rollNumber,
@@ -554,7 +606,6 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             val totalPresent = studentList.count { it.isPresent }
             
             runOnUiThread {
-                // TalkBack announcements
                 val announceSuccess = "Attendance saved successfully"
                 val announceSummary = "$selectedSession attendance saved. Present: $totalPresent, Absent: $totalAbsent."
                 
@@ -564,15 +615,13 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         }
     }
 
-    // PART 8 - SHARING ABSENTEES LIST
     private fun shareAbsenteesFlow() {
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
-            val records = db.attendanceDao().getAttendanceForDateAndSession(savedDate, selectedSession)
+            val records = db.attendanceDao().getAttendanceForDateAndSession(classId, savedDate, selectedSession)
             
             runOnUiThread {
                 if (records.isEmpty()) {
-                    // Block sharing
                     val msg = "Please save attendance before sharing."
                     Toast.makeText(this@AttendanceRegisterActivity, msg, Toast.LENGTH_LONG).show()
                     binding.root.announceForAccessibility(msg)
@@ -584,12 +633,14 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                 val totalPresent = records.size - totalAbsent
                 
                 val message = StringBuilder()
+                val className = if (classroom != null) "Class ${classroom!!.standard}${classroom!!.division}" else "My Class"
+
                 if (totalAbsent == 0) {
-                    message.append("No absentees for $selectedSession on $savedDate. Full attendance present.")
+                    message.append("No absentees for $className on $savedDate during $selectedSession. Full attendance present.")
                 } else {
-                    message.append("Absentees Report\n")
+                    message.append("$className Absentees Report\n")
                     message.append("Date: $savedDate\n")
-                    message.append("Session: $selectedSession\n\n")
+                    message.append("Session/Period: $selectedSession\n\n")
                     
                     absentees.forEach {
                         message.append("Roll No. ${it.rollNumber} — ${it.name}\n")

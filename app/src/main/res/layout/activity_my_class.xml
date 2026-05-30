@@ -21,7 +21,7 @@
             android:src="?android:attr/actionModeCloseDrawable"
             android:background="?android:attr/selectableItemBackground"
             android:tint="#FFFFFF"
-            android:contentDescription="Go back button"
+            android:contentDescription="Go back"
             android:importantForAccessibility="yes" />
 
         <TextView
@@ -63,7 +63,20 @@
         android:text="Attendance Register"
         android:textColor="#000000"
         android:backgroundTint="@color/lavender"
-        android:contentDescription="Attendance Register button"
+        android:contentDescription="Attendance Register"
+        android:importantForAccessibility="yes"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Manage Students Option -->
+    <Button
+        android:id="@+id/btnManageStudents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Add or Edit Student Roster"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#FF444444"
+        android:contentDescription="Add or edit student roster. Set up students manually or edit existing profiles."
         android:importantForAccessibility="yes" />
 
 </LinearLayout>

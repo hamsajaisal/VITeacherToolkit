@@ -95,6 +95,37 @@
             android:textColor="#000000"
             android:backgroundTint="@color/lavender"
             android:contentDescription="Classroom Settings button. Configure class, division, and academic year. This is a feature for class teachers."
+            android:layout_marginBottom="24dp" />
+
+        <!-- Visual Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#333333"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Backup Option -->
+        <Button
+            android:id="@+id/btnBackupData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Backup Application Data"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Backup application data button. Exports all your notes, timetables, classes, and historical registers to a database file."
+            android:layout_marginBottom="16dp" />
+
+        <!-- Restore Option -->
+        <Button
+            android:id="@+id/btnRestoreData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Restore Application Data"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF444444"
+            android:contentDescription="Restore application data button. Imports database file to overwrite current app settings. Warning: This cannot be undone."
             android:layout_marginBottom="16dp" />
     </LinearLayout>
 </ScrollView>

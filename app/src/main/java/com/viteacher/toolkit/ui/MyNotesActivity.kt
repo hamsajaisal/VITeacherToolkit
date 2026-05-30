@@ -420,7 +420,49 @@ class MyNotesActivity : AppCompatActivity() {
         }
     }
 
-    // Removed CategorySpinnerAdapter since we now use an accessible AlertDialog selection menu.
+    private fun showRenameNoteDialog(note: Note) {
+        val input = EditText(this)
+        input.setText(note.title)
+        input.contentDescription = "New note title, required"
+        input.setSelection(note.title.length)
+
+        val container = FrameLayout(this)
+        val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        params.setMargins(48, 16, 48, 16)
+        input.layoutParams = params
+        container.addView(input)
+
+        AlertDialog.Builder(this)
+            .setTitle("Rename Note")
+            .setView(container)
+            .setPositiveButton("Save") { _, _ ->
+                val newTitle = input.text.toString().trim()
+                if (newTitle.isNotEmpty()) {
+                    renameNoteInDb(note, newTitle)
+                } else {
+                    Toast.makeText(this, "Title cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+                binding.root.announceForAccessibility("Rename cancelled")
+            }
+            .create()
+            .show()
+        binding.root.announceForAccessibility("Rename note dialog. Type new name and select Save or Cancel.")
+    }
+
+    private fun renameNoteInDb(note: Note, newTitle: String) {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            db.noteDao().updateNote(note.copy(title = newTitle, lastEdited = System.currentTimeMillis()))
+            runOnUiThread {
+                val message = "Note renamed to $newTitle"
+                Toast.makeText(this@MyNotesActivity, message, Toast.LENGTH_SHORT).show()
+                binding.root.announceForAccessibility(message)
+            }
+        }
+    }
 
     // RecyclerView Note title list adapter
     inner class NoteAdapter(
@@ -471,6 +513,7 @@ class MyNotesActivity : AppCompatActivity() {
         private fun showNoteOptionsPopup(anchor: View, note: Note) {
             val options = arrayOf(
                 "Edit",
+                "Rename",
                 if (note.isPinned) "Unpin" else "Pin",
                 "Share",
                 "Delete"
@@ -480,14 +523,15 @@ class MyNotesActivity : AppCompatActivity() {
                 .setItems(options) { _, which ->
                     when (which) {
                         0 -> onEdit(note)
-                        1 -> onPinToggle(note)
-                        2 -> onShare(note)
-                        3 -> onDelete(note)
+                        1 -> showRenameNoteDialog(note)
+                        2 -> onPinToggle(note)
+                        3 -> onShare(note)
+                        4 -> onDelete(note)
                     }
                 }
                 .create()
                 .show()
-            binding.root.announceForAccessibility("Options for note ${note.title}. Choose Edit, Pin or Unpin, Share, or Delete.")
+            binding.root.announceForAccessibility("Options for note ${note.title}. Choose Edit, Rename, Pin or Unpin, Share, or Delete.")
         }
 
         override fun getItemCount() = notes.size

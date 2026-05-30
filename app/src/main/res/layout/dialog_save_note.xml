@@ -56,7 +56,7 @@
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="Create New Category"
-        android:contentDescription="Create new category button"
+        android:contentDescription="Create new category"
         android:backgroundTint="#888888"
         android:textColor="@android:color/white"
         android:importantForAccessibility="yes"/>

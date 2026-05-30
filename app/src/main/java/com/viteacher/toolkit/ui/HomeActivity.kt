@@ -56,7 +56,20 @@ class HomeActivity : AppCompatActivity() {
         }
 
         binding.btnMyClass.setOnClickListener {
-            startActivity(Intent(this, MyClassActivity::class.java))
+            lifecycleScope.launch {
+                val db = AppDatabase.getDatabase(applicationContext)
+                val list = db.classroomDao().getAllClassroomsOnce()
+                runOnUiThread {
+                    if (list.size == 1) {
+                        val intent = Intent(this@HomeActivity, MyClassActivity::class.java).apply {
+                            putExtra("class_id", list[0].id)
+                        }
+                        startActivity(intent)
+                    } else if (list.size > 1) {
+                        startActivity(Intent(this@HomeActivity, ClassSelectionActivity::class.java))
+                    }
+                }
+            }
         }
 
         binding.btnSettings.setOnClickListener {
@@ -100,15 +113,16 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun checkClassSettings() {
-        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
-        val standard = prefs.getString("class_standard", "")
-        val division = prefs.getString("class_division", "")
-        val academicYear = prefs.getString("class_academic_year", "")
-
-        if (!standard.isNullOrEmpty() && !division.isNullOrEmpty() && !academicYear.isNullOrEmpty()) {
-            binding.btnMyClass.visibility = android.view.View.VISIBLE
-        } else {
-            binding.btnMyClass.visibility = android.view.View.GONE
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            val list = db.classroomDao().getAllClassroomsOnce()
+            runOnUiThread {
+                if (list.isNotEmpty()) {
+                    binding.btnMyClass.visibility = android.view.View.VISIBLE
+                } else {
+                    binding.btnMyClass.visibility = android.view.View.GONE
+                }
+            }
         }
     }
 

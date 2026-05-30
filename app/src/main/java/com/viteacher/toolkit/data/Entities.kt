@@ -58,19 +58,34 @@ data class Category(
     val name: String // Unique category name
 )
 
-@Entity(tableName = "students")
+@Entity(tableName = "classrooms")
+data class Classroom(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val standard: String,
+    val division: String,
+    val academicYear: String,
+    val attendanceType: String, // "DoubleSession", "OnceADay", "HourWise"
+    val totalHours: Int = 0
+)
+
+@Entity(
+    tableName = "students",
+    primaryKeys = ["classId", "rollNumber"]
+)
 data class Student(
-    @PrimaryKey val rollNumber: Int,
+    val classId: Int,
+    val rollNumber: Int,
     val name: String
 )
 
 @Entity(
     tableName = "attendance_records",
-    primaryKeys = ["date", "session", "rollNumber"]
+    primaryKeys = ["classId", "date", "session", "rollNumber"]
 )
 data class AttendanceRecord(
+    val classId: Int,
     val date: String,          // Format: "22 May 2026"
-    val session: String,       // "Forenoon" or "Afternoon"
+    val session: String,       // "Forenoon", "Afternoon", "Daily", "Hour X"
     val rollNumber: Int,
     val name: String,
     val isPresent: Boolean

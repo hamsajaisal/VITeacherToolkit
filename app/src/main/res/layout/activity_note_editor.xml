@@ -19,7 +19,7 @@
             android:layout_height="48dp"
             android:src="@android:drawable/ic_menu_revert"
             android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Go back button"
+            android:contentDescription="Go back"
             android:importantForAccessibility="yes"/>
 
         <TextView
@@ -48,7 +48,7 @@
             android:layout_height="48dp"
             android:src="@android:drawable/ic_menu_more"
             android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="More options button"
+            android:contentDescription="More options"
             android:importantForAccessibility="yes"/>
 
     </LinearLayout>
@@ -76,7 +76,7 @@
             android:layout_width="64dp"
             android:layout_height="48dp"
             android:text="A-"
-            android:contentDescription="Decrease font size button"
+            android:contentDescription="Decrease font size"
             android:layout_marginEnd="8dp"
             android:importantForAccessibility="yes"/>
 
@@ -85,7 +85,7 @@
             android:layout_width="64dp"
             android:layout_height="48dp"
             android:text="A+"
-            android:contentDescription="Increase font size button"
+            android:contentDescription="Increase font size"
             android:importantForAccessibility="yes"/>
 
     </LinearLayout>
@@ -127,7 +127,7 @@
                 android:layout_height="48dp"
                 android:text="B"
                 android:textStyle="bold"
-                android:contentDescription="Bold button"
+                android:contentDescription="Bold"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -137,7 +137,7 @@
                 android:layout_height="48dp"
                 android:text="I"
                 android:textStyle="italic"
-                android:contentDescription="Italic button"
+                android:contentDescription="Italic"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -146,7 +146,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="U"
-                android:contentDescription="Underline button"
+                android:contentDescription="Underline"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -155,7 +155,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="S"
-                android:contentDescription="Strikethrough button"
+                android:contentDescription="Strikethrough"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -164,7 +164,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="High"
-                android:contentDescription="Highlight button"
+                android:contentDescription="Highlight"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -173,7 +173,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="Color"
-                android:contentDescription="Text color button"
+                android:contentDescription="Text color"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -182,7 +182,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="• List"
-                android:contentDescription="Bullet list button"
+                android:contentDescription="Bullet list"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -191,7 +191,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="1. List"
-                android:contentDescription="Numbered list button"
+                android:contentDescription="Numbered list"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -200,7 +200,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="Align"
-                android:contentDescription="Text alignment button"
+                android:contentDescription="Text alignment"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -208,8 +208,8 @@
                 android:id="@+id/btnAllCaps"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
-                android:text="CAPS"
-                android:contentDescription="All caps button"
+                android:text="Case"
+                android:contentDescription="Change case"
                 android:importantForAccessibility="yes"/>
 
         </LinearLayout>

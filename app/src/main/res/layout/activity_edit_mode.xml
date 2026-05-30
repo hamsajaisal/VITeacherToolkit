@@ -72,7 +72,17 @@
                 android:layout_height="48dp"
                 android:text="B"
                 android:textStyle="bold"
-                android:contentDescription="Bold button"
+                android:contentDescription="Bold"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockItalic"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="I"
+                android:textStyle="italic"
+                android:contentDescription="Italic"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -81,7 +91,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="U"
-                android:contentDescription="Underline button"
+                android:contentDescription="Underline"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -90,7 +100,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="S"
-                android:contentDescription="Strikethrough button"
+                android:contentDescription="Strikethrough"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -99,7 +109,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="High"
-                android:contentDescription="Highlight button"
+                android:contentDescription="Highlight"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -108,7 +118,52 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="Color"
-                android:contentDescription="Text color button"
+                android:contentDescription="Text color"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockBulletList"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Bullet"
+                android:contentDescription="Bullet list"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockNumberedList"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Number"
+                android:contentDescription="Numbered list"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockAlignment"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Align"
+                android:contentDescription="Cycle text alignment"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockAllCaps"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Case"
+                android:contentDescription="Change case"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockPageBreak"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Page Break"
+                android:contentDescription="Page break"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -117,7 +172,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="Delete"
-                android:contentDescription="Delete button"
+                android:contentDescription="Delete"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes"/>
 
@@ -126,7 +181,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="Cut"
-                android:contentDescription="Cut button"
+                android:contentDescription="Cut"
                 android:importantForAccessibility="yes"/>
 
         </LinearLayout>
@@ -147,7 +202,7 @@
             android:layout_weight="1"
             android:minHeight="48dp"
             android:text="OK"
-            android:contentDescription="OK button"
+            android:contentDescription="OK"
             android:layout_marginEnd="8dp"
             android:importantForAccessibility="yes"/>
 
@@ -158,7 +213,7 @@
             android:layout_weight="1"
             android:minHeight="48dp"
             android:text="Cancel"
-            android:contentDescription="Cancel button"
+            android:contentDescription="Cancel"
             android:importantForAccessibility="yes"/>
 
     </LinearLayout>

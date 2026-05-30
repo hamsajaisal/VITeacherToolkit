@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:isScrollContainer="true"
+    android:importantForAccessibility="yes"
+    android:background="#000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_revert"
+                android:contentDescription="Go back button"
+                android:tint="#FFFFFF"
+                android:padding="12dp"
+                android:layout_marginRight="8dp" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Manual Roster Setup"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:background="@drawable/border_green"
+                android:gravity="center"
+                android:accessibilityHeading="true"
+                android:importantForAccessibility="yes" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Setup your students roster manually. Select a roll number from the dropdown, enter the student's name, then select the next roll number. Tapping save will record all your changes."
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Roll Number Dropdown Select -->
+        <TextView
+            android:id="@+id/tvRollNumberLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Roll Number"
+            android:textColor="#CCCCCC"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <Spinner
+            android:id="@+id/spRollNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="#FFFFFF"
+            android:contentDescription="Select roll number dropdown"
+            android:spinnerMode="dropdown"
+            android:importantForAccessibility="yes" />
+
+        <!-- Input Field: Student Name -->
+        <TextView
+            android:id="@+id/tvStudentNameLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Student Name"
+            android:textColor="#CCCCCC"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes"
+            android:labelFor="@id/etStudentName" />
+
+        <EditText
+            android:id="@+id/etStudentName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="Type student name here"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#666666"
+            android:inputType="textPersonName"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="Student name edit box"
+            android:importantForAccessibility="yes" />
+
+        <!-- Button: Add Extra Roll Number -->
+        <Button
+            android:id="@+id/btnAddExtraRoll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Add Extra Roll Number"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF444444"
+            android:contentDescription="Add Extra Roll Number button. Creates a new roll number slot and selects it."
+            android:layout_marginBottom="32dp" />
+
+        <!-- Actions -->
+        <Button
+            android:id="@+id/btnSaveRoster"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Save Student Roster"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Save student roster button"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Cancel"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF222222"
+            android:contentDescription="Cancel manual setup button"
+            android:layout_marginBottom="24dp" />
+
+    </LinearLayout>
+</ScrollView>

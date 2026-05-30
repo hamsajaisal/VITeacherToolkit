@@ -46,7 +46,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@android:drawable/ic_input_add"
-            android:contentDescription="Create new category button"
+            android:contentDescription="Create new category"
             android:background="?android:attr/selectableItemBackground"
             android:layout_marginStart="8dp"
             android:importantForAccessibility="yes"/>
@@ -68,7 +68,7 @@
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="Create New Note"
-        android:contentDescription="Create New Note button"
+        android:contentDescription="Create New Note"
         android:importantForAccessibility="yes"/>
 
 </LinearLayout>

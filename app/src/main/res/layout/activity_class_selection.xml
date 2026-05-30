@@ -3,60 +3,54 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#000000"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="#000000">
 
-    <!-- Header Layout -->
+    <!-- Header Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="24dp">
 
         <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="?android:attr/actionModeCloseDrawable"
-            android:background="?android:attr/selectableItemBackground"
-            android:tint="#FFFFFF"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
             android:contentDescription="Go back button"
-            android:importantForAccessibility="yes" />
+            android:tint="#FFFFFF"
+            android:padding="12dp"
+            android:layout_marginRight="8dp" />
 
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="History Detail"
+            android:text="Select Class"
             android:textColor="#FFFFFF"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:gravity="center"
             android:background="@drawable/border_green"
-            android:layout_marginStart="8dp"
+            android:gravity="center"
             android:accessibilityHeading="true"
             android:importantForAccessibility="yes" />
-
     </LinearLayout>
 
-    <!-- Selected Date Header -->
     <TextView
-        android:id="@+id/tvSelectedDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="22 May 2026"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="24dp"
+        android:text="Please select a classroom from your registers list:"
+        android:textColor="#CCCCCC"
+        android:textSize="14sp"
+        android:layout_marginBottom="20dp"
         android:importantForAccessibility="yes" />
 
-    <!-- RecyclerView for dynamic sessions list -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvSessionCards"
+        android:id="@+id/rvClassSelection"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"

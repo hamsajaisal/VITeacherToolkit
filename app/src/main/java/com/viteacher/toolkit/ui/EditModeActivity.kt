@@ -6,8 +6,10 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.text.style.AlignmentSpan
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StrikethroughSpan
@@ -33,6 +35,10 @@ class EditModeActivity : AppCompatActivity() {
     private lateinit var masterText: SpannableStringBuilder
     private lateinit var adapter: BlockChecklistAdapter
     private var currentMode = "Characters"
+    
+    private var alignmentIndex = 0
+    private val alignments = listOf(Layout.Alignment.ALIGN_NORMAL, Layout.Alignment.ALIGN_CENTER, Layout.Alignment.ALIGN_OPPOSITE)
+    private val alignmentNames = listOf("left", "center", "right")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -169,6 +175,10 @@ class EditModeActivity : AppCompatActivity() {
             applyStyleSpanToChecked(Typeface.BOLD, "Bold")
         }
 
+        binding.btnBlockItalic.setOnClickListener {
+            applyStyleSpanToChecked(Typeface.ITALIC, "Italic")
+        }
+
         binding.btnBlockUnderline.setOnClickListener {
             applyStyleToChecked({ UnderlineSpan() }, UnderlineSpan::class.java, "Underline")
         }
@@ -183,6 +193,26 @@ class EditModeActivity : AppCompatActivity() {
 
         binding.btnBlockTextColor.setOnClickListener {
             openTextColorPicker()
+        }
+
+        binding.btnBlockBulletList.setOnClickListener {
+            applyListFormattingToChecked(isNumbered = false)
+        }
+
+        binding.btnBlockNumberedList.setOnClickListener {
+            applyListFormattingToChecked(isNumbered = true)
+        }
+
+        binding.btnBlockAlignment.setOnClickListener {
+            cycleAlignmentForChecked()
+        }
+
+        binding.btnBlockAllCaps.setOnClickListener {
+            showChangeCaseMenuForChecked()
+        }
+
+        binding.btnBlockPageBreak.setOnClickListener {
+            insertPageBreakToChecked()
         }
 
         binding.btnBlockDelete.setOnClickListener {
@@ -223,12 +253,13 @@ class EditModeActivity : AppCompatActivity() {
 
         rebuildChecklist()
 
+        val announcementText = name.lowercase()
         val announcement = if (appliedCount > 0 && removedCount > 0) {
-            "$name applied and removed from selected items"
+            "Selected text $announcementText applied to some and removed from some items"
         } else if (appliedCount > 0) {
-            "$name applied to $appliedCount items"
+            "Selected text $announcementText"
         } else {
-            "$name removed from $removedCount items"
+            "$name removed from selected text"
         }
         binding.root.announceForAccessibility(announcement)
         binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -257,12 +288,13 @@ class EditModeActivity : AppCompatActivity() {
 
         rebuildChecklist()
 
+        val announcementText = if (name.equals("Underline", ignoreCase = true)) "underlined" else name.lowercase()
         val announcement = if (appliedCount > 0 && removedCount > 0) {
-            "$name applied to some and removed from some selected items"
+            "Selected text $announcementText applied to some and removed from some items"
         } else if (appliedCount > 0) {
-            "$name applied to $appliedCount selected items"
+            "Selected text $announcementText"
         } else {
-            "$name removed from $removedCount selected items"
+            "$name removed from selected text"
         }
         binding.root.announceForAccessibility(announcement)
         binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -294,7 +326,7 @@ class EditModeActivity : AppCompatActivity() {
             masterText.setSpan(BackgroundColorSpan(color), seg.start, seg.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         rebuildChecklist()
-        binding.root.announceForAccessibility("$name applied to ${checked.size} items")
+        binding.root.announceForAccessibility("$name applied to selected text")
         binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
@@ -324,7 +356,141 @@ class EditModeActivity : AppCompatActivity() {
             masterText.setSpan(ForegroundColorSpan(color), seg.start, seg.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         rebuildChecklist()
-        binding.root.announceForAccessibility("$name applied to ${checked.size} items")
+        binding.root.announceForAccessibility("$name applied to selected text")
+        binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
+    private fun applyListFormattingToChecked(isNumbered: Boolean) {
+        val checked = adapter.getCheckedSegments()
+        if (checked.isEmpty()) {
+            binding.root.announceForAccessibility("No items selected")
+            return
+        }
+
+        val sortedChecked = checked.sortedByDescending { it.start }
+        for (i in sortedChecked.indices) {
+            val seg = sortedChecked[i]
+            val chronologicalIndex = sortedChecked.size - 1 - i
+            val prefix = if (isNumbered) "${chronologicalIndex + 1}. " else "• "
+            masterText.insert(seg.start, prefix)
+        }
+        rebuildChecklist()
+        val listType = if (isNumbered) "Numbered list" else "Bullet list"
+        binding.root.announceForAccessibility("$listType applied to selected text")
+        binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
+    private fun cycleAlignmentForChecked() {
+        val checked = adapter.getCheckedSegments()
+        if (checked.isEmpty()) {
+            binding.root.announceForAccessibility("No items selected")
+            return
+        }
+        alignmentIndex = (alignmentIndex + 1) % alignments.size
+        val alignment = alignments[alignmentIndex]
+        val name = alignmentNames[alignmentIndex]
+
+        for (seg in checked) {
+            val spans = masterText.getSpans(seg.start, seg.end, AlignmentSpan::class.java)
+            spans.forEach { masterText.removeSpan(it) }
+            masterText.setSpan(AlignmentSpan.Standard(alignment), seg.start, seg.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        rebuildChecklist()
+        binding.root.announceForAccessibility("Text alignment set to $name for selected text")
+        binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
+    private fun showChangeCaseMenuForChecked() {
+        val options = arrayOf(
+            "UPPERCASE (all letters capitalized)",
+            "lowercase (all small letters)",
+            "Sentence case (first letter of each sentence capitalized)",
+            "Title Case (first letter of each word capitalized)"
+        )
+        AlertDialog.Builder(this)
+            .setTitle("Change Case")
+            .setItems(options) { _, which ->
+                val caseType = when (which) {
+                    0 -> "UPPERCASE"
+                    1 -> "lowercase"
+                    2 -> "Sentence case"
+                    3 -> "Title Case"
+                    else -> ""
+                }
+                applyChangeCaseToChecked(caseType)
+            }
+            .create()
+            .show()
+        binding.root.announceForAccessibility("Change Case options. Select UPPERCASE, lowercase, Sentence case, or Title Case.")
+    }
+
+    private fun applyChangeCaseToChecked(caseType: String) {
+        val checked = adapter.getCheckedSegments()
+        if (checked.isEmpty()) {
+            binding.root.announceForAccessibility("No items selected")
+            return
+        }
+        val sortedChecked = checked.sortedByDescending { it.start }
+        for (seg in sortedChecked) {
+            val text = masterText.substring(seg.start, seg.end)
+            val converted = when (caseType) {
+                "UPPERCASE" -> text.uppercase()
+                "lowercase" -> text.lowercase()
+                "Sentence case" -> toSentenceCase(text)
+                "Title Case" -> toTitleCase(text)
+                else -> text
+            }
+            masterText.replace(seg.start, seg.end, converted)
+        }
+        rebuildChecklist()
+        binding.root.announceForAccessibility("$caseType applied to selected text")
+        binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
+    private fun toSentenceCase(s: String): String {
+        if (s.isEmpty()) return s
+        val sb = StringBuilder(s.lowercase())
+        var capitalizeNext = true
+        for (i in sb.indices) {
+            val c = sb[i]
+            if (capitalizeNext && Character.isLetter(c)) {
+                sb.setCharAt(i, Character.toUpperCase(c))
+                capitalizeNext = false
+            } else if (c == '.' || c == '?' || c == '!') {
+                capitalizeNext = true
+            }
+        }
+        return sb.toString()
+    }
+
+    private fun toTitleCase(s: String): String {
+        if (s.isEmpty()) return s
+        val sb = StringBuilder(s.lowercase())
+        var capitalizeNext = true
+        for (i in sb.indices) {
+            val c = sb[i]
+            if (Character.isWhitespace(c)) {
+                capitalizeNext = true
+            } else if (capitalizeNext && Character.isLetter(c)) {
+                sb.setCharAt(i, Character.toUpperCase(c))
+                capitalizeNext = false
+            }
+        }
+        return sb.toString()
+    }
+
+    private fun insertPageBreakToChecked() {
+        val checked = adapter.getCheckedSegments()
+        if (checked.isEmpty()) {
+            binding.root.announceForAccessibility("No items selected")
+            return
+        }
+        val sortedChecked = checked.sortedByDescending { it.start }
+        for (seg in sortedChecked) {
+            masterText.insert(seg.end, "\n[Page Break]\n")
+        }
+        rebuildChecklist()
+        binding.root.announceForAccessibility("Page break inserted after selected text")
         binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 
@@ -345,7 +511,6 @@ class EditModeActivity : AppCompatActivity() {
             binding.root.announceForAccessibility("Selected blocks deleted")
         }
 
-        // Sort by start index descending to prevent index shift out of bounds issues
         val sortedChecked = checked.sortedByDescending { it.start }
 
         for (seg in sortedChecked) {

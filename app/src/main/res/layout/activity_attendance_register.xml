@@ -21,7 +21,7 @@
             android:src="?android:attr/actionModeCloseDrawable"
             android:background="?android:attr/selectableItemBackground"
             android:tint="#FFFFFF"
-            android:contentDescription="Go back button"
+            android:contentDescription="Go back"
             android:importantForAccessibility="yes" />
 
         <TextView
@@ -46,7 +46,7 @@
             android:src="@android:drawable/ic_menu_more"
             android:background="?android:attr/selectableItemBackground"
             android:tint="#FFFFFF"
-            android:contentDescription="More options button"
+            android:contentDescription="More options"
             android:layout_marginStart="8dp"
             android:importantForAccessibility="yes" />
 
@@ -65,8 +65,9 @@
         android:layout_marginBottom="16dp"
         android:importantForAccessibility="yes" />
 
-    <!-- Session Toggles -->
+    <!-- Session Toggles (Double Session) -->
     <LinearLayout
+        android:id="@+id/layoutDoubleSessionToggles"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -81,7 +82,7 @@
             android:text="Forenoon"
             android:textColor="#000000"
             android:backgroundTint="@color/lavender_dark"
-            android:contentDescription="Forenoon session button"
+            android:contentDescription="Forenoon session"
             android:layout_marginEnd="8dp"
             android:importantForAccessibility="yes" />
 
@@ -94,10 +95,41 @@
             android:text="Afternoon"
             android:textColor="#FFFFFF"
             android:backgroundTint="@color/grey_dark"
-            android:contentDescription="Afternoon session button"
+            android:contentDescription="Afternoon session"
             android:layout_marginStart="8dp"
             android:importantForAccessibility="yes" />
 
+    </LinearLayout>
+
+    <!-- Hour Selection (Hour-wise Mode) -->
+    <LinearLayout
+        android:id="@+id/layoutHourSessionSelector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/tvHourSelectLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Hour/Period"
+            android:textColor="#CCCCCC"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <Spinner
+            android:id="@+id/spSessionHour"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:backgroundTint="#FFFFFF"
+            android:contentDescription="Select hour or period dropdown"
+            android:spinnerMode="dropdown"
+            android:importantForAccessibility="yes" />
     </LinearLayout>
 
     <!-- Empty State Message -->
@@ -138,7 +170,7 @@
             android:text="Save Attendance"
             android:textColor="#000000"
             android:backgroundTint="@color/lavender"
-            android:contentDescription="Save attendance button"
+            android:contentDescription="Save attendance"
             android:layout_marginBottom="8dp"
             android:importantForAccessibility="yes" />
 
@@ -156,7 +188,7 @@
                 android:text="Share Absentees"
                 android:textColor="#000000"
                 android:backgroundTint="@color/lavender"
-                android:contentDescription="Share absentees button"
+                android:contentDescription="Share absentees"
                 android:layout_marginEnd="4dp"
                 android:importantForAccessibility="yes" />
 
@@ -169,7 +201,7 @@
                 android:text="View History"
                 android:textColor="#000000"
                 android:backgroundTint="@color/lavender"
-                android:contentDescription="View attendance history button"
+                android:contentDescription="View attendance history"
                 android:layout_marginStart="4dp"
                 android:importantForAccessibility="yes" />
 

@@ -58,6 +58,17 @@
             android:windowSoftInputMode="adjustResize"/>
 
         <activity
+            android:name=".ui.ClassSelectionActivity"
+            android:exported="false"
+            android:label="Class Selection"/>
+
+        <activity
+            android:name=".ui.AddStudentsManuallyActivity"
+            android:exported="false"
+            android:label="Add Students Manually"
+            android:windowSoftInputMode="adjustResize"/>
+
+        <activity
             android:name=".ui.MyClassActivity"
             android:exported="false"
             android:label="My Class"/>

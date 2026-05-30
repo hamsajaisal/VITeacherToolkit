@@ -100,33 +100,57 @@ interface CategoryDao {
 }
 
 @Dao
-interface StudentDao {
-    @Query("SELECT * FROM students ORDER BY rollNumber ASC")
-    fun getAllStudentsFlow(): Flow<List<Student>>
+interface ClassroomDao {
+    @Query("SELECT * FROM classrooms ORDER BY id ASC")
+    fun getAllClassroomsFlow(): Flow<List<Classroom>>
 
-    @Query("SELECT * FROM students ORDER BY rollNumber ASC")
-    suspend fun getAllStudentsOnce(): List<Student>
+    @Query("SELECT * FROM classrooms ORDER BY id ASC")
+    suspend fun getAllClassroomsOnce(): List<Classroom>
+
+    @Query("SELECT * FROM classrooms WHERE id = :classId LIMIT 1")
+    suspend fun getClassroomById(classId: Int): Classroom?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertClassroom(classroom: Classroom): Long
+
+    @Delete
+    suspend fun deleteClassroom(classroom: Classroom)
+}
+
+@Dao
+interface StudentDao {
+    @Query("SELECT * FROM students WHERE classId = :classId ORDER BY rollNumber ASC")
+    fun getAllStudentsFlow(classId: Int): Flow<List<Student>>
+
+    @Query("SELECT * FROM students WHERE classId = :classId ORDER BY rollNumber ASC")
+    suspend fun getAllStudentsOnce(classId: Int): List<Student>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStudents(students: List<Student>)
 
-    @Query("DELETE FROM students")
-    suspend fun deleteAllStudents()
+    @Query("DELETE FROM students WHERE classId = :classId")
+    suspend fun deleteAllStudents(classId: Int)
 }
 
 @Dao
 interface AttendanceDao {
-    @Query("SELECT * FROM attendance_records WHERE date = :date AND session = :session ORDER BY rollNumber ASC")
-    suspend fun getAttendanceForDateAndSession(date: String, session: String): List<AttendanceRecord>
+    @Query("SELECT * FROM attendance_records WHERE classId = :classId AND date = :date AND session = :session ORDER BY rollNumber ASC")
+    suspend fun getAttendanceForDateAndSession(classId: Int, date: String, session: String): List<AttendanceRecord>
 
-    @Query("SELECT DISTINCT session FROM attendance_records WHERE date = :date")
-    suspend fun getSavedSessionsForDate(date: String): List<String>
+    @Query("SELECT DISTINCT session FROM attendance_records WHERE classId = :classId AND date = :date")
+    suspend fun getSavedSessionsForDate(classId: Int, date: String): List<String>
 
-    @Query("SELECT DISTINCT date, session FROM attendance_records ORDER BY date DESC, session ASC")
-    fun getAllSavedDatesAndSessionsFlow(): Flow<List<DateSessionDto>>
+    @Query("SELECT DISTINCT date, session FROM attendance_records WHERE classId = :classId ORDER BY date DESC, session ASC")
+    fun getAllSavedDatesAndSessionsFlow(classId: Int): Flow<List<DateSessionDto>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAttendanceRecords(records: List<AttendanceRecord>)
+
+    @Query("SELECT * FROM attendance_records WHERE classId = :classId AND date = :date")
+    suspend fun getAttendanceForDateAndClass(classId: Int, date: String): List<AttendanceRecord>
+
+    @Query("DELETE FROM attendance_records WHERE classId = :classId")
+    suspend fun deleteAttendanceByClassId(classId: Int)
 }
 
 data class DateSessionDto(

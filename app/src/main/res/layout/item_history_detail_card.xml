@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/bg_history_item"
+    android:layout_marginBottom="20dp">
+
+    <TextView
+        android:id="@+id/tvSessionName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Session Name"
+        android:textColor="@color/lavender_dark"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:importantForAccessibility="yes" />
+
+    <TextView
+        android:id="@+id/tvStats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Present: 0 | Absent: 0"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:importantForAccessibility="yes" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Absentees:"
+        android:textColor="#CCCCCC"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:importantForAccessibility="yes" />
+
+    <TextView
+        android:id="@+id/tvAbsentees"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="None"
+        android:textColor="#FFCCCCCC"
+        android:textSize="16sp"
+        android:lineSpacingExtra="4dp"
+        android:importantForAccessibility="yes" />
+
+    <Button
+        android:id="@+id/btnShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:layout_marginTop="16dp"
+        android:text="Share Absentees"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="Share absentees report button"
+        android:importantForAccessibility="yes" />
+
+</LinearLayout>

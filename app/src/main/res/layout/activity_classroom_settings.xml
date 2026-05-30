@@ -48,117 +48,234 @@
                 android:importantForAccessibility="yes" />
         </LinearLayout>
 
-        <!-- Description text -->
-        <TextView
+        <!-- STATE 1: Classroom List View -->
+        <LinearLayout
+            android:id="@+id/layoutClassroomList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Configure your class and academic year details below."
-            android:textColor="#CCCCCC"
-            android:textSize="14sp"
-            android:layout_marginBottom="24dp"
-            android:importantForAccessibility="yes" />
+            android:orientation="vertical"
+            android:visibility="gone">
 
-        <!-- Input Field: Standard or Class -->
-        <TextView
-            android:id="@+id/tvClassStandardLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Standard or Class"
-            android:textColor="#CCCCCC"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"
-            android:importantForAccessibility="yes"
-            android:labelFor="@id/etClassStandard" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Your Configured Classes"
+                android:textColor="#CCCCCC"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp"
+                android:importantForAccessibility="yes" />
 
-        <EditText
-            android:id="@+id/etClassStandard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:hint="e.g. 6"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#666666"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:imeOptions="actionNext"
-            android:nextFocusForward="@id/etClassDivision"
-            android:layout_marginBottom="20dp"
-            android:contentDescription="Class standard edit box"
-            android:importantForAccessibility="yes" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvClassrooms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:importantForAccessibility="yes" />
 
-        <!-- Input Field: Division -->
-        <TextView
-            android:id="@+id/tvClassDivisionLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Division"
-            android:textColor="#CCCCCC"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"
-            android:importantForAccessibility="yes"
-            android:labelFor="@id/etClassDivision" />
+            <Button
+                android:id="@+id/btnAddClass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="Add New Class"
+                android:textColor="#000000"
+                android:backgroundTint="@color/lavender"
+                android:contentDescription="Add New Class button"
+                android:layout_marginBottom="24dp" />
+        </LinearLayout>
 
-        <EditText
-            android:id="@+id/etClassDivision"
+        <!-- STATE 2: Add Class Form View -->
+        <LinearLayout
+            android:id="@+id/layoutAddClassForm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:hint="e.g. B"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#666666"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:imeOptions="actionNext"
-            android:nextFocusForward="@id/etClassAcademicYear"
-            android:layout_marginBottom="20dp"
-            android:contentDescription="Division edit box"
-            android:importantForAccessibility="yes" />
+            android:orientation="vertical"
+            android:visibility="visible">
 
-        <!-- Input Field: Academic Year -->
-        <TextView
-            android:id="@+id/tvClassAcademicYearLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Academic Year"
-            android:textColor="#CCCCCC"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"
-            android:importantForAccessibility="yes"
-            android:labelFor="@id/etClassAcademicYear" />
+            <TextView
+                android:id="@+id/tvFormSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Configure your class and academic year details below."
+                android:textColor="#CCCCCC"
+                android:textSize="14sp"
+                android:layout_marginBottom="24dp"
+                android:importantForAccessibility="yes" />
 
-        <EditText
-            android:id="@+id/etClassAcademicYear"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:hint="e.g. 2025-26"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#666666"
-            android:inputType="text"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:imeOptions="actionDone"
-            android:nextFocusForward="@id/btnSaveClassroomSettings"
-            android:layout_marginBottom="28dp"
-            android:contentDescription="Academic year edit box"
-            android:importantForAccessibility="yes" />
+            <!-- Input Field: Standard or Class -->
+            <TextView
+                android:id="@+id/tvClassStandardLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Standard or Class"
+                android:textColor="#CCCCCC"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:importantForAccessibility="yes"
+                android:labelFor="@id/etClassStandard" />
 
-        <!-- Button: Save Classroom Settings -->
-        <Button
-            android:id="@+id/btnSaveClassroomSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="Save My Class"
-            android:textColor="#000000"
-            android:backgroundTint="@color/lavender"
-            android:contentDescription="Save My Class settings button"
-            android:layout_marginBottom="24dp" />
+            <EditText
+                android:id="@+id/etClassStandard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:hint="e.g. 6"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
+                android:nextFocusForward="@id/etClassDivision"
+                android:layout_marginBottom="20dp"
+                android:contentDescription="Class standard edit box"
+                android:importantForAccessibility="yes" />
+
+            <!-- Input Field: Division -->
+            <TextView
+                android:id="@+id/tvClassDivisionLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Division"
+                android:textColor="#CCCCCC"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:importantForAccessibility="yes"
+                android:labelFor="@id/etClassDivision" />
+
+            <EditText
+                android:id="@+id/etClassDivision"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:hint="e.g. B"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
+                android:nextFocusForward="@id/etClassAcademicYear"
+                android:layout_marginBottom="20dp"
+                android:contentDescription="Division edit box"
+                android:importantForAccessibility="yes" />
+
+            <!-- Input Field: Academic Year -->
+            <TextView
+                android:id="@+id/tvClassAcademicYearLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Academic Year"
+                android:textColor="#CCCCCC"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:importantForAccessibility="yes"
+                android:labelFor="@id/etClassAcademicYear" />
+
+            <EditText
+                android:id="@+id/etClassAcademicYear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:hint="e.g. 2025-26"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666"
+                android:inputType="text"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:imeOptions="actionNext"
+                android:layout_marginBottom="20dp"
+                android:contentDescription="Academic year edit box"
+                android:importantForAccessibility="yes" />
+
+            <!-- Attendance System Type Selection Dropdown -->
+            <TextView
+                android:id="@+id/tvAttendanceTypeLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Attendance System Type"
+                android:textColor="#CCCCCC"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:importantForAccessibility="yes" />
+
+            <Spinner
+                android:id="@+id/spAttendanceType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:layout_marginBottom="20dp"
+                android:backgroundTint="#FFFFFF"
+                android:contentDescription="Select attendance system type. Double session, Daily session, or Hour-wise periods."
+                android:spinnerMode="dropdown"
+                android:importantForAccessibility="yes" />
+
+            <!-- Hour-wise Total Hours Input (Initially Hidden) -->
+            <LinearLayout
+                android:id="@+id/layoutHourCountInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvTotalHoursLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Number of Hours per Day"
+                    android:textColor="#CCCCCC"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    android:importantForAccessibility="yes"
+                    android:labelFor="@id/etTotalHours" />
+
+                <EditText
+                    android:id="@+id/etTotalHours"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:hint="e.g. 5"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#666666"
+                    android:inputType="number"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:layout_marginBottom="20dp"
+                    android:contentDescription="Number of hours per day edit box"
+                    android:importantForAccessibility="yes" />
+            </LinearLayout>
+
+            <!-- Button: Save Classroom Settings -->
+            <Button
+                android:id="@+id/btnSaveClassroomSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="Save Class"
+                android:textColor="#000000"
+                android:backgroundTint="@color/lavender"
+                android:contentDescription="Save class settings button"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Button: Cancel Add/Edit (Initially Gone, Shown only if classes exist) -->
+            <Button
+                android:id="@+id/btnCancelAddClass"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="Cancel"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#FF444444"
+                android:contentDescription="Cancel adding class button"
+                android:visibility="gone"
+                android:layout_marginBottom="24dp" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>
