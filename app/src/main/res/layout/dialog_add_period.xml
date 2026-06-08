@@ -10,6 +10,7 @@
         android:orientation="vertical">
 
         <TextView
+            android:id="@+id/tvDialogTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Add School Period"
@@ -18,10 +19,12 @@
             android:accessibilityHeading="true"/>
 
         <TextView
+            android:id="@+id/tvPeriodNumberLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Period Number"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="no"/>
 
         <Spinner
             android:id="@+id/spinnerPeriodNumber"
@@ -34,7 +37,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Start Time"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="no"/>
 
         <Button
             android:id="@+id/btnSelectStartTime"
@@ -48,7 +52,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="End Time"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="no"/>
 
         <Button
             android:id="@+id/btnSelectEndTime"
@@ -77,7 +82,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Which day is this exception for?"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="4dp"
+                android:importantForAccessibility="no"/>
 
             <Spinner
                 android:id="@+id/spinnerExceptionDay"

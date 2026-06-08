@@ -38,6 +38,27 @@
             android:inputType="textPersonName"
             android:layout_marginBottom="16dp"/>
 
+        <TextView
+            android:id="@+id/tvInstitutionTypeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Type of Institution"
+            android:textSize="16sp"
+            android:textColor="#CCCCCC"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes"
+            android:labelFor="@id/spinnerInstitutionType" />
+
+        <Spinner
+            android:id="@+id/spinnerInstitutionType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="Type of Institution, select School or College"
+            android:spinnerMode="dropdown"
+            android:importantForAccessibility="yes" />
+
         <EditText
             android:id="@+id/etSchoolName"
             android:layout_width="match_parent"
@@ -72,6 +93,14 @@
             android:contentDescription="Confirm PIN, required"
             android:inputType="numberPassword"
             android:maxLength="4"
+            android:layout_marginBottom="16dp"/>
+
+        <CheckBox
+            android:id="@+id/cbShowPin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show PIN"
+            android:contentDescription="Show PIN numbers"
             android:layout_marginBottom="24dp"/>
 
         <Button

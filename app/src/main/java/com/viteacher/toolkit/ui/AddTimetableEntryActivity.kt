@@ -24,6 +24,8 @@ class AddTimetableEntryActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddTimetableEntryBinding
     private var loadedPeriods: List<SchoolPeriod> = emptyList()
+    private var displayedPeriods: List<SchoolPeriod> = emptyList()
+    private var isCollege = false
 
     private val days = listOf(
         "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
@@ -44,6 +46,18 @@ class AddTimetableEntryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAddTimetableEntryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        isCollege = prefs.getString("institution_type", "school") == "college"
+        if (isCollege) {
+            binding.tvClassLabel.text = "Program"
+            binding.etClass.hint = "Example: BSc CS"
+            binding.etClass.contentDescription = "Program name edit box"
+
+            binding.tvDivisionLabel.text = "Year"
+            binding.etDivision.hint = "Example: 1st Year"
+            binding.etDivision.contentDescription = "Year edit box"
+        }
 
         setupDaySpinner()
         setupReminderSpinner()
@@ -69,7 +83,8 @@ class AddTimetableEntryActivity : AppCompatActivity() {
                 if (periods.isEmpty()) {
                     showNoSchoolHoursDialog()
                 } else {
-                    loadPeriodsIntoSpinner(periods)
+                    val currentDay = binding.spinnerDay.selectedItem?.toString() ?: "Monday"
+                    updatePeriodSpinnerForDay(currentDay)
                 }
             }
         }
@@ -100,9 +115,20 @@ class AddTimetableEntryActivity : AppCompatActivity() {
         )
     }
 
-    private fun loadPeriodsIntoSpinner(periods: List<SchoolPeriod>) {
-        val periodLabels = periods.map {
-            "Period ${it.periodNumber} (${it.startTime} - ${it.endTime})"
+    private fun updatePeriodSpinnerForDay(selectedDay: String) {
+        val filtered = if (loadedPeriods.any { it.isException && it.exceptionDay == selectedDay }) {
+            loadedPeriods.filter { it.isException && it.exceptionDay == selectedDay }
+        } else {
+            loadedPeriods.filter { !it.isException }
+        }
+        displayedPeriods = filtered.sortedBy { it.periodNumber }
+
+        val periodLabels = if (displayedPeriods.isEmpty()) {
+            listOf("No periods set for $selectedDay")
+        } else {
+            displayedPeriods.map {
+                "Period ${it.periodNumber} (${it.startTime} - ${it.endTime})"
+            }
         }
         val adapter = ArrayAdapter(
             this,
@@ -147,6 +173,15 @@ class AddTimetableEntryActivity : AppCompatActivity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerDay.adapter = adapter
         binding.spinnerDay.setAccessibleSelection("Day")
+
+        binding.spinnerDay.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                if (loadedPeriods.isNotEmpty()) {
+                    updatePeriodSpinnerForDay(days[position])
+                }
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
     }
 
     private fun setupReminderSpinner() {
@@ -165,8 +200,8 @@ class AddTimetableEntryActivity : AppCompatActivity() {
         val reminderPosition = binding.spinnerReminder.selectedItemPosition
         val reminderMinutesBefore = reminderMinutes[reminderPosition]
 
-        if (loadedPeriods.isEmpty()) {
-            showNoSchoolHoursDialog()
+        if (displayedPeriods.isEmpty()) {
+            Toast.makeText(this, "No periods set for $day. Please define school hours first.", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -176,17 +211,17 @@ class AddTimetableEntryActivity : AppCompatActivity() {
             return
         }
         if (className.isEmpty()) {
-            binding.etClass.error = "Please enter a class"
+            binding.etClass.error = if (isCollege) "Please enter a program" else "Please enter a class"
             binding.etClass.requestFocus()
             return
         }
         if (division.isEmpty()) {
-            binding.etDivision.error = "Please enter a division"
+            binding.etDivision.error = if (isCollege) "Please enter a year" else "Please enter a division"
             binding.etDivision.requestFocus()
             return
         }
 
-        val selectedPeriod = loadedPeriods[periodPosition]
+        val selectedPeriod = displayedPeriods[periodPosition]
 
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
@@ -213,9 +248,11 @@ class AddTimetableEntryActivity : AppCompatActivity() {
             }
 
             runOnUiThread {
-                val message =
-                    "Timetable entry saved. $subject for class $className $division " +
-                            "on $day period ${selectedPeriod.periodNumber}"
+                val message = if (isCollege) {
+                    "Timetable entry saved. $subject for program $className year $division on $day period ${selectedPeriod.periodNumber}"
+                } else {
+                    "Timetable entry saved. $subject for class $className $division on $day period ${selectedPeriod.periodNumber}"
+                }
                 Toast.makeText(this@AddTimetableEntryActivity, message, Toast.LENGTH_SHORT).show()
                 binding.root.announceForAccessibility(message)
                 finish()

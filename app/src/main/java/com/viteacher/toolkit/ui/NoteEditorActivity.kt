@@ -38,6 +38,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import com.viteacher.toolkit.util.StorageUtils
+import com.viteacher.toolkit.util.setupCursorEndForEditTexts
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.lifecycleScope
 import com.viteacher.toolkit.R
@@ -91,6 +92,8 @@ class NoteEditorActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityNoteEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.root.setupCursorEndForEditTexts()
 
         // Read intent extras
         noteId = intent.getIntExtra("note_id", 0)
@@ -710,6 +713,7 @@ class NoteEditorActivity : AppCompatActivity() {
 
     private fun showSaveNoteDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_save_note, null)
+        dialogView.setupCursorEndForEditTexts()
         val etTitle = dialogView.findViewById<EditText>(R.id.etNoteTitle)
         val spinnerCategory = dialogView.findViewById<Spinner>(R.id.spinnerNoteCategory)
         val btnCreateCategory = dialogView.findViewById<Button>(R.id.btnDialogCreateCategory)
@@ -766,6 +770,7 @@ class NoteEditorActivity : AppCompatActivity() {
 
     private fun showDialogCreateCategory(spinner: Spinner) {
         val input = EditText(this)
+        input.setupCursorEndForEditTexts()
         input.hint = "Example: Maths"
         input.contentDescription = "Category name, required"
 

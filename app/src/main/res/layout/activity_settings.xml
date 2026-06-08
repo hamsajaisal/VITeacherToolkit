@@ -25,6 +25,18 @@
             android:accessibilityHeading="true"
             android:importantForAccessibility="yes" />
 
+        <!-- Button: Edit User Profile -->
+        <Button
+            android:id="@+id/btnEditProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Edit User Profile"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Edit your profile details and security PIN"
+            android:layout_marginBottom="24dp" />
+
         <!-- Existing Button: Set School Hour Schedule -->
         <Button
             android:id="@+id/btnSchoolHours"
@@ -46,8 +58,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"
-            android:accessibilityHeading="true"
-            android:importantForAccessibility="yes" />
+            android:importantForAccessibility="no" />
 
         <!-- Existing Label: Description -->
         <TextView
@@ -56,14 +67,14 @@
             android:text="Choose the language for TTS class reminders"
             android:textColor="#CCCCCC"
             android:layout_marginBottom="8dp"
-            android:importantForAccessibility="yes" />
+            android:importantForAccessibility="no" />
 
         <!-- Existing Spinner: Language Select -->
         <Spinner
             android:id="@+id/spinnerLanguage"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:contentDescription="Select reminder language, English or Malayalam"
+            android:contentDescription="Reminder Announcement Language: Choose the language for TTS class reminders. Select reminder language, English or Malayalam."
             android:layout_marginBottom="16dp"
             android:importantForAccessibility="yes" />
 
@@ -95,13 +106,6 @@
             android:textColor="#000000"
             android:backgroundTint="@color/lavender"
             android:contentDescription="Classroom Settings button. Configure class, division, and academic year. This is a feature for class teachers."
-            android:layout_marginBottom="24dp" />
-
-        <!-- Visual Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#333333"
             android:layout_marginBottom="24dp" />
 
         <!-- Backup Option -->

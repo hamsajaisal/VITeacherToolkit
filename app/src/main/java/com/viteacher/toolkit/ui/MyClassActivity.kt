@@ -26,6 +26,14 @@ class MyClassActivity : AppCompatActivity() {
         binding = ActivityMyClassBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        if (isCollege) {
+            binding.tvTitle.text = "My Program"
+            binding.btnClassProfile.text = "Program Profile"
+            binding.btnClassProfile.contentDescription = "Program Profile"
+        }
+
         classId = intent.getIntExtra("class_id", 1)
 
         setupClassDetails()
@@ -36,6 +44,13 @@ class MyClassActivity : AppCompatActivity() {
 
         binding.btnAttendanceRegister.setOnClickListener {
             val intent = Intent(this, AttendanceRegisterActivity::class.java).apply {
+                putExtra("class_id", classId)
+            }
+            startActivity(intent)
+        }
+
+        binding.btnClassProfile.setOnClickListener {
+            val intent = Intent(this, ClassProfileActivity::class.java).apply {
                 putExtra("class_id", classId)
             }
             startActivity(intent)
@@ -65,12 +80,23 @@ class MyClassActivity : AppCompatActivity() {
                 val division = dbClass.division
                 val academicYear = dbClass.academicYear
 
-                val displayText = "Class $standard$division — $academicYear"
+                val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                val isCollege = prefs.getString("institution_type", "school") == "college"
+
+                val displayText = if (isCollege) {
+                    "$standard $division — $academicYear"
+                } else {
+                    "Class $standard$division — $academicYear"
+                }
                 binding.tvClassDetails.text = displayText
 
                 // TalkBack announcement matching requirement
                 val academicYearSpoken = academicYear.replace("-", " to ")
-                val contentDesc = "Class $standard$division, Academic Year $academicYearSpoken"
+                val contentDesc = if (isCollege) {
+                    "$standard $division, Academic Year $academicYearSpoken"
+                } else {
+                    "Class $standard$division, Academic Year $academicYearSpoken"
+                }
                 binding.tvClassDetails.contentDescription = contentDesc
             }
         }
@@ -85,13 +111,21 @@ class MyClassActivity : AppCompatActivity() {
             runOnUiThread {
                 val input = EditText(this@MyClassActivity).apply {
                     inputType = InputType.TYPE_CLASS_NUMBER
-                    setText(defaultCount)
-                    contentDescription = "Number of students input box"
+                    hint = "example 30"
+                    contentDescription = "example 30 edit box"
+                }
+
+                val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                val isCollege = prefs.getString("institution_type", "school") == "college"
+                val messageText = if (isCollege) {
+                    "How many students are there in your program?"
+                } else {
+                    "How many students are there in your class?"
                 }
 
                 val dialog = AlertDialog.Builder(this@MyClassActivity)
                     .setTitle("Students Count")
-                    .setMessage("How many students are there in your class?")
+                    .setMessage(messageText)
                     .setView(input)
                     .setPositiveButton("OK") { _, _ ->
                         val countText = input.text.toString().trim()
@@ -118,10 +152,15 @@ class MyClassActivity : AppCompatActivity() {
                     .create()
 
                 dialog.show()
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "OK button"
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel button"
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "OK"
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel"
                 
-                binding.root.announceForAccessibility("Dialog opened. How many students are there in your class? Double tap to type in the input box, then select OK or Cancel.")
+                val announceMsg = if (isCollege) {
+                    "Dialog opened. How many students are there in your program? Double tap to type in the input box, then select OK or Cancel."
+                } else {
+                    "Dialog opened. How many students are there in your class? Double tap to type in the input box, then select OK or Cancel."
+                }
+                binding.root.announceForAccessibility(announceMsg)
             }
         }
     }

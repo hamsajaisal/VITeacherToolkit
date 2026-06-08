@@ -90,3 +90,35 @@ data class AttendanceRecord(
     val name: String,
     val isPresent: Boolean
 )
+
+@Entity(
+    tableName = "student_profiles",
+    primaryKeys = ["classId", "admissionNumber"]
+)
+data class StudentProfile(
+    val classId: Int,
+    val admissionNumber: String,
+    val name: String
+)
+
+@Entity(
+    tableName = "student_profile_fields",
+    primaryKeys = ["classId", "admissionNumber", "fieldName"]
+)
+data class StudentProfileField(
+    val classId: Int,
+    val admissionNumber: String,
+    val fieldName: String,
+    val fieldValue: String
+)
+
+@Entity(tableName = "student_remarks")
+data class StudentRemark(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val classId: Int,
+    val admissionNumber: String,
+    val date: String,
+    val subject: String,
+    val remarkText: String,
+    val timestamp: Long
+)

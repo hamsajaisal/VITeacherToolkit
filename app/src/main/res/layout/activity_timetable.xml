@@ -37,6 +37,14 @@
         android:contentDescription="View timetable grouped by class"
         android:layout_marginBottom="16dp"/>
 
+    <Button
+        android:id="@+id/btnSilenceAnnouncements"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Silence Announcements"
+        android:contentDescription="Silence timetable announcements"
+        android:layout_marginBottom="16dp"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTimetable"
         android:layout_width="match_parent"

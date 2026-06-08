@@ -27,6 +27,12 @@ class ClassSelectionActivity : AppCompatActivity() {
         binding = ActivityClassSelectionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val prefs = getSharedPreferences("vi_teacher_prefs", MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        if (isCollege) {
+            binding.tvTitle.text = "Select Program"
+        }
+
         binding.btnBack.setOnClickListener {
             finish()
         }
@@ -36,7 +42,9 @@ class ClassSelectionActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        selectionAdapter = ClassSelectionAdapter(classroomList) { classroom ->
+        val prefs = getSharedPreferences("vi_teacher_prefs", MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        selectionAdapter = ClassSelectionAdapter(classroomList, isCollege) { classroom ->
             val intent = Intent(this, MyClassActivity::class.java).apply {
                 putExtra("class_id", classroom.id)
             }
@@ -55,7 +63,14 @@ class ClassSelectionActivity : AppCompatActivity() {
                 classroomList.clear()
                 classroomList.addAll(dbClassrooms)
                 selectionAdapter.notifyDataSetChanged()
-                binding.root.announceForAccessibility("Class Selection Screen. You have ${classroomList.size} classes available.")
+                val prefs = getSharedPreferences("vi_teacher_prefs", MODE_PRIVATE)
+                val isCollege = prefs.getString("institution_type", "school") == "college"
+                val announceText = if (isCollege) {
+                    "Program Selection Screen. You have ${classroomList.size} programs available."
+                } else {
+                    "Class Selection Screen. You have ${classroomList.size} classes available."
+                }
+                binding.root.announceForAccessibility(announceText)
             }
         }
     }
@@ -63,6 +78,7 @@ class ClassSelectionActivity : AppCompatActivity() {
 
 class ClassSelectionAdapter(
     private val list: List<Classroom>,
+    private val isCollege: Boolean,
     private val onItemClick: (Classroom) -> Unit
 ) : RecyclerView.Adapter<ClassSelectionAdapter.ViewHolder>() {
 
@@ -78,7 +94,8 @@ class ClassSelectionAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = list[position]
-        holder.tvName.text = "Class ${item.standard}${item.division}"
+        val nameText = if (isCollege) "${item.standard} ${item.division}" else "Class ${item.standard}${item.division}"
+        holder.tvName.text = nameText
 
         val typeDisplay = when (item.attendanceType) {
             "DoubleSession" -> "Double Session"
@@ -87,7 +104,9 @@ class ClassSelectionAdapter(
         }
         holder.tvDetails.text = "Academic Year: ${item.academicYear} | $typeDisplay"
 
-        holder.view.contentDescription = "Select Class ${item.standard}${item.division}, Academic Year ${item.academicYear}, $typeDisplay"
+        val selectPrefix = if (isCollege) "Select Program" else "Select Class"
+        val spaceOrNot = if (isCollege) " " else ""
+        holder.view.contentDescription = "$selectPrefix ${item.standard}$spaceOrNot${item.division}, Academic Year ${item.academicYear}, $typeDisplay"
         holder.view.setOnClickListener {
             onItemClick(item)
         }

@@ -20,6 +20,9 @@ interface TimetableDao {
     @Query("SELECT * FROM timetable_entries ORDER BY dayOfWeek, periodNumber")
     suspend fun getAllEntriesOnce(): List<TimetableEntry>
 
+    @Query("SELECT * FROM timetable_entries WHERE id = :id LIMIT 1")
+    suspend fun getEntryById(id: Int): TimetableEntry?
+
     @Query("SELECT * FROM timetable_entries WHERE dayOfWeek = :day ORDER BY periodNumber")
     fun getEntriesForDay(day: String): Flow<List<TimetableEntry>>
 
@@ -157,3 +160,57 @@ data class DateSessionDto(
     val date: String,
     val session: String
 )
+
+@Dao
+interface StudentProfileDao {
+    @Query("SELECT * FROM student_profiles WHERE classId = :classId ORDER BY name ASC")
+    suspend fun getAllStudentProfiles(classId: Int): List<StudentProfile>
+
+    @Query("SELECT * FROM student_profiles WHERE classId = :classId ORDER BY name ASC")
+    fun getAllStudentProfilesFlow(classId: Int): Flow<List<StudentProfile>>
+
+    @Query("SELECT * FROM student_profiles WHERE classId = :classId AND admissionNumber = :admissionNumber LIMIT 1")
+    suspend fun getStudentProfile(classId: Int, admissionNumber: String): StudentProfile?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStudentProfiles(profiles: List<StudentProfile>)
+
+    @Query("DELETE FROM student_profiles WHERE classId = :classId")
+    suspend fun deleteStudentProfilesForClass(classId: Int)
+}
+
+@Dao
+interface StudentProfileFieldDao {
+    @Query("SELECT * FROM student_profile_fields WHERE classId = :classId AND admissionNumber = :admissionNumber")
+    suspend fun getFieldsForStudent(classId: Int, admissionNumber: String): List<StudentProfileField>
+
+    @Query("SELECT * FROM student_profile_fields WHERE classId = :classId")
+    suspend fun getFieldsForClass(classId: Int): List<StudentProfileField>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStudentProfileFields(fields: List<StudentProfileField>)
+
+    @Query("DELETE FROM student_profile_fields WHERE classId = :classId")
+    suspend fun deleteStudentProfileFieldsForClass(classId: Int)
+}
+
+@Dao
+interface StudentRemarkDao {
+    @Query("SELECT * FROM student_remarks WHERE classId = :classId AND admissionNumber = :admissionNumber ORDER BY timestamp DESC")
+    suspend fun getRemarksForStudent(classId: Int, admissionNumber: String): List<StudentRemark>
+
+    @Query("SELECT * FROM student_remarks WHERE classId = :classId AND admissionNumber = :admissionNumber ORDER BY timestamp DESC")
+    fun getRemarksForStudentFlow(classId: Int, admissionNumber: String): Flow<List<StudentRemark>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRemark(remark: StudentRemark): Long
+
+    @Update
+    suspend fun updateRemark(remark: StudentRemark)
+
+    @Delete
+    suspend fun deleteRemark(remark: StudentRemark)
+
+    @Query("DELETE FROM student_remarks WHERE classId = :classId")
+    suspend fun deleteRemarksForClass(classId: Int)
+}

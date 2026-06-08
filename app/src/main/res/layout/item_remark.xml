@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@drawable/bg_history_item"
+    android:layout_marginBottom="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:importantForAccessibility="yes">
+
+    <!-- Header containing date and subject -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <!-- Subject -->
+        <TextView
+            android:id="@+id/tvRemarkSubject"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Mathematics"
+            android:textColor="@color/lavender"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:importantForAccessibility="no" />
+
+        <!-- Date -->
+        <TextView
+            android:id="@+id/tvRemarkDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="15 May 2026"
+            android:textColor="#CCCCCC"
+            android:textSize="13sp"
+            android:importantForAccessibility="no" />
+
+    </LinearLayout>
+
+    <!-- Remark description text -->
+    <TextView
+        android:id="@+id/tvRemarkText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Student showed excellent improvement in reading."
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:importantForAccessibility="no" />
+
+</LinearLayout>

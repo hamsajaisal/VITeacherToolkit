@@ -18,10 +18,13 @@
             android:accessibilityHeading="true"/>
 
         <TextView
+            android:id="@+id/tvDayLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Day"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="yes"
+            android:labelFor="@id/spinnerDay"/>
 
         <Spinner
             android:id="@+id/spinnerDay"
@@ -31,10 +34,13 @@
             android:layout_marginBottom="16dp"/>
 
         <TextView
+            android:id="@+id/tvPeriodLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Period Number"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="yes"
+            android:labelFor="@id/spinnerPeriod"/>
 
         <Spinner
             android:id="@+id/spinnerPeriod"
@@ -44,55 +50,67 @@
             android:layout_marginBottom="16dp"/>
 
         <TextView
+            android:id="@+id/tvSubjectLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Subject"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="yes"
+            android:labelFor="@id/etSubject"/>
 
         <EditText
             android:id="@+id/etSubject"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Example: Malayalam"
-            android:contentDescription="Subject name, required"
+            android:contentDescription="Subject name edit box"
             android:inputType="textCapWords"
             android:layout_marginBottom="16dp"/>
 
         <TextView
+            android:id="@+id/tvClassLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Class"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="yes"
+            android:labelFor="@id/etClass"/>
 
         <EditText
             android:id="@+id/etClass"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Example: 7"
-            android:contentDescription="Class number, required"
+            android:contentDescription="Class number edit box"
             android:inputType="text"
             android:layout_marginBottom="16dp"/>
 
         <TextView
+            android:id="@+id/tvDivisionLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Division"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="yes"
+            android:labelFor="@id/etDivision"/>
 
         <EditText
             android:id="@+id/etDivision"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Example: A"
-            android:contentDescription="Division, required"
+            android:contentDescription="Division edit box"
             android:inputType="textCapCharacters"
             android:layout_marginBottom="16dp"/>
 
         <TextView
+            android:id="@+id/tvReminderLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Remind me before class"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp"
+            android:importantForAccessibility="yes"
+            android:labelFor="@id/spinnerReminder"/>
 
         <Spinner
             android:id="@+id/spinnerReminder"

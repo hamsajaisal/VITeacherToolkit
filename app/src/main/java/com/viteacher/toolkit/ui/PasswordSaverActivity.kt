@@ -69,12 +69,19 @@ class PasswordSaverActivity : AppCompatActivity() {
     }
 
     private fun showPassword(credential: Credential) {
-        val message =
-            "Title: ${credential.title}. " +
-                    "Username: ${credential.username}. " +
-                    "Password: ${credential.password}"
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-        binding.root.announceForAccessibility(message)
+        val message = "Password: ${credential.password}"
+        AlertDialog.Builder(this)
+            .setTitle("Password for ${credential.title}")
+            .setMessage(message)
+            .setPositiveButton("Copy") { _, _ ->
+                copyToClipboard("Password", credential.password)
+            }
+            .setNegativeButton("Close") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+        binding.root.announceForAccessibility("Password for ${credential.title} is ${credential.password}")
     }
 
     private fun editCredential(credential: Credential) {
@@ -130,6 +137,33 @@ class PasswordSaverActivity : AppCompatActivity() {
         }
     }
 
+    private fun showCredentialDetailsDialog(credential: Credential) {
+        val options = arrayOf(
+            "Show Password",
+            "Copy Username",
+            "Copy Password",
+            "Edit Credential",
+            "Delete Credential"
+        )
+        
+        AlertDialog.Builder(this)
+            .setTitle(credential.title)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showPassword(credential)
+                    1 -> copyToClipboard("Username", credential.username)
+                    2 -> copyToClipboard("Password", credential.password)
+                    3 -> editCredential(credential)
+                    4 -> confirmDelete(credential)
+                }
+            }
+            .setNegativeButton("Close") { dialog, _ -> dialog.dismiss() }
+            .create()
+            .show()
+        
+        binding.root.announceForAccessibility("Opened details for ${credential.title}. Select Show Password, Copy Username, Copy Password, Edit Credential, or Delete Credential.")
+    }
+
     inner class CredentialAdapter(
         private var credentials: List<Credential>,
         private val onView: (Credential) -> Unit,
@@ -160,7 +194,12 @@ class PasswordSaverActivity : AppCompatActivity() {
             holder.tvTitle.text = credential.title
             holder.tvUsername.text = credential.username
             holder.itemView.contentDescription =
-                "Credential: ${credential.title}, Username: ${credential.username}"
+                "Credential: ${credential.title}, Username: ${credential.username}. Double tap to open action menu."
+            
+            holder.itemView.setOnClickListener {
+                showCredentialDetailsDialog(credential)
+            }
+            
             holder.btnView.setOnClickListener { onView(credential) }
             holder.btnEdit.setOnClickListener { onEdit(credential) }
             holder.btnDelete.setOnClickListener { onDelete(credential) }

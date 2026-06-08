@@ -17,9 +17,12 @@ import android.content.Context
         Category::class,
         Classroom::class,
         Student::class,
-        AttendanceRecord::class
+        AttendanceRecord::class,
+        StudentProfile::class,
+        StudentProfileField::class,
+        StudentRemark::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -32,6 +35,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun classroomDao(): ClassroomDao
     abstract fun studentDao(): StudentDao
     abstract fun attendanceDao(): AttendanceDao
+    abstract fun studentProfileDao(): StudentProfileDao
+    abstract fun studentProfileFieldDao(): StudentProfileFieldDao
+    abstract fun studentRemarkDao(): StudentRemarkDao
 
     companion object {
         @Volatile
@@ -73,6 +79,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `student_profiles` (`classId` INTEGER NOT NULL, `admissionNumber` TEXT NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`classId`, `admissionNumber`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `student_profile_fields` (`classId` INTEGER NOT NULL, `admissionNumber` TEXT NOT NULL, `fieldName` TEXT NOT NULL, `fieldValue` TEXT NOT NULL, PRIMARY KEY(`classId`, `admissionNumber`, `fieldName`))")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `student_remarks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `classId` INTEGER NOT NULL, `admissionNumber` TEXT NOT NULL, `date` TEXT NOT NULL, `subject` TEXT NOT NULL, `remarkText` TEXT NOT NULL, `timestamp` INTEGER NOT NULL)")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -80,7 +94,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "vi_teacher_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

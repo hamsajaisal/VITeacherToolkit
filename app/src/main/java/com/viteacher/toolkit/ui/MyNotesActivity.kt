@@ -25,6 +25,7 @@ import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.Category
 import com.viteacher.toolkit.data.Note
 import com.viteacher.toolkit.databinding.ActivityMyNotesBinding
+import com.viteacher.toolkit.util.setupCursorEndForEditTexts
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -40,6 +41,8 @@ class MyNotesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMyNotesBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.root.setupCursorEndForEditTexts()
 
         // Ensure default "General" category exists
         ensureGeneralCategory()
@@ -174,6 +177,7 @@ class MyNotesActivity : AppCompatActivity() {
 
     private fun showCreateCategoryDialog() {
         val input = EditText(this)
+        input.setupCursorEndForEditTexts()
         input.hint = "Example: Maths"
         input.contentDescription = "Category name, required"
 
@@ -249,6 +253,7 @@ class MyNotesActivity : AppCompatActivity() {
 
     private fun showRenameCategoryDialog(oldName: String) {
         val input = EditText(this)
+        input.setupCursorEndForEditTexts()
         input.setText(oldName)
         input.contentDescription = "New category name, required"
         input.setSelection(oldName.length)
@@ -422,6 +427,7 @@ class MyNotesActivity : AppCompatActivity() {
 
     private fun showRenameNoteDialog(note: Note) {
         val input = EditText(this)
+        input.setupCursorEndForEditTexts()
         input.setText(note.title)
         input.contentDescription = "New note title, required"
         input.setSelection(note.title.length)

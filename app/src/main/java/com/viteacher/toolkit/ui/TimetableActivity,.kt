@@ -1,5 +1,6 @@
 package com.viteacher.toolkit.ui
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,6 +20,9 @@ import com.viteacher.toolkit.data.TimetableEntry
 import com.viteacher.toolkit.databinding.ActivityTimetableBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class TimetableActivity : AppCompatActivity() {
 
@@ -51,11 +55,28 @@ class TimetableActivity : AppCompatActivity() {
         binding.btnViewByClass.setOnClickListener {
             showClassFilterDialog()
         }
+
+        binding.btnSilenceAnnouncements.setOnClickListener {
+            showSilenceAnnouncementsDialog()
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        updateDynamicLabels()
         loadAllEntries()
+    }
+
+    private fun updateDynamicLabels() {
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        if (isCollege) {
+            binding.btnViewByClass.text = "View by Program"
+            binding.btnViewByClass.contentDescription = "View by Program"
+        } else {
+            binding.btnViewByClass.text = "View by Class"
+            binding.btnViewByClass.contentDescription = "View by Class"
+        }
     }
 
     private fun loadAllEntries() {
@@ -110,6 +131,8 @@ class TimetableActivity : AppCompatActivity() {
     private fun showClassFilterDialog() {
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
+            val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val isCollege = prefs.getString("institution_type", "school") == "college"
             db.timetableDao().getAllEntriesOnce().let { entries ->
                 val classes = entries.map { "${it.className} ${it.division}" }
                     .distinct().sorted()
@@ -118,8 +141,9 @@ class TimetableActivity : AppCompatActivity() {
                         Toast.makeText(this@TimetableActivity, "No entries yet", Toast.LENGTH_SHORT).show()
                         return@runOnUiThread
                     }
+                    val title = if (isCollege) "Select Program" else "Select Class"
                     AlertDialog.Builder(this@TimetableActivity)
-                        .setTitle("Select Class")
+                        .setTitle(title)
                         .setItems(classes.toTypedArray()) { _, which ->
                             filterByClass(classes[which])
                         }
@@ -143,10 +167,13 @@ class TimetableActivity : AppCompatActivity() {
                         it.className == className && it.division == division
                     }
                     adapter.updateList(filtered)
-                    val message = if (filtered.isEmpty())
-                        "No entries for class $classAndDivision"
-                    else
-                        "Showing ${filtered.size} entries for class $classAndDivision"
+                    val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                    val isCollege = prefs.getString("institution_type", "school") == "college"
+                    val message = if (filtered.isEmpty()) {
+                        if (isCollege) "No entries for program $classAndDivision" else "No entries for class $classAndDivision"
+                    } else {
+                        if (isCollege) "Showing ${filtered.size} entries for program $classAndDivision" else "Showing ${filtered.size} entries for class $classAndDivision"
+                    }
                     binding.root.announceForAccessibility(message)
                 }
         }
@@ -183,6 +210,154 @@ class TimetableActivity : AppCompatActivity() {
         }
     }
 
+    private fun showSilenceAnnouncementsDialog() {
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val silentDates = prefs.getStringSet("silent_dates", emptySet())?.toMutableSet() ?: mutableSetOf()
+
+        val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(java.util.Date())
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, 1)
+        val tomorrowStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.time)
+
+        val options = arrayOf(
+            "Silence Today (${if (silentDates.contains(todayStr)) "Status: Silenced" else "Status: Reminders are active"})",
+            "Silence Tomorrow (${if (silentDates.contains(tomorrowStr)) "Status: Silenced" else "Status: Reminders are active"})",
+            "Silence Specific Date",
+            "Silence Date Range",
+            "Clear All Silenced Dates"
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle("Silence Timetable Announcements")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        val activeSet = prefs.getStringSet("silent_dates", emptySet())?.toMutableSet() ?: mutableSetOf()
+                        val announceMsg: String
+                        if (activeSet.contains(todayStr)) {
+                            activeSet.remove(todayStr)
+                            announceMsg = "Announcements for today are now active"
+                        } else {
+                            activeSet.add(todayStr)
+                            announceMsg = "Announcements for today are now silenced"
+                        }
+                        prefs.edit().putStringSet("silent_dates", activeSet).apply()
+                        Toast.makeText(this, announceMsg, Toast.LENGTH_SHORT).show()
+                        binding.root.announceForAccessibility(announceMsg)
+                    }
+                    1 -> {
+                        val activeSet = prefs.getStringSet("silent_dates", emptySet())?.toMutableSet() ?: mutableSetOf()
+                        val announceMsg: String
+                        if (activeSet.contains(tomorrowStr)) {
+                            activeSet.remove(tomorrowStr)
+                            announceMsg = "Announcements for tomorrow are now active"
+                        } else {
+                            activeSet.add(tomorrowStr)
+                            announceMsg = "Announcements for tomorrow are now silenced"
+                        }
+                        prefs.edit().putStringSet("silent_dates", activeSet).apply()
+                        Toast.makeText(this, announceMsg, Toast.LENGTH_SHORT).show()
+                        binding.root.announceForAccessibility(announceMsg)
+                    }
+                    2 -> {
+                        showSilenceDatePicker()
+                    }
+                    3 -> {
+                        showSilenceDateRangePicker()
+                    }
+                    4 -> {
+                        prefs.edit().putStringSet("silent_dates", emptySet()).apply()
+                        val msg = "All silenced dates cleared. Announcements are active for all days."
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                        binding.root.announceForAccessibility(msg)
+                    }
+                }
+            }
+            .setNegativeButton("Close") { dialog, _ -> dialog.dismiss() }
+            .create()
+            .show()
+        
+        binding.root.announceForAccessibility("Silence Timetable Announcements dialog opened. Select Silence Today, Silence Tomorrow, Silence Specific Date, Silence Date Range, or Clear All Silenced Dates.")
+    }
+
+    private fun showSilenceDatePicker() {
+        val calendar = Calendar.getInstance()
+        val datePickerDialog = android.app.DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                val selectedCalendar = Calendar.getInstance()
+                selectedCalendar.set(year, month, dayOfMonth)
+                val selectedDateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(selectedCalendar.time)
+                
+                val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                val activeSet = prefs.getStringSet("silent_dates", emptySet())?.toMutableSet() ?: mutableSetOf()
+                activeSet.add(selectedDateStr)
+                prefs.edit().putStringSet("silent_dates", activeSet).apply()
+                
+                val formattedDateReadable = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.US).format(selectedCalendar.time)
+                val msg = "Announcements silenced for $formattedDateReadable"
+                Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                binding.root.announceForAccessibility(msg)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+        datePickerDialog.show()
+        binding.root.announceForAccessibility("DatePicker dialog opened. Select a year, month, and day to silence announcements, then select OK.")
+    }
+
+    private fun showSilenceDateRangePicker() {
+        val calendar = Calendar.getInstance()
+        val startPickerDialog = android.app.DatePickerDialog(
+            this,
+            { _, sYear, sMonth, sDay ->
+                val startCal = Calendar.getInstance()
+                startCal.set(sYear, sMonth, sDay)
+                
+                val endPickerDialog = android.app.DatePickerDialog(
+                    this@TimetableActivity,
+                    { _, eYear, eMonth, eDay ->
+                        val endCal = Calendar.getInstance()
+                        endCal.set(eYear, eMonth, eDay)
+                        
+                        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                        val activeSet = prefs.getStringSet("silent_dates", emptySet())?.toMutableSet() ?: mutableSetOf()
+                        
+                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                        val tempCal = startCal.clone() as Calendar
+                        var count = 0
+                        while (!tempCal.after(endCal)) {
+                            activeSet.add(sdf.format(tempCal.time))
+                            tempCal.add(Calendar.DAY_OF_YEAR, 1)
+                            count++
+                        }
+                        
+                        prefs.edit().putStringSet("silent_dates", activeSet).apply()
+                        
+                        val startStr = SimpleDateFormat("d MMMM yyyy", Locale.US).format(startCal.time)
+                        val endStr = SimpleDateFormat("d MMMM yyyy", Locale.US).format(endCal.time)
+                        val msg = "Announcements silenced for $count days (from $startStr to $endStr)"
+                        Toast.makeText(this@TimetableActivity, msg, Toast.LENGTH_LONG).show()
+                        binding.root.announceForAccessibility(msg)
+                    },
+                    sYear, sMonth, sDay
+                )
+                
+                endPickerDialog.datePicker.minDate = startCal.timeInMillis
+                endPickerDialog.setTitle("Select End Date")
+                endPickerDialog.show()
+                binding.root.announceForAccessibility("End Date Picker opened. Select the last day to silence announcements, then select OK.")
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+        startPickerDialog.setTitle("Select Start Date")
+        startPickerDialog.show()
+        binding.root.announceForAccessibility("Start Date Picker opened. Select the first day to silence announcements, then select OK.")
+    }
+
     inner class TimetableAdapter(
         private var entries: List<TimetableEntry>,
         private val onEdit: (TimetableEntry) -> Unit,
@@ -206,10 +381,19 @@ class TimetableActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val entry = entries[position]
             holder.tvSubject.text = entry.subject
-            holder.tvClass.text = "Class ${entry.className} ${entry.division}"
-            holder.tvTime.text = "${entry.dayOfWeek}, Period ${entry.periodNumber}"
-            holder.itemView.contentDescription =
-                "${entry.subject}, Class ${entry.className} ${entry.division}, ${entry.dayOfWeek}, Period ${entry.periodNumber}"
+            val prefs = holder.itemView.context.getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val isCollege = prefs.getString("institution_type", "school") == "college"
+            if (isCollege) {
+                holder.tvClass.text = "${entry.className} ${entry.division}"
+                holder.itemView.contentDescription =
+                    "${entry.subject}, Program ${entry.className} ${entry.division}, ${entry.dayOfWeek}, Hour ${entry.periodNumber}"
+                holder.tvTime.text = "${entry.dayOfWeek}, Hour ${entry.periodNumber}"
+            } else {
+                holder.tvClass.text = "Class ${entry.className} ${entry.division}"
+                holder.itemView.contentDescription =
+                    "${entry.subject}, Class ${entry.className} ${entry.division}, ${entry.dayOfWeek}, Period ${entry.periodNumber}"
+                holder.tvTime.text = "${entry.dayOfWeek}, Period ${entry.periodNumber}"
+            }
             holder.btnEdit.setOnClickListener { onEdit(entry) }
             holder.btnDelete.setOnClickListener { onDelete(entry) }
         }

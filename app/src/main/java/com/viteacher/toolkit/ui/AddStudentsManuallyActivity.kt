@@ -14,6 +14,7 @@ import com.viteacher.toolkit.R
 import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.Student
 import com.viteacher.toolkit.databinding.ActivityAddStudentsManuallyBinding
+import com.viteacher.toolkit.util.setupCursorEndForEditTexts
 import kotlinx.coroutines.launch
 
 class AddStudentsManuallyActivity : AppCompatActivity() {
@@ -31,6 +32,8 @@ class AddStudentsManuallyActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAddStudentsManuallyBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.root.setupCursorEndForEditTexts()
 
         classId = intent.getIntExtra("class_id", 1)
         totalStudents = intent.getIntExtra("total_students", 30)
@@ -170,8 +173,8 @@ class AddStudentsManuallyActivity : AppCompatActivity() {
                 .create()
             dialog.show()
 
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Save ${filledNames.size} students button"
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel button"
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Save ${filledNames.size} students"
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel"
             binding.root.announceForAccessibility("Warning dialog. You have only added ${filledNames.size} student names. Save these students or Cancel?")
         } else {
             performDatabaseRosterSave(filledNames)
@@ -211,8 +214,8 @@ class AddStudentsManuallyActivity : AppCompatActivity() {
             .create()
         dialog.show()
 
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Discard and exit button"
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Keep typing button"
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Discard and exit"
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Keep typing"
         binding.root.announceForAccessibility("Warning dialog. Unsaved changes will be discarded. Discard and Exit or Keep Typing?")
     }
 

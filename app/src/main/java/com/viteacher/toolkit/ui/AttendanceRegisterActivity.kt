@@ -29,6 +29,8 @@ import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.AttendanceRecord
 import com.viteacher.toolkit.data.Classroom
 import com.viteacher.toolkit.data.Student
+import com.viteacher.toolkit.data.StudentProfile
+import com.viteacher.toolkit.data.StudentProfileField
 import com.viteacher.toolkit.databinding.ActivityAttendanceRegisterBinding
 import kotlinx.coroutines.launch
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
@@ -111,8 +113,12 @@ class AttendanceRegisterActivity : AppCompatActivity() {
 
             classroom = dbClass
             runOnUiThread {
-                binding.tvTitle.text = "Class ${dbClass.standard}${dbClass.division} Register"
-                binding.tvTitle.contentDescription = "Class ${dbClass.standard}${dbClass.division} Attendance Register Screen"
+                val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                val isCollege = prefs.getString("institution_type", "school") == "college"
+                val prefix = if (isCollege) "" else "Class "
+                val classText = if (isCollege) "${dbClass.standard} ${dbClass.division}" else "${dbClass.standard}${dbClass.division}"
+                binding.tvTitle.text = "$prefix$classText Register"
+                binding.tvTitle.contentDescription = "$prefix$classText Attendance Register Screen"
 
                 when (dbClass.attendanceType) {
                     "DoubleSession" -> {
@@ -254,6 +260,7 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             val popup = PopupMenu(this, it)
             popup.menu.add("Import Student List")
             popup.menu.add("Download Sample Excel Template")
+            popup.menu.add("Fetch from Class Profile")
             
             popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.title) {
@@ -265,10 +272,108 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                         triggerDownloadSampleTemplate()
                         true
                     }
+                    "Fetch from Class Profile" -> {
+                        triggerFetchFromClassProfile()
+                        true
+                    }
                     else -> false
                 }
             }
             popup.show()
+        }
+    }
+
+    private fun triggerFetchFromClassProfile() {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            val profiles = db.studentProfileDao().getAllStudentProfiles(classId)
+            
+            runOnUiThread {
+                if (profiles.isEmpty()) {
+                    val msg = "No Class Profile records found for this class. Please import your Sampoorna Excel sheet first."
+                    Toast.makeText(this@AttendanceRegisterActivity, msg, Toast.LENGTH_LONG).show()
+                    binding.root.announceForAccessibility(msg)
+                    return@runOnUiThread
+                }
+
+                AlertDialog.Builder(this@AttendanceRegisterActivity)
+                    .setTitle("Fetch from Class Profile")
+                    .setMessage("This will replace your current attendance roster with students from your Class Profile. Do you want to continue?")
+                    .setPositiveButton("Yes") { _, _ ->
+                        performFetchFromClassProfile()
+                    }
+                    .setNegativeButton("No") { d, _ ->
+                        d.dismiss()
+                        binding.root.announceForAccessibility("Fetch cancelled.")
+                    }
+                    .create()
+                    .show()
+                binding.root.announceForAccessibility("Warning dialog. Fetching from Class Profile will replace your current student list. Continue? Choose Yes or No.")
+            }
+        }
+    }
+
+    private fun performFetchFromClassProfile() {
+        lifecycleScope.launch {
+            try {
+                val db = AppDatabase.getDatabase(applicationContext)
+                val profiles = db.studentProfileDao().getAllStudentProfiles(classId)
+                val fields = db.studentProfileFieldDao().getFieldsForClass(classId)
+
+                // Try to locate a column mapping representing roll number (case-insensitive checks)
+                val rollFieldName = fields.map { it.fieldName }.distinct().find {
+                    val lower = it.lowercase()
+                    lower.contains("roll") || lower == "sl. no" || lower == "sl no" || lower == "sl.no" || lower.contains("serial")
+                }
+
+                val studentsToInsert = mutableListOf<Student>()
+                if (rollFieldName != null) {
+                    val studentRolls = mutableListOf<Pair<StudentProfile, Int>>()
+                    var maxRoll = 0
+                    profiles.forEach { profile ->
+                        val fieldVal = fields.find { it.admissionNumber == profile.admissionNumber && it.fieldName == rollFieldName }?.fieldValue ?: ""
+                        val parsedRoll = fieldVal.toDoubleOrNull()?.toInt() ?: fieldVal.toIntOrNull()
+                        if (parsedRoll != null && parsedRoll > 0) {
+                            studentRolls.add(Pair(profile, parsedRoll))
+                            if (parsedRoll > maxRoll) maxRoll = parsedRoll
+                        } else {
+                            studentRolls.add(Pair(profile, -1))
+                        }
+                    }
+
+                    // Resolve missing roll numbers sequentially
+                    var fallbackRoll = maxRoll + 1
+                    val resolvedList = studentRolls.map { (profile, roll) ->
+                        val finalRoll = if (roll == -1) fallbackRoll++ else roll
+                        Student(classId = classId, rollNumber = finalRoll, name = profile.name)
+                    }
+
+                    studentsToInsert.addAll(resolvedList.sortedBy { it.rollNumber })
+                } else {
+                    // Fallback to alphabetical sorting by student name
+                    val sortedProfiles = profiles.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
+                    sortedProfiles.forEachIndexed { index, profile ->
+                        studentsToInsert.add(Student(classId = classId, rollNumber = index + 1, name = profile.name))
+                    }
+                }
+
+                db.studentDao().deleteAllStudents(classId)
+                db.studentDao().insertStudents(studentsToInsert)
+
+                runOnUiThread {
+                    val successMsg = "${studentsToInsert.size} students loaded from Class Profile successfully."
+                    Toast.makeText(this@AttendanceRegisterActivity, successMsg, Toast.LENGTH_LONG).show()
+                    binding.root.announceForAccessibility(successMsg)
+                    loadStudentList()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                runOnUiThread {
+                    val errMsg = "Failed to fetch from Class Profile: ${e.message}"
+                    Toast.makeText(this@AttendanceRegisterActivity, errMsg, Toast.LENGTH_LONG).show()
+                    binding.root.announceForAccessibility(errMsg)
+                }
+            }
         }
     }
 
@@ -365,8 +470,8 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                         .create()
                     dialog.show()
                     
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Yes button"
-                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "No button"
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Yes"
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "No"
                     binding.root.announceForAccessibility("Warning dialog. This will replace your existing student list. Do you want to continue? Select Yes or No.")
                 } else {
                     launchFilePicker()
@@ -576,8 +681,8 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                         .create()
                     dialog.show()
 
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Yes button"
-                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "No button"
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Yes"
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "No"
                     binding.root.announceForAccessibility("Warning dialog. $selectedSession attendance for today is already saved. Do you want to overwrite it? Select Yes or No.")
                 } else {
                     performSaveAttendance()
@@ -633,7 +738,11 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                 val totalPresent = records.size - totalAbsent
                 
                 val message = StringBuilder()
-                val className = if (classroom != null) "Class ${classroom!!.standard}${classroom!!.division}" else "My Class"
+                val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                val isCollege = prefs.getString("institution_type", "school") == "college"
+                val className = if (classroom != null) {
+                    if (isCollege) "${classroom!!.standard} ${classroom!!.division}" else "Class ${classroom!!.standard}${classroom!!.division}"
+                } else "My Class"
 
                 if (totalAbsent == 0) {
                     message.append("No absentees for $className on $savedDate during $selectedSession. Full attendance present.")

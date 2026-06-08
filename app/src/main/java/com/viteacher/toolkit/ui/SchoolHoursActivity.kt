@@ -1,5 +1,6 @@
 package com.viteacher.toolkit.ui
 
+import android.content.Context
 import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -28,12 +29,27 @@ class SchoolHoursActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySchoolHoursBinding
     private lateinit var adapter: PeriodAdapter
     private val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
-    private val periodNumbers = (1..8).map { "Period $it" }
+    private lateinit var periodNumbers: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySchoolHoursBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        periodNumbers = if (isCollege) {
+            (1..8).map { "Hour $it" }
+        } else {
+            (1..8).map { "Period $it" }
+        }
+
+        if (isCollege) {
+            binding.tvTitle.text = "College Hour Schedule"
+            binding.btnAddPeriod.text = "Add New Hour"
+            binding.btnAddPeriod.contentDescription = "Add a new college hour"
+            binding.rvPeriods.contentDescription = "College hours list"
+        }
 
         adapter = PeriodAdapter(emptyList()) { period ->
             confirmDeletePeriod(period)
@@ -69,13 +85,25 @@ class SchoolHoursActivity : AppCompatActivity() {
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
 
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+
+        if (isCollege) {
+            dialogBinding.tvDialogTitle.text = "Add College Hour"
+            dialogBinding.tvPeriodNumberLabel.text = "Hour Number"
+            dialogBinding.spinnerPeriodNumber.contentDescription = "Hour number, combo box"
+            dialogBinding.cbIsException.contentDescription = "Check this if this hour timing applies to a specific day only, such as Friday"
+            dialogBinding.btnSavePeriod.text = "Save Hour"
+            dialogBinding.btnSavePeriod.contentDescription = "Save this college hour"
+        }
+
         var selectedStartTime = "09:00 AM"
         var selectedEndTime = "10:00 AM"
 
         val periodAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, periodNumbers)
         periodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         dialogBinding.spinnerPeriodNumber.adapter = periodAdapter
-        dialogBinding.spinnerPeriodNumber.setAccessibleSelection("Period number")
+        dialogBinding.spinnerPeriodNumber.setAccessibleSelection(if (isCollege) "Hour number" else "Period number")
 
         val dayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -142,10 +170,17 @@ class SchoolHoursActivity : AppCompatActivity() {
                     .timetableDao()
                     .insertPeriod(period)
                 runOnUiThread {
-                    val message = if (isException)
-                        "Period $periodNumber saved for $exceptionDay only, $selectedStartTime to $selectedEndTime"
-                    else
-                        "Period $periodNumber saved for all days, $selectedStartTime to $selectedEndTime"
+                    val message = if (isCollege) {
+                        if (isException)
+                            "Hour $periodNumber saved for $exceptionDay only, $selectedStartTime to $selectedEndTime"
+                        else
+                            "Hour $periodNumber saved for all days, $selectedStartTime to $selectedEndTime"
+                    } else {
+                        if (isException)
+                            "Period $periodNumber saved for $exceptionDay only, $selectedStartTime to $selectedEndTime"
+                        else
+                            "Period $periodNumber saved for all days, $selectedStartTime to $selectedEndTime"
+                    }
                     Toast.makeText(this@SchoolHoursActivity, message, Toast.LENGTH_SHORT).show()
                     dialogBinding.root.announceForAccessibility(message)
                     dialog.dismiss()
@@ -161,16 +196,20 @@ class SchoolHoursActivity : AppCompatActivity() {
     }
 
     private fun confirmDeletePeriod(period: SchoolPeriod) {
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        val label = if (isCollege) "Hour" else "Period"
+
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Delete Period")
-            .setMessage("Are you sure you want to delete Period ${period.periodNumber}? This cannot be undone.")
+            .setTitle("Delete $label")
+            .setMessage("Are you sure you want to delete $label ${period.periodNumber}? This cannot be undone.")
             .setPositiveButton("Delete") { _, _ ->
                 lifecycleScope.launch {
                     AppDatabase.getDatabase(applicationContext)
                         .timetableDao()
                         .deletePeriod(period)
                     runOnUiThread {
-                        val message = "Period ${period.periodNumber} deleted successfully"
+                        val message = "$label ${period.periodNumber} deleted successfully"
                         Toast.makeText(this@SchoolHoursActivity, message, Toast.LENGTH_SHORT).show()
                         binding.root.announceForAccessibility(message)
                     }
@@ -183,7 +222,7 @@ class SchoolHoursActivity : AppCompatActivity() {
             .create()
         dialog.show()
         binding.root.announceForAccessibility(
-            "Confirm delete. Are you sure you want to delete Period ${period.periodNumber}? Choose Delete or Cancel."
+            "Confirm delete. Are you sure you want to delete $label ${period.periodNumber}? Choose Delete or Cancel."
         )
     }
 
@@ -207,7 +246,11 @@ class SchoolHoursActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val period = periods[position]
-            holder.tvPeriodTitle.text = "Period ${period.periodNumber}"
+            val prefs = holder.itemView.context.getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val isCollege = prefs.getString("institution_type", "school") == "college"
+            val label = if (isCollege) "Hour" else "Period"
+
+            holder.tvPeriodTitle.text = "$label ${period.periodNumber}"
             val timeText = "${period.startTime} to ${period.endTime}"
             holder.tvPeriodTime.text = timeText
 
@@ -219,9 +262,9 @@ class SchoolHoursActivity : AppCompatActivity() {
             }
 
             val contentDesc = if (period.isException)
-                "Period ${period.periodNumber}, ${period.startTime} to ${period.endTime}, exception for ${period.exceptionDay} only"
+                "$label ${period.periodNumber}, ${period.startTime} to ${period.endTime}, exception for ${period.exceptionDay} only"
             else
-                "Period ${period.periodNumber}, ${period.startTime} to ${period.endTime}, applies to all days"
+                "$label ${period.periodNumber}, ${period.startTime} to ${period.endTime}, applies to all days"
 
             holder.itemView.contentDescription = contentDesc
             holder.btnDelete.setOnClickListener { onDelete(period) }

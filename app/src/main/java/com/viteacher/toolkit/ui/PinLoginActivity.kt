@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.databinding.ActivityPinLoginBinding
+import com.viteacher.toolkit.util.setupCursorEndForEditTexts
 import kotlinx.coroutines.launch
 
 class PinLoginActivity : AppCompatActivity() {
@@ -22,6 +23,8 @@ class PinLoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPinLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.root.setupCursorEndForEditTexts()
 
         targetScreen = intent.getStringExtra("target") ?: "home"
 
@@ -39,6 +42,39 @@ class PinLoginActivity : AppCompatActivity() {
                 }
             }
         }
+
+        binding.cbShowPin.setOnCheckedChangeListener { _, isChecked ->
+            val inputType = if (isChecked) {
+                android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL
+            } else {
+                android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
+            }
+            binding.etPin.inputType = inputType
+            binding.etPin.setSelection(binding.etPin.text.length)
+        }
+
+        binding.etPin.addTextChangedListener(object : android.text.TextWatcher {
+            private var lastLength = 0
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                lastLength = s?.length ?: 0
+            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val currentLength = s?.length ?: 0
+                if (currentLength > lastLength) {
+                    val isShowPinChecked = binding.cbShowPin.isChecked
+                    if (isShowPinChecked) {
+                        val addedChar = s?.lastOrNull() ?: ""
+                        binding.etPin.announceForAccessibility("$addedChar")
+                    } else {
+                        binding.etPin.announceForAccessibility("bullet")
+                    }
+                } else if (currentLength < lastLength) {
+                    binding.etPin.announceForAccessibility("deleted")
+                }
+                lastLength = currentLength
+            }
+        })
 
         binding.btnLogin.setOnClickListener {
             verifyPin()
@@ -115,7 +151,7 @@ class PinLoginActivity : AppCompatActivity() {
                     binding.etPin.text?.clear()
                     binding.etPin.requestFocus()
                     Toast.makeText(this@PinLoginActivity, message, Toast.LENGTH_SHORT).show()
-                    binding.root.announceForAccessibility(message)
+                    binding.root.announceForAccessibility("Incorrect PIN. PIN cleared. Please try again.")
                 }
             }
         }

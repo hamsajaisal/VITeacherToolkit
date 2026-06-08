@@ -1,26 +1,50 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
 }
 
+val keystorePropertiesFile = rootProject.file("local.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.viteacher.toolkit"
     compileSdk = 35
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["signing.key.alias"] as String? ?: ""
+            keyPassword = keystoreProperties["signing.key.password"] as String? ?: ""
+            storeFile = keystoreProperties["signing.keystore.path"]?.let { file(it as String) }
+            storePassword = keystoreProperties["signing.keystore.password"] as String? ?: ""
+        }
+    }
 
     defaultConfig {
         applicationId = "com.viteacher.toolkit"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "2.1"
+        versionCode = 8
+        versionName = "2.3.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+            val isSigningConfigured = keystorePropertiesFile.exists() && 
+                    keystoreProperties.containsKey("signing.keystore.path")
+            signingConfig = if (isSigningConfigured) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

@@ -28,7 +28,7 @@
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_revert"
-                android:contentDescription="Go back button"
+                android:contentDescription="Go back"
                 android:tint="#FFFFFF"
                 android:padding="12dp"
                 android:layout_marginRight="8dp" />
@@ -67,7 +67,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"
-            android:importantForAccessibility="yes" />
+            android:importantForAccessibility="no" />
 
         <Spinner
             android:id="@+id/spRollNumber"
@@ -90,7 +90,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"
-            android:importantForAccessibility="yes"
+            android:importantForAccessibility="no"
             android:labelFor="@id/etStudentName" />
 
         <EditText
@@ -118,7 +118,7 @@
             android:text="Add Extra Roll Number"
             android:textColor="#FFFFFF"
             android:backgroundTint="#FF444444"
-            android:contentDescription="Add Extra Roll Number button. Creates a new roll number slot and selects it."
+            android:contentDescription="Add Extra Roll Number. Creates a new roll number slot and selects it."
             android:layout_marginBottom="32dp" />
 
         <!-- Actions -->
@@ -130,7 +130,7 @@
             android:text="Save Student Roster"
             android:textColor="#000000"
             android:backgroundTint="@color/lavender"
-            android:contentDescription="Save student roster button"
+            android:contentDescription="Save student roster"
             android:layout_marginBottom="12dp" />
 
         <Button
@@ -141,7 +141,7 @@
             android:text="Cancel"
             android:textColor="#FFFFFF"
             android:backgroundTint="#FF222222"
-            android:contentDescription="Cancel manual setup button"
+            android:contentDescription="Cancel manual setup"
             android:layout_marginBottom="24dp" />
 
     </LinearLayout>

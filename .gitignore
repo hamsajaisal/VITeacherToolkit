@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Keystores & Certificates (Private Keys)
+*.jks
+*.keystore
+viteacher_signing_backup_DO_NOT_SHARE.txt
+
+# Binaries & Package Outputs
+*.apk
+*.aab

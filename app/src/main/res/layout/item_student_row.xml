@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:minHeight="56dp"
+    android:padding="12dp"
+    android:background="@drawable/bg_history_item"
+    android:layout_marginBottom="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:importantForAccessibility="yes">
+
+    <!-- Icon or Avatar Placeholder if needed, but simple clean text is very good for TalkBack -->
+    <TextView
+        android:id="@+id/tvRosterIndex"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@color/lavender"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:text="1"
+        android:layout_marginEnd="12dp"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Student Name -->
+        <TextView
+            android:id="@+id/tvStudentName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Student Full Name"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:importantForAccessibility="no" />
+
+        <!-- Student Admission Details -->
+        <TextView
+            android:id="@+id/tvStudentAdmission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Admission Number: 12418"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:importantForAccessibility="no" />
+
+    </LinearLayout>
+
+    <!-- Chevron or arrow indicating detail view -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=">"
+        android:textColor="@color/lavender"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginStart="8dp"
+        android:importantForAccessibility="no" />
+
+</LinearLayout>

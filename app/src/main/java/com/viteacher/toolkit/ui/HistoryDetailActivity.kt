@@ -191,7 +191,7 @@ class HistoryDetailCardAdapter(
 
         // Share button context and click
         holder.btnShare.text = "Share ${item.sessionName} Absentees"
-        holder.btnShare.contentDescription = "Share ${item.sessionName} absentees report button"
+        holder.btnShare.contentDescription = "Share ${item.sessionName} absentees report"
         holder.btnShare.setOnClickListener {
             onShareClick(item.records, item.sessionName)
         }

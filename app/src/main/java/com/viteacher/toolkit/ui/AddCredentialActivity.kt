@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.Credential
 import com.viteacher.toolkit.databinding.ActivityAddCredentialBinding
+import com.viteacher.toolkit.util.setupCursorEndForEditTexts
 import kotlinx.coroutines.launch
 
 class AddCredentialActivity : AppCompatActivity() {
@@ -17,6 +18,8 @@ class AddCredentialActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAddCredentialBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.root.setupCursorEndForEditTexts()
 
         binding.btnSaveCredential.setOnClickListener {
             saveCredential()

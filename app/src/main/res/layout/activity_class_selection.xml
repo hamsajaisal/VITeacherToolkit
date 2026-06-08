@@ -20,7 +20,7 @@
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_revert"
-            android:contentDescription="Go back button"
+            android:contentDescription="Go back"
             android:tint="#FFFFFF"
             android:padding="12dp"
             android:layout_marginRight="8dp" />

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:isScrollContainer="true"
+    android:background="#000000"
+    android:importantForAccessibility="yes">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header Bar with Back Button and Green Border Student Name -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="?android:attr/actionModeCloseDrawable"
+                android:background="?android:attr/selectableItemBackground"
+                android:tint="#FFFFFF"
+                android:contentDescription="Go back"
+                android:importantForAccessibility="yes" />
+
+            <TextView
+                android:id="@+id/tvStudentNameTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Student Name"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/border_green"
+                android:layout_marginStart="8dp"
+                android:accessibilityHeading="true"
+                android:importantForAccessibility="yes" />
+
+        </LinearLayout>
+
+        <!-- Birthday Indicator Card (Hidden by default, shown if today is birthday) -->
+        <LinearLayout
+            android:id="@+id/layoutBirthdayIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:background="#332200"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            android:importantForAccessibility="yes">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🎂"
+                android:textSize="24sp"
+                android:layout_marginEnd="8dp"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/tvBirthdayLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Today is their birthday!"
+                android:textColor="#FFD700"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:importantForAccessibility="no" />
+
+        </LinearLayout>
+
+        <!-- Dynamic details wrapper -->
+        <LinearLayout
+            android:id="@+id/layoutDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Call Parent Action Button -->
+        <Button
+            android:id="@+id/btnCallParent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Call Parent"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Call parent"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Visual Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#333333"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Remarks Section Heading -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Remarks"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+        <!-- Remarks Dynamic List Wrapper -->
+        <LinearLayout
+            android:id="@+id/layoutRemarks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Empty remarks label -->
+        <TextView
+            android:id="@+id/tvNoRemarks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No remarks added for this student yet."
+            android:textColor="#CCCCCC"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_marginBottom="16dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Add Remark Button -->
+        <Button
+            android:id="@+id/btnAddRemark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Add Remark"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Add new remark"
+            android:importantForAccessibility="yes" />
+
+    </LinearLayout>
+</ScrollView>

@@ -35,6 +35,7 @@ object ReminderScheduler {
         if (triggerTime <= System.currentTimeMillis()) return
 
         val intent = Intent(context, ReminderReceiver::class.java).apply {
+            putExtra("entry_id", entry.id)
             putExtra("message", message)
             putExtra("language", language)
         }

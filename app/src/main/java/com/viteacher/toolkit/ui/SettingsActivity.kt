@@ -49,6 +49,13 @@ class SettingsActivity : AppCompatActivity() {
 
         setupLanguageSpinner()
 
+        binding.btnEditProfile.setOnClickListener {
+            val intent = Intent(this, SetupProfileActivity::class.java).apply {
+                putExtra("EXTRA_EDIT_MODE", true)
+            }
+            startActivity(intent)
+        }
+
         binding.btnSchoolHours.setOnClickListener {
             startActivity(Intent(this, SchoolHoursActivity::class.java))
         }
@@ -67,6 +74,27 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.btnRestoreData.setOnClickListener {
             triggerRestore()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateDynamicLabels()
+    }
+
+    private fun updateDynamicLabels() {
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        if (isCollege) {
+            binding.btnSchoolHours.text = "Set College Hour Schedule"
+            binding.btnSchoolHours.contentDescription = "Set up your college hour timings"
+            binding.btnClassroomSettings.text = "Program Settings"
+            binding.btnClassroomSettings.contentDescription = "Program Settings button. Configure program, year or semester, and academic year. This is a feature for teachers."
+        } else {
+            binding.btnSchoolHours.text = "Set School Hour Schedule"
+            binding.btnSchoolHours.contentDescription = "Set up your school period timings"
+            binding.btnClassroomSettings.text = "Classroom Settings"
+            binding.btnClassroomSettings.contentDescription = "Classroom Settings button. Configure class, division, and academic year. This is a feature for class teachers."
         }
     }
 
@@ -163,8 +191,8 @@ class SettingsActivity : AppCompatActivity() {
             .create()
         dialog.show()
 
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Yes, select file button"
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "No, cancel button"
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Yes, select file"
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "No, cancel"
         binding.root.announceForAccessibility("Warning dialog. Restoring data will overwrite all current settings. Select Yes to choose your backup file, or No to cancel.")
     }
 
@@ -213,7 +241,7 @@ class SettingsActivity : AppCompatActivity() {
             }
             .create()
         dialog.show()
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Restart App button"
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Restart App"
         binding.root.announceForAccessibility("Restore Successful dialog. Your data has been restored. Select Restart App to finalize.")
     }
 
