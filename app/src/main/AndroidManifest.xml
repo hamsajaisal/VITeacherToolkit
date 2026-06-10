@@ -150,8 +150,34 @@
             android:exported="false"
             android:label="Edit Mode"/>
 
+        <!-- Classroom Timer Feature -->
+        <activity
+            android:name=".ui.ClassroomTimerActivity"
+            android:exported="false"
+            android:label="Classroom Timer"/>
+
+        <activity
+            android:name=".ui.PeriodWorkflowTimerActivity"
+            android:exported="false"
+            android:label="Period Workflow Timer"/>
+
+        <activity
+            android:name=".ui.ActivityTimerActivity"
+            android:exported="false"
+            android:label="Activity Timer"/>
+
+        <activity
+            android:name=".ui.StopwatchActivity"
+            android:exported="false"
+            android:label="Stopwatch"/>
+
         <service
             android:name=".util.TTSReminderService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback"/>
+
+        <service
+            android:name=".util.ClassroomTimerService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback"/>
 

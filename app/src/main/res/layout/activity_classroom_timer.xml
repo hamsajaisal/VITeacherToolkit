@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:padding="24dp">
+
+    <!-- Header bar with back button and green border title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="?android:attr/actionModeCloseDrawable"
+            android:background="?android:attr/selectableItemBackground"
+            android:tint="#FFFFFF"
+            android:importantForAccessibility="yes" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Classroom Timer"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/border_green"
+            android:layout_marginStart="8dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+    </LinearLayout>
+
+    <!-- Alert Mode Header -->
+    <TextView
+        android:id="@+id/tvAlertModeHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Alert Mode"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        android:importantForAccessibility="no" />
+
+    <!-- Alert Mode Selector -->
+    <Spinner
+        android:id="@+id/spinnerAlertMode"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="32dp"
+        android:importantForAccessibility="yes" />
+
+    <!-- Tools container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- 1. Period Workflow Timer Option -->
+        <Button
+            android:id="@+id/btnPeriodWorkflow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Period Workflow Timer\n(Divide period into phases)"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Divide your class period into phases with automatic announcements"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="no" />
+
+        <!-- 2. Activity Timer Option -->
+        <Button
+            android:id="@+id/btnActivityTimer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Activity Timer\n(Set a task countdown)"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set a countdown for a specific classroom task"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="no" />
+
+        <!-- 3. Stopwatch Option -->
+        <Button
+            android:id="@+id/btnStopwatch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Stopwatch\n(Measure elapsed time)"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Measure how long students take to complete a task"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="no" />
+
+    </LinearLayout>
+
+</LinearLayout>

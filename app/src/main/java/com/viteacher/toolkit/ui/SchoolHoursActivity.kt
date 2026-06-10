@@ -19,6 +19,7 @@ import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.SchoolPeriod
 import com.viteacher.toolkit.databinding.ActivitySchoolHoursBinding
 import com.viteacher.toolkit.databinding.DialogAddPeriodBinding
+import com.viteacher.toolkit.util.ReminderScheduler
 import com.viteacher.toolkit.util.TimePickerHelper
 import com.viteacher.toolkit.util.setAccessibleSelection
 import kotlinx.coroutines.flow.collectLatest
@@ -39,9 +40,9 @@ class SchoolHoursActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
         val isCollege = prefs.getString("institution_type", "school") == "college"
         periodNumbers = if (isCollege) {
-            (1..8).map { "Hour $it" }
+            (1..8).map { "Hour $it" } + listOf("Forenoon Interval", "Lunch Break", "Afternoon Interval")
         } else {
-            (1..8).map { "Period $it" }
+            (1..8).map { "Period $it" } + listOf("Forenoon Interval", "Lunch Break", "Afternoon Interval")
         }
 
         if (isCollege) {
@@ -110,6 +111,50 @@ class SchoolHoursActivity : AppCompatActivity() {
         dialogBinding.spinnerExceptionDay.adapter = dayAdapter
         dialogBinding.spinnerExceptionDay.setAccessibleSelection("Exception day")
 
+        // Setup alert timing options
+        val alertTimeOptions = listOf("At break end", "2 minutes before end", "5 minutes before end", "10 minutes before end", "15 minutes before end")
+        val alertMinutesValues = listOf(0, 2, 5, 10, 15)
+        val alertTimeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, alertTimeOptions)
+        alertTimeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        dialogBinding.spinnerAlertMinutes.adapter = alertTimeAdapter
+        dialogBinding.spinnerAlertMinutes.setAccessibleSelection("Alert time selection")
+
+        dialogBinding.spinnerPeriodNumber.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val periodNumber = when (position) {
+                    8 -> 99
+                    9 -> 100
+                    10 -> 101
+                    else -> position + 1
+                }
+                
+                val isBreak = periodNumber in listOf(99, 100, 101)
+                if (isBreak) {
+                    dialogBinding.layoutBreakAlert.visibility = View.VISIBLE
+                    val isAlertEnabled = prefs.getBoolean("refreshment_alert_enabled_$periodNumber", false)
+                    dialogBinding.cbEnableAlert.isChecked = isAlertEnabled
+                    dialogBinding.layoutAlertMinutes.visibility = if (isAlertEnabled) View.VISIBLE else View.GONE
+                    
+                    val savedMinutes = prefs.getInt("refreshment_alert_minutes_$periodNumber", 5)
+                    val valueIndex = alertMinutesValues.indexOf(savedMinutes).coerceAtLeast(0)
+                    dialogBinding.spinnerAlertMinutes.setSelection(valueIndex)
+                } else {
+                    dialogBinding.layoutBreakAlert.visibility = View.GONE
+                }
+            }
+
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+        }
+
+        dialogBinding.cbEnableAlert.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                dialogBinding.layoutAlertMinutes.visibility = View.VISIBLE
+                dialogBinding.layoutAlertMinutes.announceForAccessibility("Alert timing options visible")
+            } else {
+                dialogBinding.layoutAlertMinutes.visibility = View.GONE
+            }
+        }
+
         dialogBinding.btnSelectStartTime.setOnClickListener {
             TimePickerHelper.show(
                 context = this,
@@ -151,11 +196,29 @@ class SchoolHoursActivity : AppCompatActivity() {
 
         dialogBinding.btnSavePeriod.setOnClickListener {
             val periodPosition = dialogBinding.spinnerPeriodNumber.selectedItemPosition
-            val periodNumber = periodPosition + 1
+            val periodNumber = when (periodPosition) {
+                8 -> 99
+                9 -> 100
+                10 -> 101
+                else -> periodPosition + 1
+            }
             val isException = dialogBinding.cbIsException.isChecked
             val exceptionDay = if (isException)
                 dialogBinding.spinnerExceptionDay.selectedItem.toString()
             else ""
+
+            val isBreak = periodNumber in listOf(99, 100, 101)
+            if (isBreak) {
+                val isAlertEnabled = dialogBinding.cbEnableAlert.isChecked
+                val selectedAlertIndex = dialogBinding.spinnerAlertMinutes.selectedItemPosition
+                val alertMin = alertMinutesValues.getOrElse(selectedAlertIndex) { 5 }
+                
+                prefs.edit().apply {
+                    putBoolean("refreshment_alert_enabled_$periodNumber", isAlertEnabled)
+                    putInt("refreshment_alert_minutes_$periodNumber", alertMin)
+                    apply()
+                }
+            }
 
             val period = SchoolPeriod(
                 periodNumber = periodNumber,
@@ -169,18 +232,22 @@ class SchoolHoursActivity : AppCompatActivity() {
                 AppDatabase.getDatabase(applicationContext)
                     .timetableDao()
                     .insertPeriod(period)
+                
+                if (isBreak) {
+                    ReminderScheduler.scheduleBreakReminder(applicationContext, period)
+                }
+
                 runOnUiThread {
-                    val message = if (isCollege) {
-                        if (isException)
-                            "Hour $periodNumber saved for $exceptionDay only, $selectedStartTime to $selectedEndTime"
-                        else
-                            "Hour $periodNumber saved for all days, $selectedStartTime to $selectedEndTime"
-                    } else {
-                        if (isException)
-                            "Period $periodNumber saved for $exceptionDay only, $selectedStartTime to $selectedEndTime"
-                        else
-                            "Period $periodNumber saved for all days, $selectedStartTime to $selectedEndTime"
+                    val labelName = when (periodNumber) {
+                        99 -> "Forenoon Interval"
+                        100 -> "Lunch Break"
+                        101 -> "Afternoon Interval"
+                        else -> if (isCollege) "Hour $periodNumber" else "Period $periodNumber"
                     }
+                    val message = if (isException)
+                        "$labelName saved for $exceptionDay only, $selectedStartTime to $selectedEndTime"
+                    else
+                        "$labelName saved for all days, $selectedStartTime to $selectedEndTime"
                     Toast.makeText(this@SchoolHoursActivity, message, Toast.LENGTH_SHORT).show()
                     dialogBinding.root.announceForAccessibility(message)
                     dialog.dismiss()
@@ -200,16 +267,28 @@ class SchoolHoursActivity : AppCompatActivity() {
         val isCollege = prefs.getString("institution_type", "school") == "college"
         val label = if (isCollege) "Hour" else "Period"
 
+        val labelName = when (period.periodNumber) {
+            99 -> "Forenoon Interval"
+            100 -> "Lunch Break"
+            101 -> "Afternoon Interval"
+            else -> "$label ${period.periodNumber}"
+        }
+
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Delete $label")
-            .setMessage("Are you sure you want to delete $label ${period.periodNumber}? This cannot be undone.")
+            .setTitle("Delete $labelName")
+            .setMessage("Are you sure you want to delete $labelName? This cannot be undone.")
             .setPositiveButton("Delete") { _, _ ->
                 lifecycleScope.launch {
                     AppDatabase.getDatabase(applicationContext)
                         .timetableDao()
                         .deletePeriod(period)
+                    
+                    if (period.periodNumber in listOf(99, 100, 101)) {
+                        ReminderScheduler.cancelBreakReminder(applicationContext, period.periodNumber)
+                    }
+
                     runOnUiThread {
-                        val message = "$label ${period.periodNumber} deleted successfully"
+                        val message = "$labelName deleted successfully"
                         Toast.makeText(this@SchoolHoursActivity, message, Toast.LENGTH_SHORT).show()
                         binding.root.announceForAccessibility(message)
                     }
@@ -222,7 +301,7 @@ class SchoolHoursActivity : AppCompatActivity() {
             .create()
         dialog.show()
         binding.root.announceForAccessibility(
-            "Confirm delete. Are you sure you want to delete $label ${period.periodNumber}? Choose Delete or Cancel."
+            "Confirm delete. Are you sure you want to delete $labelName? Choose Delete or Cancel."
         )
     }
 
@@ -250,7 +329,14 @@ class SchoolHoursActivity : AppCompatActivity() {
             val isCollege = prefs.getString("institution_type", "school") == "college"
             val label = if (isCollege) "Hour" else "Period"
 
-            holder.tvPeriodTitle.text = "$label ${period.periodNumber}"
+            val labelName = when (period.periodNumber) {
+                99 -> "Forenoon Interval"
+                100 -> "Lunch Break"
+                101 -> "Afternoon Interval"
+                else -> "$label ${period.periodNumber}"
+            }
+
+            holder.tvPeriodTitle.text = labelName
             val timeText = "${period.startTime} to ${period.endTime}"
             holder.tvPeriodTime.text = timeText
 
@@ -262,9 +348,9 @@ class SchoolHoursActivity : AppCompatActivity() {
             }
 
             val contentDesc = if (period.isException)
-                "$label ${period.periodNumber}, ${period.startTime} to ${period.endTime}, exception for ${period.exceptionDay} only"
+                "$labelName, ${period.startTime} to ${period.endTime}, exception for ${period.exceptionDay} only"
             else
-                "$label ${period.periodNumber}, ${period.startTime} to ${period.endTime}, applies to all days"
+                "$labelName, ${period.startTime} to ${period.endTime}, applies to all days"
 
             holder.itemView.contentDescription = contentDesc
             holder.btnDelete.setOnClickListener { onDelete(period) }

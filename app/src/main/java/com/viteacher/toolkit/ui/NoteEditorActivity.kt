@@ -172,7 +172,8 @@ class NoteEditorActivity : AppCompatActivity() {
                     selectedCategory = note.category
                     isPinned = note.isPinned
                     currentFontSize = note.fontSize
-                    binding.tvFontSizeLabel.text = "Font Size: $currentFontSize"
+                    binding.tvFontSizeLabel.text = "$currentFontSize"
+                    binding.tvFontSizeLabel.contentDescription = "Current Font Size: $currentFontSize"
                     binding.etNoteContent.textSize = currentFontSize.toFloat()
                     
                     val spanned = HtmlCompat.fromHtml(note.content, HtmlCompat.FROM_HTML_MODE_LEGACY)
@@ -184,7 +185,8 @@ class NoteEditorActivity : AppCompatActivity() {
     }
 
     private fun setupFontSizeControls() {
-        binding.tvFontSizeLabel.text = "Font Size: $currentFontSize"
+        binding.tvFontSizeLabel.text = "$currentFontSize"
+        binding.tvFontSizeLabel.contentDescription = "Current Font Size: $currentFontSize"
         binding.etNoteContent.textSize = currentFontSize.toFloat()
 
         binding.btnIncreaseFontSize.setOnClickListener {
@@ -210,7 +212,8 @@ class NoteEditorActivity : AppCompatActivity() {
         val newSize = (currentFontSize + delta).coerceIn(12, 48)
         if (newSize != currentFontSize) {
             currentFontSize = newSize
-            binding.tvFontSizeLabel.text = "Font Size: $currentFontSize"
+            binding.tvFontSizeLabel.text = "$currentFontSize"
+            binding.tvFontSizeLabel.contentDescription = "Current Font Size: $currentFontSize"
             binding.etNoteContent.textSize = currentFontSize.toFloat()
             val text = if (delta > 0) "increased to $currentFontSize" else "decreased to $currentFontSize"
             binding.root.announceForAccessibility("Font size $text")

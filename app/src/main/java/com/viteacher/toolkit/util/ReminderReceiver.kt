@@ -36,6 +36,26 @@ class ReminderReceiver : BroadcastReceiver() {
     }
 
     private fun rescheduleForNextWeek(context: Context, intent: Intent) {
+        val isBreak = intent.getBooleanExtra("is_break", false)
+        if (isBreak) {
+            val periodNumber = intent.getIntExtra("period_number", -1)
+            if (periodNumber != -1) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val db = AppDatabase.getDatabase(context.applicationContext)
+                        val periods = db.timetableDao().getAllPeriodsOnce()
+                        val period = periods.find { it.periodNumber == periodNumber }
+                        if (period != null) {
+                            ReminderScheduler.scheduleBreakReminder(context.applicationContext, period)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+            return
+        }
+
         val entryId = intent.getIntExtra("entry_id", -1)
         val language = intent.getStringExtra("language") ?: "en"
         if (entryId != -1) {

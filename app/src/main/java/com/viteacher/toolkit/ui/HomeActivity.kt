@@ -74,6 +74,11 @@ class HomeActivity : AppCompatActivity() {
         }
 
 
+        binding.btnClassroomTimer.contentDescription = "Classroom Timer"
+        binding.btnClassroomTimer.setOnClickListener {
+            startActivity(Intent(this, ClassroomTimerActivity::class.java))
+        }
+
         binding.btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }

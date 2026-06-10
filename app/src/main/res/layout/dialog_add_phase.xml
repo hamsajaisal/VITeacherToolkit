@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#121212">
+
+    <TextView
+        android:id="@+id/tvDialogTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Phase"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Phase Name"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/etPhaseName"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="e.g. Introduction"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#666666"
+        android:backgroundTint="#FFFFFF"
+        android:inputType="text"
+        android:layout_marginBottom="16dp"
+        android:importantForAccessibility="yes" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Duration (Minutes)"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/etPhaseDuration"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="e.g. 5"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#666666"
+        android:backgroundTint="#FFFFFF"
+        android:inputType="number"
+        android:layout_marginBottom="24dp"
+        android:importantForAccessibility="yes" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Cancel"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF444444"
+            android:layout_marginEnd="12dp" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Save"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender" />
+
+    </LinearLayout>
+
+</LinearLayout>

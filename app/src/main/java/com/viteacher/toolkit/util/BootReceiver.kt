@@ -35,6 +35,12 @@ class BootReceiver : BroadcastReceiver() {
                         }
                     }
                 }
+
+                periods.forEach { period ->
+                    if (period.periodNumber in listOf(99, 100, 101)) {
+                        ReminderScheduler.scheduleBreakReminder(context, period)
+                    }
+                }
             }
         }
     }

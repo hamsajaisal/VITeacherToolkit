@@ -94,6 +94,46 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/layoutBreakAlert"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp">
+
+            <CheckBox
+                android:id="@+id/cbEnableAlert"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enable refreshment alert for this break"
+                android:contentDescription="Enable refreshment alert for this break"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:id="@+id/layoutAlertMinutes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvAlertMinutesLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="When should you be alerted?"
+                    android:layout_marginBottom="4dp"
+                    android:importantForAccessibility="no"/>
+
+                <Spinner
+                    android:id="@+id/spinnerAlertMinutes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="Alert time, combo box"
+                    android:layout_marginBottom="8dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnSavePeriod"
             android:layout_width="match_parent"

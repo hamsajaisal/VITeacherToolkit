@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header bar with back button and title -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="?android:attr/actionModeCloseDrawable"
+                android:background="?android:attr/selectableItemBackground"
+                android:tint="#FFFFFF"
+                android:importantForAccessibility="yes" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Period Workflow Timer"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="@drawable/border_green"
+                android:layout_marginStart="8dp"
+                android:accessibilityHeading="true"
+                android:importantForAccessibility="yes" />
+
+        </LinearLayout>
+
+        <!-- SETUP LAYOUT -->
+        <LinearLayout
+            android:id="@+id/layoutSetup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Synchronize with Timetable Period"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerTimetablePeriods"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:backgroundTint="#FFFFFF"
+                android:layout_marginBottom="16dp"
+                android:importantForAccessibility="yes" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Total Period Duration (Minutes)"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/etTotalDuration"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="e.g. 45 (Optional)"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666"
+                android:backgroundTint="#FFFFFF"
+                android:inputType="number"
+                android:layout_marginBottom="16dp"
+                android:importantForAccessibility="yes" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Default Period End Reminder"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerReminderInterval"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:backgroundTint="#FFFFFF"
+                android:layout_marginBottom="16dp"
+                android:importantForAccessibility="yes" />
+
+            <TextView
+                android:id="@+id/tvPeriodWarningLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Custom Warning (Minutes before end)"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/etPeriodWarning"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="e.g. 5 or 10"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666"
+                android:backgroundTint="#FFFFFF"
+                android:inputType="number"
+                android:layout_marginBottom="24dp"
+                android:importantForAccessibility="yes"
+                android:visibility="gone" />
+
+            <!-- Phases Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Phases"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Load Phase Template"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:layout_marginBottom="4dp" />
+
+            <Spinner
+                android:id="@+id/spinnerPhaseTemplates"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:backgroundTint="#FFFFFF"
+                android:layout_marginBottom="16dp"
+                android:importantForAccessibility="yes" />
+
+            <!-- Horizontal Layout for Add Phase and Save Template Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <Button
+                    android:id="@+id/btnAddPhase"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="48dp"
+                    android:text="Add Phase"
+                    android:textColor="#000000"
+                    android:backgroundTint="@color/lavender"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnSaveAsTemplate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="48dp"
+                    android:text="Save Template"
+                    android:textColor="#000000"
+                    android:backgroundTint="@color/lavender" />
+
+            </LinearLayout>
+
+            <!-- ListView or LinearLayout for dynamic phases -->
+            <LinearLayout
+                android:id="@+id/layoutPhasesList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Total Assigned Text -->
+            <TextView
+                android:id="@+id/tvTotalAssigned"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Total assigned: 0 minutes"
+                android:textColor="#CCCCCC"
+                android:textSize="16sp"
+                android:layout_marginBottom="32dp"
+                android:importantForAccessibility="yes" />
+
+            <Button
+                android:id="@+id/btnStartWorkflow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:text="Start Workflow Timer"
+                android:textColor="#000000"
+                android:backgroundTint="@color/lavender"
+                android:visibility="visible" />
+
+        </LinearLayout>
+
+        <!-- RUNNING LAYOUT -->
+        <LinearLayout
+            android:id="@+id/layoutRunning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:visibility="gone">
+
+            <!-- Current Phase Title -->
+            <TextView
+                android:id="@+id/tvCurrentPhase"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Current Phase: Introduction"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="24dp"
+                android:importantForAccessibility="yes" />
+
+            <!-- Countdown Text -->
+            <TextView
+                android:id="@+id/tvCountdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="05:00 remaining"
+                android:textColor="#FFFFFF"
+                android:textSize="48sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="24dp"
+                android:importantForAccessibility="yes" />
+
+            <!-- Progress Indicator -->
+            <ProgressBar
+                android:id="@+id/pbWorkflow"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="12dp"
+                android:max="100"
+                android:progress="0"
+                android:layout_marginBottom="32dp"
+                android:importantForAccessibility="no" />
+
+            <!-- Warning Status Text -->
+            <TextView
+                android:id="@+id/tvWarningStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#FF8A80"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:layout_marginBottom="32dp"
+                android:visibility="gone"
+                android:importantForAccessibility="yes" />
+
+            <!-- Running Controls -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/btnPauseResume"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Pause"
+                    android:textColor="#000000"
+                    android:backgroundTint="@color/lavender"
+                    android:layout_marginBottom="16dp" />
+
+                <Button
+                    android:id="@+id/btnStopReset"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Stop and Reset"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#FF444444" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

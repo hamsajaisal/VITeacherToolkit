@@ -117,9 +117,9 @@ class AddTimetableEntryActivity : AppCompatActivity() {
 
     private fun updatePeriodSpinnerForDay(selectedDay: String) {
         val filtered = if (loadedPeriods.any { it.isException && it.exceptionDay == selectedDay }) {
-            loadedPeriods.filter { it.isException && it.exceptionDay == selectedDay }
+            loadedPeriods.filter { it.isException && it.exceptionDay == selectedDay && it.periodNumber !in listOf(99, 100, 101) }
         } else {
-            loadedPeriods.filter { !it.isException }
+            loadedPeriods.filter { !it.isException && it.periodNumber !in listOf(99, 100, 101) }
         }
         displayedPeriods = filtered.sortedBy { it.periodNumber }
 

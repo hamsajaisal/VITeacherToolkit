@@ -261,6 +261,7 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             popup.menu.add("Import Student List")
             popup.menu.add("Download Sample Excel Template")
             popup.menu.add("Fetch from Class Profile")
+            popup.menu.add("Mark Late Arrivals")
             
             popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.title) {
@@ -274,6 +275,10 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                     }
                     "Fetch from Class Profile" -> {
                         triggerFetchFromClassProfile()
+                        true
+                    }
+                    "Mark Late Arrivals" -> {
+                        showLateArrivalsDialog()
                         true
                     }
                     else -> false
@@ -651,6 +656,80 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             try {
                 workbook.close()
             } catch (_: IOException) {}
+        }
+    }
+
+    private fun showLateArrivalsDialog() {
+        val absentItems = studentList.filter { !it.isPresent }
+        if (absentItems.isEmpty()) {
+            val msg = "All students are already marked present."
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            binding.root.announceForAccessibility(msg)
+            return
+        }
+
+        val names = absentItems.map { "${it.student.rollNumber}. ${it.student.name}" }.toTypedArray()
+        val checkedItems = BooleanArray(absentItems.size) { false }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Mark Late Arrivals Present")
+            .setMultiChoiceItems(names, checkedItems) { _, which, isChecked ->
+                checkedItems[which] = isChecked
+            }
+            .setPositiveButton("Mark Present") { _, _ ->
+                val selectedStudents = mutableListOf<StudentAttendanceItem>()
+                for (i in checkedItems.indices) {
+                    if (checkedItems[i]) {
+                        selectedStudents.add(absentItems[i])
+                    }
+                }
+                if (selectedStudents.isNotEmpty()) {
+                    performMarkLateArrivals(selectedStudents)
+                }
+            }
+            .setNegativeButton("Cancel") { d, _ ->
+                d.dismiss()
+            }
+            .create()
+
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Mark Present"
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel"
+        
+        binding.root.announceForAccessibility(
+            "Mark Late Arrivals Present dialog. Select students using the checkboxes, then select Mark Present or Cancel."
+        )
+    }
+
+    private fun performMarkLateArrivals(items: List<StudentAttendanceItem>) {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            
+            items.forEach { item ->
+                item.isPresent = true
+                sessionAttendanceCache[selectedSession]?.put(item.student.rollNumber, true)
+            }
+
+            val recordsToUpdate = items.map {
+                AttendanceRecord(
+                    classId = classId,
+                    date = savedDate,
+                    session = selectedSession,
+                    rollNumber = it.student.rollNumber,
+                    name = it.student.name,
+                    isPresent = true
+                )
+            }
+
+            db.attendanceDao().insertAttendanceRecords(recordsToUpdate)
+
+            runOnUiThread {
+                studentAdapter.notifyDataSetChanged()
+                val namesList = items.joinToString(", ") { it.student.name }
+                val msg = "Marked late arrival present: $namesList"
+                Toast.makeText(this@AttendanceRegisterActivity, msg, Toast.LENGTH_LONG).show()
+                binding.root.announceForAccessibility(msg)
+            }
         }
     }
 
