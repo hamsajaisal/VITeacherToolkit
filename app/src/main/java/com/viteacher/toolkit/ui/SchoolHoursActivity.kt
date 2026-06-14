@@ -52,9 +52,15 @@ class SchoolHoursActivity : AppCompatActivity() {
             binding.rvPeriods.contentDescription = "College hours list"
         }
 
-        adapter = PeriodAdapter(emptyList()) { period ->
-            confirmDeletePeriod(period)
-        }
+        adapter = PeriodAdapter(
+            emptyList(),
+            onLongClick = { period ->
+                showPeriodOptions(period)
+            },
+            onDelete = { period ->
+                confirmDeletePeriod(period)
+            }
+        )
 
         binding.rvPeriods.layoutManager = LinearLayoutManager(this)
         binding.rvPeriods.adapter = adapter
@@ -77,7 +83,7 @@ class SchoolHoursActivity : AppCompatActivity() {
         }
     }
 
-    private fun showAddPeriodDialog() {
+    private fun showAddPeriodDialog(editingPeriod: SchoolPeriod? = null) {
         val dialog = Dialog(this)
         val dialogBinding = DialogAddPeriodBinding.inflate(layoutInflater)
         dialog.setContentView(dialogBinding.root)
@@ -90,16 +96,29 @@ class SchoolHoursActivity : AppCompatActivity() {
         val isCollege = prefs.getString("institution_type", "school") == "college"
 
         if (isCollege) {
-            dialogBinding.tvDialogTitle.text = "Add College Hour"
+            dialogBinding.tvDialogTitle.text = if (editingPeriod != null) "Edit College Hour" else "Add College Hour"
             dialogBinding.tvPeriodNumberLabel.text = "Hour Number"
             dialogBinding.spinnerPeriodNumber.contentDescription = "Hour number, combo box"
             dialogBinding.cbIsException.contentDescription = "Check this if this hour timing applies to a specific day only, such as Friday"
-            dialogBinding.btnSavePeriod.text = "Save Hour"
-            dialogBinding.btnSavePeriod.contentDescription = "Save this college hour"
+            dialogBinding.btnSavePeriod.text = if (editingPeriod != null) "Save Changes" else "Save Hour"
+            dialogBinding.btnSavePeriod.contentDescription = if (editingPeriod != null) "Save changes to this college hour" else "Save this college hour"
+        } else {
+            if (editingPeriod != null) {
+                dialogBinding.tvDialogTitle.text = "Edit School Period"
+                dialogBinding.btnSavePeriod.text = "Save Changes"
+                dialogBinding.btnSavePeriod.contentDescription = "Save changes to this school period"
+            }
         }
 
-        var selectedStartTime = "09:00 AM"
-        var selectedEndTime = "10:00 AM"
+        var selectedStartTime = editingPeriod?.startTime ?: "09:00 AM"
+        var selectedEndTime = editingPeriod?.endTime ?: "10:00 AM"
+
+        if (editingPeriod != null) {
+            dialogBinding.btnSelectStartTime.text = "Select Start Time: $selectedStartTime"
+            dialogBinding.btnSelectStartTime.contentDescription = "Select start time, currently $selectedStartTime"
+            dialogBinding.btnSelectEndTime.text = "Select End Time: $selectedEndTime"
+            dialogBinding.btnSelectEndTime.contentDescription = "Select end time, currently $selectedEndTime"
+        }
 
         val periodAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, periodNumbers)
         periodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -194,6 +213,23 @@ class SchoolHoursActivity : AppCompatActivity() {
             }
         }
 
+        // Set initial spinner/exception values if editing
+        if (editingPeriod != null) {
+            val spinnerPosition = when (editingPeriod.periodNumber) {
+                99 -> 8
+                100 -> 9
+                101 -> 10
+                else -> editingPeriod.periodNumber - 1
+            }
+            dialogBinding.spinnerPeriodNumber.setSelection(spinnerPosition)
+
+            dialogBinding.cbIsException.isChecked = editingPeriod.isException
+            if (editingPeriod.isException) {
+                val dayIndex = days.indexOf(editingPeriod.exceptionDay).coerceAtLeast(0)
+                dialogBinding.spinnerExceptionDay.setSelection(dayIndex)
+            }
+        }
+
         dialogBinding.btnSavePeriod.setOnClickListener {
             val periodPosition = dialogBinding.spinnerPeriodNumber.selectedItemPosition
             val periodNumber = when (periodPosition) {
@@ -221,6 +257,7 @@ class SchoolHoursActivity : AppCompatActivity() {
             }
 
             val period = SchoolPeriod(
+                id = editingPeriod?.id ?: 0,
                 periodNumber = periodNumber,
                 startTime = selectedStartTime,
                 endTime = selectedEndTime,
@@ -229,6 +266,10 @@ class SchoolHoursActivity : AppCompatActivity() {
             )
 
             lifecycleScope.launch {
+                if (editingPeriod != null && editingPeriod.periodNumber in listOf(99, 100, 101)) {
+                    ReminderScheduler.cancelBreakReminder(applicationContext, editingPeriod.periodNumber)
+                }
+
                 AppDatabase.getDatabase(applicationContext)
                     .timetableDao()
                     .insertPeriod(period)
@@ -244,7 +285,9 @@ class SchoolHoursActivity : AppCompatActivity() {
                         101 -> "Afternoon Interval"
                         else -> if (isCollege) "Hour $periodNumber" else "Period $periodNumber"
                     }
-                    val message = if (isException)
+                    val message = if (editingPeriod != null)
+                        "$labelName updated successfully"
+                    else if (isException)
                         "$labelName saved for $exceptionDay only, $selectedStartTime to $selectedEndTime"
                     else
                         "$labelName saved for all days, $selectedStartTime to $selectedEndTime"
@@ -260,6 +303,31 @@ class SchoolHoursActivity : AppCompatActivity() {
         }
 
         dialog.show()
+    }
+
+    private fun showPeriodOptions(period: SchoolPeriod) {
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        val label = if (isCollege) "Hour" else "Period"
+
+        val labelName = when (period.periodNumber) {
+            99 -> "Forenoon Interval"
+            100 -> "Lunch Break"
+            101 -> "Afternoon Interval"
+            else -> "$label ${period.periodNumber}"
+        }
+
+        val options = arrayOf("Edit Details", "Delete $labelName")
+        AlertDialog.Builder(this)
+            .setTitle("$labelName Options")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showAddPeriodDialog(period)
+                    1 -> confirmDeletePeriod(period)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun confirmDeletePeriod(period: SchoolPeriod) {
@@ -307,6 +375,7 @@ class SchoolHoursActivity : AppCompatActivity() {
 
     inner class PeriodAdapter(
         private var periods: List<SchoolPeriod>,
+        private val onLongClick: (SchoolPeriod) -> Unit,
         private val onDelete: (SchoolPeriod) -> Unit
     ) : RecyclerView.Adapter<PeriodAdapter.ViewHolder>() {
 
@@ -348,11 +417,17 @@ class SchoolHoursActivity : AppCompatActivity() {
             }
 
             val contentDesc = if (period.isException)
-                "$labelName, ${period.startTime} to ${period.endTime}, exception for ${period.exceptionDay} only"
+                "$labelName, ${period.startTime} to ${period.endTime}, exception for ${period.exceptionDay} only. Double tap and hold for options."
             else
-                "$labelName, ${period.startTime} to ${period.endTime}, applies to all days"
+                "$labelName, ${period.startTime} to ${period.endTime}, applies to all days. Double tap and hold for options."
 
             holder.itemView.contentDescription = contentDesc
+
+            holder.itemView.setOnLongClickListener {
+                onLongClick(period)
+                true
+            }
+
             holder.btnDelete.setOnClickListener { onDelete(period) }
         }
 

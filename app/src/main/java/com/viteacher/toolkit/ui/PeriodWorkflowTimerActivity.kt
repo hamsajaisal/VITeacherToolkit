@@ -51,6 +51,10 @@ class PeriodWorkflowTimerActivity : AppCompatActivity(), ClassroomTimerService.W
             timerService = binder.getService()
             isBound = true
 
+            val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val isAutoEnabled = prefs.getBoolean("pref_auto_monitor_timetable", false)
+            timerService?.enableAutoMonitor(isAutoEnabled)
+
             // Restore state if running
             timerService!!.workflowListener = this@PeriodWorkflowTimerActivity
 
@@ -174,6 +178,7 @@ class PeriodWorkflowTimerActivity : AppCompatActivity(), ClassroomTimerService.W
         }
 
         setupReminderSpinner()
+        setupAutoMonitorSwitch()
         setupTemplatesSpinner()
         loadTodayTimetable()
     }
@@ -447,6 +452,18 @@ class PeriodWorkflowTimerActivity : AppCompatActivity(), ClassroomTimerService.W
             binding.spinnerReminderInterval.setSelection(index)
         }
 
+        val savedCustomMins = prefs.getString("workflow_custom_warning_minutes", "5")
+        binding.etPeriodWarning.setText(savedCustomMins)
+
+        binding.etPeriodWarning.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val value = s?.toString()?.trim() ?: ""
+                prefs.edit().putString("workflow_custom_warning_minutes", value).apply()
+            }
+        })
+
         binding.spinnerReminderInterval.setAccessibleSelection("Period end reminder options") { position ->
             val selectedOption = options[position]
             prefs.edit().putString("workflow_reminder_interval", selectedOption).apply()
@@ -458,6 +475,44 @@ class PeriodWorkflowTimerActivity : AppCompatActivity(), ClassroomTimerService.W
                 binding.tvPeriodWarningLabel.visibility = View.GONE
                 binding.etPeriodWarning.visibility = View.GONE
             }
+        }
+    }
+
+    private fun setupAutoMonitorSwitch() {
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val isAutoEnabled = prefs.getBoolean("pref_auto_monitor_timetable", false)
+        binding.switchAutoMonitor.isChecked = isAutoEnabled
+        updateAutoMonitorUI(isAutoEnabled)
+
+        binding.switchAutoMonitor.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("pref_auto_monitor_timetable", isChecked).apply()
+            updateAutoMonitorUI(isChecked)
+            
+            if (isChecked) {
+                val intent = Intent(this, ClassroomTimerService::class.java)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+            }
+            
+            timerService?.enableAutoMonitor(isChecked)
+            
+            val announceMsg = if (isChecked) "Auto monitor enabled" else "Auto monitor disabled"
+            binding.root.announceForAccessibility(announceMsg)
+        }
+    }
+
+    private fun updateAutoMonitorUI(enabled: Boolean) {
+        if (enabled) {
+            binding.tvAutoMonitorStatus.visibility = View.VISIBLE
+            binding.layoutManualPeriodSetup.visibility = View.GONE
+            binding.btnStartWorkflow.visibility = View.GONE
+        } else {
+            binding.tvAutoMonitorStatus.visibility = View.GONE
+            binding.layoutManualPeriodSetup.visibility = View.VISIBLE
+            binding.btnStartWorkflow.visibility = View.VISIBLE
         }
     }
 
@@ -673,19 +728,12 @@ class PeriodWorkflowTimerActivity : AppCompatActivity(), ClassroomTimerService.W
                         startWorkflowTimer(warningMin, warningTimeMs, periodName, remainingSec, totalPeriodDurationSec, isEmptyPhases)
                     }
                 } else {
-                    if (isEmptyPhases) {
-                        runOnUiThread {
-                            val remainingMinutes = remainingSec / 60
-                            val errorMsg = "Warning time has already passed. Only $remainingMinutes minutes remaining in this period."
-                            Toast.makeText(this@PeriodWorkflowTimerActivity, errorMsg, Toast.LENGTH_LONG).show()
-                            binding.root.announceForAccessibility(errorMsg)
-                        }
-                    } else {
-                        runOnUiThread {
-                            val errorMsg = "Period end warning could not be set as the warning time has already passed."
-                            Toast.makeText(this@PeriodWorkflowTimerActivity, errorMsg, Toast.LENGTH_LONG).show()
-                            startWorkflowTimer(null, null, null, 0, 0, isEmptyPhases)
-                        }
+                    runOnUiThread {
+                        val remainingMinutes = remainingSec / 60
+                        val errorMsg = "Period end warning could not be set as the warning time has already passed. Running timer for remaining $remainingMinutes minutes."
+                        Toast.makeText(this@PeriodWorkflowTimerActivity, errorMsg, Toast.LENGTH_LONG).show()
+                        binding.root.announceForAccessibility(errorMsg)
+                        startWorkflowTimer(null, null, periodName, remainingSec, totalPeriodDurationSec, isEmptyPhases)
                     }
                 }
             } else {

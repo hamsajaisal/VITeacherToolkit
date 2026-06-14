@@ -29,6 +29,7 @@ class ClassroomSettingsActivity : AppCompatActivity() {
     private var classroomList = mutableListOf<Classroom>()
     private lateinit var classroomAdapter: ClassroomAdapter
     private var isCollege = false
+    private var editingClassroom: Classroom? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +66,7 @@ class ClassroomSettingsActivity : AppCompatActivity() {
         }
 
         binding.btnCancelAddClass.setOnClickListener {
+            editingClassroom = null
             switchToListView()
         }
 
@@ -74,9 +76,16 @@ class ClassroomSettingsActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        classroomAdapter = ClassroomAdapter(classroomList, isCollege) { classroom ->
-            showDeleteConfirmation(classroom)
-        }
+        classroomAdapter = ClassroomAdapter(
+            classroomList,
+            isCollege,
+            onLongClick = { classroom ->
+                showClassroomOptions(classroom)
+            },
+            onDeleteClick = { classroom ->
+                showDeleteConfirmation(classroom)
+            }
+        )
         binding.rvClassrooms.layoutManager = LinearLayoutManager(this)
         binding.rvClassrooms.adapter = classroomAdapter
     }
@@ -131,24 +140,64 @@ class ClassroomSettingsActivity : AppCompatActivity() {
         )
     }
 
-    private fun switchToFormView(showCancel: Boolean = true) {
+    private fun switchToFormView(showCancel: Boolean = true, classroom: Classroom? = null) {
         binding.layoutClassroomList.visibility = View.GONE
         binding.layoutAddClassForm.visibility = View.VISIBLE
-        binding.tvTitle.text = if (isCollege) "Add Program" else "Add Classroom"
         
-        binding.etClassStandard.setText("")
-        binding.etClassDivision.setText("")
-        binding.etClassAcademicYear.setText("")
-        binding.spAttendanceType.setSelection(0)
-        binding.etTotalHours.setText("")
-        binding.layoutHourCountInput.visibility = View.GONE
-        binding.switchBirthdayNotifications.isChecked = false
+        if (classroom != null) {
+            editingClassroom = classroom
+            binding.tvTitle.text = if (isCollege) "Edit Program" else "Edit Classroom"
+            binding.btnSaveClassroomSettings.text = "Save Changes"
+            binding.btnSaveClassroomSettings.contentDescription = "Save changes to class settings"
+            
+            binding.etClassStandard.setText(classroom.standard)
+            binding.etClassDivision.setText(classroom.division)
+            binding.etClassAcademicYear.setText(classroom.academicYear)
+            
+            val spinnerPosition = when (classroom.attendanceType) {
+                "DoubleSession" -> 0
+                "OnceADay" -> 1
+                else -> 2
+            }
+            binding.spAttendanceType.setSelection(spinnerPosition)
+            
+            if (classroom.attendanceType == "HourWise") {
+                binding.layoutHourCountInput.visibility = View.VISIBLE
+                binding.etTotalHours.setText(classroom.totalHours.toString())
+            } else {
+                binding.layoutHourCountInput.visibility = View.GONE
+                binding.etTotalHours.setText("")
+            }
+            
+            val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val isBirthdayEnabled = prefs.getBoolean("birthday_enabled_class_${classroom.id}", false)
+            binding.switchBirthdayNotifications.isChecked = isBirthdayEnabled
+            
+            binding.btnCancelAddClass.visibility = View.VISIBLE
+            binding.root.announceForAccessibility(
+                if (isCollege) "Edit Program form opened. Editing details for ${classroom.standard} ${classroom.division}."
+                else "Edit Classroom form opened. Editing details for ${classroom.standard} ${classroom.division}."
+            )
+        } else {
+            editingClassroom = null
+            binding.tvTitle.text = if (isCollege) "Add Program" else "Add Classroom"
+            binding.btnSaveClassroomSettings.text = "Save Class"
+            binding.btnSaveClassroomSettings.contentDescription = "Save class settings"
+            
+            binding.etClassStandard.setText("")
+            binding.etClassDivision.setText("")
+            binding.etClassAcademicYear.setText("")
+            binding.spAttendanceType.setSelection(0)
+            binding.etTotalHours.setText("")
+            binding.layoutHourCountInput.visibility = View.GONE
+            binding.switchBirthdayNotifications.isChecked = false
 
-        binding.btnCancelAddClass.visibility = if (showCancel && classroomList.isNotEmpty()) View.VISIBLE else View.GONE
-        binding.root.announceForAccessibility(
-            if (isCollege) "Add Program form opened. Please enter program name, year/semester, academic year, and select attendance type."
-            else "Add Classroom form opened. Please enter class standard, division, academic year, and select attendance type."
-        )
+            binding.btnCancelAddClass.visibility = if (showCancel && classroomList.isNotEmpty()) View.VISIBLE else View.GONE
+            binding.root.announceForAccessibility(
+                if (isCollege) "Add Program form opened. Please enter program name, year/semester, academic year, and select attendance type."
+                else "Add Classroom form opened. Please enter class standard, division, academic year, and select attendance type."
+            )
+        }
     }
 
     private fun saveClassroom() {
@@ -208,6 +257,7 @@ class ClassroomSettingsActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             val classroom = Classroom(
+                id = editingClassroom?.id ?: 0,
                 standard = standard,
                 division = division,
                 academicYear = academicYear,
@@ -223,14 +273,34 @@ class ClassroomSettingsActivity : AppCompatActivity() {
             prefs.edit().putBoolean("birthday_enabled_class_$classId", isBirthdayEnabled).apply()
 
             runOnUiThread {
-                val successMessage = if (isCollege) "Program ${standard} ${division} saved successfully" else "Class ${standard}${division} saved successfully"
+                val successMessage = if (editingClassroom != null) {
+                    if (isCollege) "Program ${standard} ${division} updated successfully" else "Class ${standard}${division} updated successfully"
+                } else {
+                    if (isCollege) "Program ${standard} ${division} saved successfully" else "Class ${standard}${division} saved successfully"
+                }
                 Toast.makeText(this@ClassroomSettingsActivity, successMessage, Toast.LENGTH_SHORT).show()
                 binding.root.announceForAccessibility(successMessage)
                 
+                editingClassroom = null
                 // Refresh class visibility and reload
                 loadClassrooms()
             }
         }
+    }
+
+    private fun showClassroomOptions(classroom: Classroom) {
+        val typeLabel = if (isCollege) "Program" else "Class"
+        val options = arrayOf("Edit Details", "Delete $typeLabel")
+        AlertDialog.Builder(this)
+            .setTitle("$typeLabel Options")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> switchToFormView(classroom = classroom)
+                    1 -> showDeleteConfirmation(classroom)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showDeleteConfirmation(classroom: Classroom) {
@@ -381,6 +451,7 @@ class ClassroomSettingsActivity : AppCompatActivity() {
 class ClassroomAdapter(
     private val list: List<Classroom>,
     private val isCollege: Boolean,
+    private val onLongClick: (Classroom) -> Unit,
     private val onDeleteClick: (Classroom) -> Unit
 ) : RecyclerView.Adapter<ClassroomAdapter.ViewHolder>() {
 
@@ -414,10 +485,10 @@ class ClassroomAdapter(
         holder.tvDetails.text = "Academic Year: ${item.academicYear} | $systemDisplay | $birthdayStatus"
 
         // Roster card TalkBack traversal
-        holder.view.contentDescription = "$prefix${item.standard} ${item.division}, Academic Year ${item.academicYear}, $systemDisplay, $birthdayStatus. Double tap and hold to delete."
+        holder.view.contentDescription = "$prefix${item.standard} ${item.division}, Academic Year ${item.academicYear}, $systemDisplay, $birthdayStatus. Double tap and hold for options."
 
         holder.view.setOnLongClickListener {
-            onDeleteClick(item)
+            onLongClick(item)
             true
         }
 

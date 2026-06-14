@@ -70,6 +70,12 @@ class StopwatchActivity : AppCompatActivity(), ClassroomTimerService.StopwatchLi
             if (service.isStopwatchRunning) {
                 service.stopStopwatch()
             } else {
+                val intentService = Intent(this, ClassroomTimerService::class.java)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    startForegroundService(intentService)
+                } else {
+                    startService(intentService)
+                }
                 service.startStopwatch()
             }
         }

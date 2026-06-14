@@ -154,6 +154,9 @@ interface AttendanceDao {
 
     @Query("DELETE FROM attendance_records WHERE classId = :classId")
     suspend fun deleteAttendanceByClassId(classId: Int)
+
+    @Query("SELECT * FROM attendance_records WHERE classId = :classId")
+    suspend fun getAllAttendanceRecordsForClassOnce(classId: Int): List<AttendanceRecord>
 }
 
 data class DateSessionDto(

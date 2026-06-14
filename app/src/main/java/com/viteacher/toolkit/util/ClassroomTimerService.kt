@@ -14,12 +14,20 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.PowerManager
 import android.os.Vibrator
 import android.os.VibrationEffect
 import android.speech.tts.TextToSpeech
 import androidx.core.app.NotificationCompat
 import com.viteacher.toolkit.R
+import com.viteacher.toolkit.data.AppDatabase
+import com.viteacher.toolkit.data.SchoolPeriod
+import com.viteacher.toolkit.data.TimetableEntry
 import com.viteacher.toolkit.ui.ClassroomTimerActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.Locale
 
 enum class AlertMode {
@@ -48,6 +56,110 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
 
     var alertMode: AlertMode = AlertMode.AUDIO_ONLY
 
+    private var wakeLock: PowerManager.WakeLock? = null
+
+    var autoMonitorEnabled = false
+    private var todayPeriods = listOf<SchoolPeriod>()
+    private var todayTimetableEntries = listOf<TimetableEntry>()
+    private var lastLoadedDay = ""
+    private var lastAutoStartedPeriodNumber = -1
+
+    private fun acquireWakeLock() {
+        if (wakeLock == null) {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "ClassroomTimerService::WakeLock"
+            )
+        }
+        if (wakeLock?.isHeld == false) {
+            wakeLock?.acquire(12 * 60 * 60 * 1000L) // 12 hours max safety limit
+        }
+    }
+
+    private fun releaseWakeLock() {
+        if (wakeLock?.isHeld == true) {
+            wakeLock?.release()
+        }
+    }
+
+    fun enableAutoMonitor(enabled: Boolean) {
+        autoMonitorEnabled = enabled
+        if (enabled) {
+            refreshTodayTimetable()
+            startTickerIfNeeded()
+        } else {
+            stopSelfCleanlyIfIdle()
+        }
+    }
+
+    private fun refreshTodayTimetable() {
+        val currentDay = getCurrentDayOfWeek()
+        lastLoadedDay = currentDay
+        
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val db = AppDatabase.getDatabase(applicationContext)
+                val periods = db.timetableDao().getAllPeriodsOnce()
+                
+                val todayPeriodsFiltered = if (periods.any { it.isException && it.exceptionDay == currentDay }) {
+                    periods.filter { it.isException && it.exceptionDay == currentDay }
+                } else {
+                    periods.filter { !it.isException }
+                }
+                todayPeriods = todayPeriodsFiltered.sortedBy { parseTimeToMinutes(it.startTime) }
+                
+                val entries = db.timetableDao().getAllEntriesOnce()
+                todayTimetableEntries = entries.filter { it.dayOfWeek == currentDay }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun getCurrentDayOfWeek(): String {
+        val calendar = Calendar.getInstance()
+        return when (calendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> "Sunday"
+            Calendar.MONDAY -> "Monday"
+            Calendar.TUESDAY -> "Tuesday"
+            Calendar.WEDNESDAY -> "Wednesday"
+            Calendar.THURSDAY -> "Thursday"
+            Calendar.FRIDAY -> "Friday"
+            Calendar.SATURDAY -> "Saturday"
+            else -> "Monday"
+        }
+    }
+
+    private fun parseTimeToMinutes(timeStr: String): Int {
+        val cleanTime = timeStr.trim().uppercase()
+        val timeParts = cleanTime.replace(" AM", "").replace(" PM", "").split(":")
+        if (timeParts.size < 2) return 0
+        var hour = timeParts[0].trim().toIntOrNull() ?: 0
+        val minute = timeParts[1].trim().toIntOrNull() ?: 0
+        if (cleanTime.contains("PM") && hour != 12) hour += 12
+        if (cleanTime.contains("AM") && hour == 12) hour = 0
+        return hour * 60 + minute
+    }
+
+    private fun deserializePhases(jsonStr: String): List<WorkflowPhase> {
+        val list = mutableListOf<WorkflowPhase>()
+        if (jsonStr.isNotEmpty()) {
+            try {
+                val jsonArray = org.json.JSONArray(jsonStr)
+                for (i in 0 until jsonArray.length()) {
+                    val jsonObject = jsonArray.getJSONObject(i)
+                    val name = jsonObject.getString("name")
+                    val duration = jsonObject.getInt("duration")
+                    list.add(WorkflowPhase(name, duration))
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        return list
+    }
+
     companion object {
         const val CHANNEL_ID = "classroom_timer_channel"
         const val NOTIFICATION_ID = 2
@@ -73,6 +185,15 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                buildNotification("Classroom Timer is active"),
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, buildNotification("Classroom Timer is active"))
+        }
         return START_STICKY
     }
 
@@ -187,6 +308,9 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
 
     private val tickerRunnable = object : Runnable {
         override fun run() {
+            if (autoMonitorEnabled) {
+                checkAutoMonitorTimetable()
+            }
             tickWorkflowTimer()
             tickActivityTimer()
             tickStopwatch()
@@ -196,21 +320,118 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
                 handler.postDelayed(this, 1000)
             } else {
                 tickerRunning = false
+                releaseWakeLock()
                 updateNotification("Classroom Timer is active")
                 stopSelfCleanlyIfIdle()
             }
         }
     }
 
+    private fun checkAutoMonitorTimetable() {
+        val currentDay = getCurrentDayOfWeek()
+        if (currentDay != lastLoadedDay) {
+            refreshTodayTimetable()
+            return
+        }
+
+        if (todayPeriods.isEmpty()) return
+
+        val calendar = Calendar.getInstance()
+        val currentMinutes = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
+
+        val activePeriods = todayPeriods.filter { it.periodNumber !in listOf(99, 100, 101) }
+        var currentPeriod: SchoolPeriod? = null
+        for (p in activePeriods) {
+            val startMin = parseTimeToMinutes(p.startTime)
+            val endMin = parseTimeToMinutes(p.endTime)
+            if (currentMinutes in startMin until endMin) {
+                currentPeriod = p
+                break
+            }
+        }
+
+        if (currentPeriod != null) {
+            val entry = todayTimetableEntries.find { it.periodNumber == currentPeriod.periodNumber }
+            if (entry != null) {
+                if (!isWorkflowRunning && lastAutoStartedPeriodNumber != currentPeriod.periodNumber) {
+                    autoStartWorkflowForPeriod(currentPeriod, entry)
+                }
+            }
+        } else {
+            if (lastAutoStartedPeriodNumber != -1) {
+                val lastPeriod = activePeriods.find { it.periodNumber == lastAutoStartedPeriodNumber }
+                if (lastPeriod != null) {
+                    val startMin = parseTimeToMinutes(lastPeriod.startTime)
+                    val endMin = parseTimeToMinutes(lastPeriod.endTime)
+                    if (currentMinutes !in startMin until endMin) {
+                        lastAutoStartedPeriodNumber = -1
+                    }
+                } else {
+                    lastAutoStartedPeriodNumber = -1
+                }
+            }
+        }
+    }
+
+    private fun autoStartWorkflowForPeriod(period: SchoolPeriod, entry: TimetableEntry) {
+        lastAutoStartedPeriodNumber = period.periodNumber
+
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val warningOption = prefs.getString("workflow_reminder_interval", "5 minutes before")
+        val warningMin = when (warningOption) {
+            "5 minutes before" -> 5
+            "10 minutes before" -> 10
+            "No reminder" -> null
+            "Custom..." -> prefs.getString("workflow_custom_warning_minutes", "5")?.toIntOrNull() ?: 5
+            else -> 5
+        }
+
+        val lastUsedJson = prefs.getString("workflow_last_used_phases", "") ?: ""
+        val phases = if (lastUsedJson.isNotEmpty()) {
+            deserializePhases(lastUsedJson)
+        } else {
+            emptyList()
+        }
+
+        workflowPhases = phases.toMutableList()
+
+        val endMin = parseTimeToMinutes(period.endTime)
+        val endCalendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, endMin / 60)
+            set(Calendar.MINUTE, endMin % 60)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val startMin = parseTimeToMinutes(period.startTime)
+        val totalPeriodDurationSec = (endMin - startMin) * 60
+        val remainingMs = endCalendar.timeInMillis - System.currentTimeMillis()
+        val remainingSec = (remainingMs / 1000).toInt()
+
+        val isCollege = prefs.getString("institution_type", "school") == "college"
+        val periodLabel = if (isCollege) "Hour" else "Period"
+        val periodName = entry.subject.ifEmpty { "$periodLabel ${period.periodNumber}" }
+
+        val warningTimeMs = if (warningMin != null) {
+            endCalendar.timeInMillis - (warningMin * 60 * 1000)
+        } else null
+
+        val finalWarningMin = if (warningTimeMs != null && warningTimeMs > System.currentTimeMillis()) warningMin else null
+        val finalWarningTimeMs = if (warningTimeMs != null && warningTimeMs > System.currentTimeMillis()) warningTimeMs else null
+
+        startWorkflow(finalWarningMin, finalWarningTimeMs, periodName, remainingSec, totalPeriodDurationSec)
+    }
+
     private fun startTickerIfNeeded() {
         if (!tickerRunning) {
             tickerRunning = true
+            acquireWakeLock()
             handler.post(tickerRunnable)
         }
     }
 
     private fun isAnyTimerRunning(): Boolean {
-        return isWorkflowRunning || isActivityRunning || isStopwatchRunning
+        return isWorkflowRunning || isActivityRunning || isStopwatchRunning || autoMonitorEnabled
     }
 
     private fun stopSelfCleanlyIfIdle() {
@@ -244,6 +465,9 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
             isStopwatchRunning -> {
                 val formattedTime = formatTimeMMSS(stopwatchElapsedSeconds)
                 "Stopwatch: $formattedTime elapsed"
+            }
+            autoMonitorEnabled -> {
+                "Auto-monitoring timetable periods..."
             }
             else -> "Classroom Timer is active"
         }
@@ -576,6 +800,7 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
 
     override fun onDestroy() {
         handler.removeCallbacks(tickerRunnable)
+        releaseWakeLock()
         tts?.stop()
         tts?.shutdown()
         super.onDestroy()

@@ -228,20 +228,26 @@ class AttendanceRegisterActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        studentAdapter = StudentAttendanceAdapter(studentList) { position, isPresent ->
-            val item = studentList[position]
-            
-            // Sync with cache
-            sessionAttendanceCache[selectedSession]?.put(item.student.rollNumber, isPresent)
-            
-            // Generate accessible announcement
-            val statusAnnouncement = if (isPresent) "marked present" else "marked absent"
-            val announcement = "${item.student.name} $statusAnnouncement"
-            binding.root.announceForAccessibility(announcement)
+        studentAdapter = StudentAttendanceAdapter(
+            studentList,
+            { position, isPresent ->
+                val item = studentList[position]
+                
+                // Sync with cache
+                sessionAttendanceCache[selectedSession]?.put(item.student.rollNumber, isPresent)
+                
+                // Generate accessible announcement
+                val statusAnnouncement = if (isPresent) "marked present" else "marked absent"
+                val announcement = "${item.student.name} $statusAnnouncement"
+                binding.root.announceForAccessibility(announcement)
 
-            // Vibrate to provide tactile feedback
-            triggerHapticFeedback()
-        }
+                // Vibrate to provide tactile feedback
+                triggerHapticFeedback()
+            },
+            { position ->
+                showStudentOptionsDialog(position)
+            }
+        )
         binding.rvStudents.layoutManager = LinearLayoutManager(this)
         binding.rvStudents.adapter = studentAdapter
     }
@@ -850,6 +856,286 @@ class AttendanceRegisterActivity : AppCompatActivity() {
             }
         }
     }
+
+    // --- STUDENT LONG-PRESS OPTIONS AND STATISTICS WORKFLOWS ---
+
+    private fun showStudentOptionsDialog(position: Int) {
+        val item = studentList[position]
+        val options = arrayOf(
+            "Go to Student Profile",
+            "Attendance Statistics",
+            "Share Late Comer Info via WhatsApp"
+        )
+        
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("${item.student.name} (Roll No. ${item.student.rollNumber})")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> navigateToStudentProfileOption(item)
+                    1 -> showAttendanceStatisticsOption(item)
+                    2 -> shareLateInfoOption(item)
+                }
+            }
+            .create()
+        dialog.show()
+        binding.root.announceForAccessibility("Options dialog opened for ${item.student.name}. Select Go to Student Profile, Attendance Statistics, or Share Late Comer Info via WhatsApp.")
+    }
+
+    private fun navigateToStudentProfileOption(item: StudentAttendanceItem) {
+        lifecycleScope.launch {
+            val profile = findStudentProfile(item.student.name, item.student.rollNumber)
+            runOnUiThread {
+                if (profile != null) {
+                    val intent = Intent(this@AttendanceRegisterActivity, StudentProfileActivity::class.java).apply {
+                        putExtra("class_id", classId)
+                        putExtra("admission_number", profile.admissionNumber)
+                    }
+                    startActivity(intent)
+                } else {
+                    AlertDialog.Builder(this@AttendanceRegisterActivity)
+                        .setTitle("Profile Not Found")
+                        .setMessage("No student profile found matching ${item.student.name} in this class. Please make sure you have imported student profiles in classroom settings.")
+                        .setPositiveButton("OK") { d, _ -> d.dismiss() }
+                        .create()
+                        .show()
+                    binding.root.announceForAccessibility("Profile Not Found dialog. No student profile found matching ${item.student.name} in this class.")
+                }
+            }
+        }
+    }
+
+    private fun showAttendanceStatisticsOption(item: StudentAttendanceItem) {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            val records = db.attendanceDao().getAllAttendanceRecordsForClassOnce(classId)
+            
+            val statsResult = calculateStudentStatistics(item.student.rollNumber, records)
+            val weeklyStats = statsResult.weekly
+            val monthlyStats = statsResult.monthly
+            
+            runOnUiThread {
+                val statsMessage = StringBuilder().apply {
+                    append("Student: ${item.student.name} (Roll No. ${item.student.rollNumber})\n\n")
+                    append("Weekly Statistics:\n")
+                    append("• Working Days: ${formatDays(weeklyStats.workingDays)}\n")
+                    append("• Present Days: ${formatDays(weeklyStats.presentDays)}\n")
+                    append("• Percentage: ${formatPercentage(weeklyStats.presentDays, weeklyStats.workingDays)}\n\n")
+                    append("Monthly Statistics:\n")
+                    append("• Working Days: ${formatDays(monthlyStats.workingDays)}\n")
+                    append("• Present Days: ${formatDays(monthlyStats.presentDays)}\n")
+                    append("• Percentage: ${formatPercentage(monthlyStats.presentDays, monthlyStats.workingDays)}")
+                }.toString()
+                
+                AlertDialog.Builder(this@AttendanceRegisterActivity)
+                    .setTitle("Attendance Statistics")
+                    .setMessage(statsMessage)
+                    .setPositiveButton("Close") { d, _ -> d.dismiss() }
+                    .setNeutralButton("Share Statistics") { _, _ ->
+                        val shareText = "Attendance Report for ${item.student.name} (Roll No. ${item.student.rollNumber})\n" +
+                                "Class: ${binding.tvTitle.text}\n\n$statsMessage"
+                        shareStudentStats(item.student.name, item.student.rollNumber, shareText)
+                    }
+                    .create()
+                    .show()
+                    
+                val announceMsg = "Attendance statistics for ${item.student.name}. " +
+                        "Weekly percentage: ${formatPercentage(weeklyStats.presentDays, weeklyStats.workingDays)}. " +
+                        "Monthly percentage: ${formatPercentage(monthlyStats.presentDays, monthlyStats.workingDays)}."
+                binding.root.announceForAccessibility(announceMsg)
+            }
+        }
+    }
+
+    private fun shareStudentStats(studentName: String, studentRoll: Int, statsText: String) {
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_SUBJECT, "Attendance Statistics for $studentName")
+            putExtra(Intent.EXTRA_TEXT, statsText)
+            type = "text/plain"
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share Attendance Statistics"))
+        binding.root.announceForAccessibility("Opening share options for $studentName's attendance statistics.")
+    }
+
+    private fun shareLateInfoOption(item: StudentAttendanceItem) {
+        lifecycleScope.launch {
+            val profile = findStudentProfile(item.student.name, item.student.rollNumber)
+            if (profile == null) {
+                runOnUiThread {
+                    AlertDialog.Builder(this@AttendanceRegisterActivity)
+                        .setTitle("Profile Not Found")
+                        .setMessage("Cannot share late info. No student profile found matching ${item.student.name} in this class. Please make sure you have imported student profiles in classroom settings.")
+                        .setPositiveButton("OK") { d, _ -> d.dismiss() }
+                        .create()
+                        .show()
+                    binding.root.announceForAccessibility("Profile Not Found dialog. Cannot share late info.")
+                }
+                return@launch
+            }
+            
+            val phone = getParentPhoneNumber(profile)
+            runOnUiThread {
+                if (phone.isNullOrEmpty()) {
+                    AlertDialog.Builder(this@AttendanceRegisterActivity)
+                        .setTitle("Phone Number Missing")
+                        .setMessage("No phone number found in the profile of ${item.student.name}. Please edit their profile or import a Sampoorna Excel file that includes parent phone numbers.")
+                        .setPositiveButton("OK") { d, _ -> d.dismiss() }
+                        .create()
+                        .show()
+                    binding.root.announceForAccessibility("Phone Number Missing dialog. No phone number found in the profile of ${item.student.name}.")
+                } else {
+                    val message = "Dear Parent, this is to inform you that your child, ${item.student.name} (Roll No. ${item.student.rollNumber}), arrived late to class today ($savedDate)."
+                    openWhatsApp(phone, message)
+                }
+            }
+        }
+    }
+
+    private suspend fun findStudentProfile(studentName: String, studentRoll: Int): StudentProfile? {
+        val db = AppDatabase.getDatabase(applicationContext)
+        val profiles = db.studentProfileDao().getAllStudentProfiles(classId)
+        val fields = db.studentProfileFieldDao().getFieldsForClass(classId)
+        
+        // Try matching by roll number field first
+        val rollFieldName = fields.map { it.fieldName }.distinct().find {
+            val lower = it.lowercase()
+            lower.contains("roll") || lower == "sl. no" || lower == "sl no" || lower == "sl.no" || lower.contains("serial")
+        }
+        
+        if (rollFieldName != null) {
+            val match = profiles.find { profile ->
+                val fieldVal = fields.find { it.admissionNumber == profile.admissionNumber && it.fieldName == rollFieldName }?.fieldValue ?: ""
+                val parsedRoll = fieldVal.toDoubleOrNull()?.toInt() ?: fieldVal.toIntOrNull()
+                parsedRoll == studentRoll
+            }
+            if (match != null) return match
+        }
+        
+        // Fallback to name match (case-insensitive)
+        return profiles.find { it.name.trim().lowercase() == studentName.trim().lowercase() }
+    }
+
+    private suspend fun getParentPhoneNumber(profile: StudentProfile): String? {
+        val db = AppDatabase.getDatabase(applicationContext)
+        val fields = db.studentProfileFieldDao().getFieldsForStudent(classId, profile.admissionNumber)
+        val phoneField = fields.find {
+            val name = it.fieldName.lowercase()
+            name.contains("phone") || name.contains("mobile") || name.contains("contact")
+        }
+        return phoneField?.fieldValue?.trim()
+    }
+
+    private fun openWhatsApp(phone: String, message: String) {
+        val cleanedPhone = formatPhoneNumberForWhatsApp(phone)
+        val url = "https://api.whatsapp.com/send?phone=$cleanedPhone&text=${Uri.encode(message)}"
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        
+        // First, try to force WhatsApp app
+        intent.setPackage("com.whatsapp")
+        try {
+            startActivity(intent)
+            return
+        } catch (e: Exception) {
+            // Try WhatsApp Business package
+            try {
+                intent.setPackage("com.whatsapp.w4b")
+                startActivity(intent)
+                return
+            } catch (e2: Exception) {
+                // Fallback: clear package to open in browser / chooser
+                intent.setPackage(null)
+                try {
+                    startActivity(intent)
+                } catch (e3: Exception) {
+                    Toast.makeText(this, "Could not open WhatsApp or Browser", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun formatPhoneNumberForWhatsApp(phone: String): String {
+        var digits = phone.filter { it.isDigit() }
+        if (digits.startsWith("0")) {
+            digits = digits.substring(1)
+        }
+        return if (digits.length == 10) {
+            "91$digits"
+        } else {
+            digits
+        }
+    }
+
+    private fun calculateStudentStatistics(
+        studentRoll: Int, 
+        records: List<AttendanceRecord>
+    ): AttendanceStatsResult {
+        val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.ENGLISH)
+        val today = LocalDate.now()
+        
+        val startOfWeek = today.with(java.time.DayOfWeek.MONDAY)
+        val endOfWeek = today.with(java.time.DayOfWeek.SUNDAY)
+        
+        val startOfMonth = today.withDayOfMonth(1)
+        val endOfMonth = today.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth())
+        
+        val parsedRecords = records.mapNotNull { record ->
+            try {
+                val date = LocalDate.parse(record.date, formatter)
+                Pair(date, record)
+            } catch (e: Exception) {
+                null
+            }
+        }
+        
+        val weeklyGrouped = parsedRecords.filter { it.first in startOfWeek..endOfWeek }.groupBy { it.first }
+        val monthlyGrouped = parsedRecords.filter { it.first in startOfMonth..endOfMonth }.groupBy { it.first }
+        
+        val weeklyStats = calculatePeriodStats(studentRoll, weeklyGrouped)
+        val monthlyStats = calculatePeriodStats(studentRoll, monthlyGrouped)
+        
+        return AttendanceStatsResult(weeklyStats, monthlyStats)
+    }
+
+    private fun calculatePeriodStats(
+        studentRoll: Int,
+        groupedByDate: Map<LocalDate, List<Pair<LocalDate, AttendanceRecord>>>
+    ): StatsData {
+        var workingDays = 0.0
+        var presentDays = 0.0
+        
+        groupedByDate.forEach { (date, pairs) ->
+            val recordsForDay = pairs.map { it.second }
+            val uniqueSessions = recordsForDay.map { it.session }.distinct()
+            val totalSessionsCount = uniqueSessions.size
+            
+            if (totalSessionsCount > 0) {
+                val studentRecordsForDay = recordsForDay.filter { it.rollNumber == studentRoll }
+                val presentSessionsCount = studentRecordsForDay.filter { it.isPresent }.size
+                
+                workingDays += 1.0
+                presentDays += presentSessionsCount.toDouble() / totalSessionsCount.toDouble()
+            }
+        }
+        
+        return StatsData(workingDays, presentDays)
+    }
+
+    private fun formatDays(days: Double): String {
+        return if (days == days.toLong().toDouble()) {
+            days.toLong().toString()
+        } else {
+            String.format(Locale.ENGLISH, "%.1f", days)
+        }
+    }
+
+    private fun formatPercentage(present: Double, working: Double): String {
+        if (working <= 0.0) return "0.0% (No working days)"
+        val percentage = (present / working) * 100.0
+        return String.format(Locale.ENGLISH, "%.1f%%", percentage)
+    }
+
+    data class StatsData(val workingDays: Double, val presentDays: Double)
+    data class AttendanceStatsResult(val weekly: StatsData, val monthly: StatsData)
 }
 
 // Data class for managing list items state in memory
@@ -861,7 +1147,8 @@ data class StudentAttendanceItem(
 // Custom Recycler View Adapter for Student Attendance
 class StudentAttendanceAdapter(
     private val list: List<StudentAttendanceItem>,
-    private val onItemClick: (Int, Boolean) -> Unit
+    private val onItemClick: (Int, Boolean) -> Unit,
+    private val onItemLongClick: (Int) -> Unit
 ) : RecyclerView.Adapter<StudentAttendanceAdapter.ViewHolder>() {
 
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
@@ -887,6 +1174,11 @@ class StudentAttendanceAdapter(
             updateViewHolderUI(holder, item)
             onItemClick(position, item.isPresent)
         }
+
+        holder.view.setOnLongClickListener {
+            onItemLongClick(position)
+            true
+        }
     }
 
     private fun updateViewHolderUI(holder: ViewHolder, item: StudentAttendanceItem) {
@@ -896,14 +1188,14 @@ class StudentAttendanceAdapter(
             holder.view.setBackgroundColor(Color.BLACK)
             
             // Set content description for TalkBack
-            holder.view.contentDescription = "Roll number ${item.student.rollNumber}, ${item.student.name}, Present"
+            holder.view.contentDescription = "Roll number ${item.student.rollNumber}, ${item.student.name}, Present. Double tap to toggle, double tap and hold for options."
         } else {
             holder.tvStatus.text = "Absent"
             holder.tvStatus.setTextColor(Color.RED)
             holder.view.setBackgroundColor(Color.parseColor("#FF5C0000")) // dark red background
             
             // Set content description for TalkBack
-            holder.view.contentDescription = "Roll number ${item.student.rollNumber}, ${item.student.name}, Absent"
+            holder.view.contentDescription = "Roll number ${item.student.rollNumber}, ${item.student.name}, Absent. Double tap to toggle, double tap and hold for options."
         }
     }
 

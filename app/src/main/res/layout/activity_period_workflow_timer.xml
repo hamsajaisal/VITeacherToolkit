@@ -53,41 +53,72 @@
             android:orientation="vertical"
             android:visibility="visible">
 
-            <TextView
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchAutoMonitor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Synchronize with Timetable Period"
+                android:minHeight="48dp"
+                android:text="Auto-monitor Timetable"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:layout_marginBottom="4dp" />
-
-            <Spinner
-                android:id="@+id/spinnerTimetablePeriods"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:backgroundTint="#FFFFFF"
-                android:layout_marginBottom="16dp"
+                android:textSize="18sp"
+                android:layout_marginBottom="12dp"
                 android:importantForAccessibility="yes" />
 
             <TextView
+                android:id="@+id/tvAutoMonitorStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Total Period Duration (Minutes)"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:layout_marginBottom="4dp" />
-
-            <EditText
-                android:id="@+id/etTotalDuration"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:hint="e.g. 45 (Optional)"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#666666"
-                android:backgroundTint="#FFFFFF"
-                android:inputType="number"
+                android:text="Auto-monitoring active. Waiting for scheduled class periods..."
+                android:textColor="@color/lavender"
+                android:textSize="14sp"
+                android:textStyle="italic"
                 android:layout_marginBottom="16dp"
+                android:visibility="gone"
                 android:importantForAccessibility="yes" />
+
+            <LinearLayout
+                android:id="@+id/layoutManualPeriodSetup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Synchronize with Timetable Period"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="4dp" />
+
+                <Spinner
+                    android:id="@+id/spinnerTimetablePeriods"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:layout_marginBottom="16dp"
+                    android:importantForAccessibility="yes" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Total Period Duration (Minutes)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="4dp" />
+
+                <EditText
+                    android:id="@+id/etTotalDuration"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="e.g. 45 (Optional)"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#666666"
+                    android:backgroundTint="#FFFFFF"
+                    android:inputType="number"
+                    android:layout_marginBottom="16dp"
+                    android:importantForAccessibility="yes" />
+
+            </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
