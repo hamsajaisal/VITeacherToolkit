@@ -32,6 +32,23 @@ class SchoolHoursActivity : AppCompatActivity() {
     private val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
     private lateinit var periodNumbers: List<String>
 
+    private fun addMinutesToTime(timeStr: String, minutesToAdd: Int): String {
+        return try {
+            val sdf = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US)
+            val date = sdf.parse(timeStr)
+            val calendar = java.util.Calendar.getInstance()
+            if (date != null) {
+                calendar.time = date
+                calendar.add(java.util.Calendar.MINUTE, minutesToAdd)
+                sdf.format(calendar.time)
+            } else {
+                timeStr
+            }
+        } catch (e: Exception) {
+            timeStr
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySchoolHoursBinding.inflate(layoutInflater)
@@ -123,7 +140,6 @@ class SchoolHoursActivity : AppCompatActivity() {
         val periodAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, periodNumbers)
         periodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         dialogBinding.spinnerPeriodNumber.adapter = periodAdapter
-        dialogBinding.spinnerPeriodNumber.setAccessibleSelection(if (isCollege) "Hour number" else "Period number")
 
         val dayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -138,31 +154,27 @@ class SchoolHoursActivity : AppCompatActivity() {
         dialogBinding.spinnerAlertMinutes.adapter = alertTimeAdapter
         dialogBinding.spinnerAlertMinutes.setAccessibleSelection("Alert time selection")
 
-        dialogBinding.spinnerPeriodNumber.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val periodNumber = when (position) {
-                    8 -> 99
-                    9 -> 100
-                    10 -> 101
-                    else -> position + 1
-                }
-                
-                val isBreak = periodNumber in listOf(99, 100, 101)
-                if (isBreak) {
-                    dialogBinding.layoutBreakAlert.visibility = View.VISIBLE
-                    val isAlertEnabled = prefs.getBoolean("refreshment_alert_enabled_$periodNumber", false)
-                    dialogBinding.cbEnableAlert.isChecked = isAlertEnabled
-                    dialogBinding.layoutAlertMinutes.visibility = if (isAlertEnabled) View.VISIBLE else View.GONE
-                    
-                    val savedMinutes = prefs.getInt("refreshment_alert_minutes_$periodNumber", 5)
-                    val valueIndex = alertMinutesValues.indexOf(savedMinutes).coerceAtLeast(0)
-                    dialogBinding.spinnerAlertMinutes.setSelection(valueIndex)
-                } else {
-                    dialogBinding.layoutBreakAlert.visibility = View.GONE
-                }
+        dialogBinding.spinnerPeriodNumber.setAccessibleSelection(if (isCollege) "Hour number" else "Period number") { position ->
+            val periodNumber = when (position) {
+                8 -> 99
+                9 -> 100
+                10 -> 101
+                else -> position + 1
             }
-
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+            
+            val isBreak = periodNumber in listOf(99, 100, 101)
+            if (isBreak) {
+                dialogBinding.layoutBreakAlert.visibility = View.VISIBLE
+                val isAlertEnabled = prefs.getBoolean("refreshment_alert_enabled_$periodNumber", false)
+                dialogBinding.cbEnableAlert.isChecked = isAlertEnabled
+                dialogBinding.layoutAlertMinutes.visibility = if (isAlertEnabled) View.VISIBLE else View.GONE
+                
+                val savedMinutes = prefs.getInt("refreshment_alert_minutes_$periodNumber", 5)
+                val valueIndex = alertMinutesValues.indexOf(savedMinutes).coerceAtLeast(0)
+                dialogBinding.spinnerAlertMinutes.setSelection(valueIndex)
+            } else {
+                dialogBinding.layoutBreakAlert.visibility = View.GONE
+            }
         }
 
         dialogBinding.cbEnableAlert.setOnCheckedChangeListener { _, isChecked ->
@@ -185,6 +197,21 @@ class SchoolHoursActivity : AppCompatActivity() {
                 dialogBinding.btnSelectStartTime.contentDescription =
                     "Select start time, currently $time"
                 dialogBinding.btnSelectStartTime.announceForAccessibility("Start time set to $time")
+
+                // Auto-calculate end time based on the selected period number and institution type
+                val periodPosition = dialogBinding.spinnerPeriodNumber.selectedItemPosition
+                val minutes = when (periodPosition) {
+                    8 -> 10  // Forenoon Interval
+                    9 -> 50  // Lunch Break
+                    10 -> 5  // Afternoon Interval
+                    else -> if (isCollege) 60 else 45 // College Hour (60m) or School Period (45m)
+                }
+                val calculatedEndTime = addMinutesToTime(time, minutes)
+                selectedEndTime = calculatedEndTime
+                dialogBinding.btnSelectEndTime.text = "Select End Time: $calculatedEndTime"
+                dialogBinding.btnSelectEndTime.contentDescription =
+                    "Select end time, currently $calculatedEndTime"
+                dialogBinding.btnSelectEndTime.announceForAccessibility("End time automatically set to $calculatedEndTime")
             }
         }
 
@@ -383,7 +410,6 @@ class SchoolHoursActivity : AppCompatActivity() {
             val tvPeriodTitle: TextView = itemView.findViewById(com.viteacher.toolkit.R.id.tvPeriodTitle)
             val tvPeriodTime: TextView = itemView.findViewById(com.viteacher.toolkit.R.id.tvPeriodTime)
             val tvPeriodException: TextView = itemView.findViewById(com.viteacher.toolkit.R.id.tvPeriodException)
-            val btnDelete: Button = itemView.findViewById(com.viteacher.toolkit.R.id.btnDeletePeriod)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -427,8 +453,6 @@ class SchoolHoursActivity : AppCompatActivity() {
                 onLongClick(period)
                 true
             }
-
-            holder.btnDelete.setOnClickListener { onDelete(period) }
         }
 
         override fun getItemCount() = periods.size

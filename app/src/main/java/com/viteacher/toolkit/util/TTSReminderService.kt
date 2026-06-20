@@ -4,7 +4,9 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.os.IBinder
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
@@ -41,14 +43,24 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
         val notification = buildNotification(message)
         startForeground(1, notification)
 
-        tts = TextToSpeech(this, this)
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val selectedEngine = prefs.getString("tts_engine", null)
+        tts = if (!selectedEngine.isNullOrEmpty()) {
+            TextToSpeech(this, this, selectedEngine)
+        } else {
+            TextToSpeech(this, this)
+        }
 
         return START_NOT_STICKY
     }
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS && tts != null) {
-            val locale = if (language == "ml") Locale("ml", "IN") else Locale.ENGLISH
+            val locale = when (language) {
+                "ml" -> Locale("ml", "IN")
+                "hi" -> Locale("hi", "IN")
+                else -> Locale.ENGLISH
+            }
             val result = tts!!.setLanguage(locale)
 
             if (result == TextToSpeech.LANG_MISSING_DATA ||
@@ -56,7 +68,11 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
                 tts!!.setLanguage(Locale.ENGLISH)
             }
 
-            tts!!.setSpeechRate(0.9f)
+            val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val speed = prefs.getFloat("tts_speed", 0.9f)
+            val volume = prefs.getFloat("tts_volume", 1.0f)
+
+            tts!!.setSpeechRate(speed)
             tts!!.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onDone(utteranceId: String?) {
                     stopSelfCleanly()
@@ -67,7 +83,10 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
                 override fun onStart(utteranceId: String?) {}
             })
 
-            tts!!.speak(message, TextToSpeech.QUEUE_FLUSH, null, "reminder_utterance")
+            val params = Bundle().apply {
+                putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume)
+            }
+            tts!!.speak(message, TextToSpeech.QUEUE_FLUSH, params, "reminder_utterance")
         } else {
             stopSelfCleanly()
         }

@@ -22,8 +22,7 @@ import java.io.File
 class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
-    private val languages = listOf("English", "Malayalam")
-    private val languageCodes = listOf("en", "ml")
+
 
     // Activity Result Launchers for Document Pickers
     private val backupLauncher = registerForActivityResult(
@@ -47,11 +46,9 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupLanguageSpinner()
-
         binding.btnEditProfile.setOnClickListener {
-            val intent = Intent(this, SetupProfileActivity::class.java).apply {
-                putExtra("EXTRA_EDIT_MODE", true)
+            val intent = Intent(this, PinLoginActivity::class.java).apply {
+                putExtra("target", "edit_profile")
             }
             startActivity(intent)
         }
@@ -60,8 +57,8 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent(this, SchoolHoursActivity::class.java))
         }
 
-        binding.btnSaveLanguage.setOnClickListener {
-            saveLanguage()
+        binding.btnTtsSettings.setOnClickListener {
+            startActivity(Intent(this, TtsSettingsActivity::class.java))
         }
 
         binding.btnClassroomSettings.setOnClickListener {
@@ -98,30 +95,6 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupLanguageSpinner() {
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languages)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerLanguage.adapter = adapter
-        binding.spinnerLanguage.setAccessibleSelection("Reminder language")
-
-        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
-        val savedCode = prefs.getString("reminder_language", "en")
-        val index = languageCodes.indexOf(savedCode)
-        if (index >= 0) binding.spinnerLanguage.setSelection(index)
-    }
-
-    private fun saveLanguage() {
-        val selectedIndex = binding.spinnerLanguage.selectedItemPosition
-        val selectedCode = languageCodes[selectedIndex]
-        val selectedName = languages[selectedIndex]
-
-        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putString("reminder_language", selectedCode).apply()
-
-        val message = "Reminder language set to $selectedName"
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-        binding.root.announceForAccessibility(message)
-    }
 
     // --- DATABASE BACKUP AND RESTORE WORKFLOWS ---
 

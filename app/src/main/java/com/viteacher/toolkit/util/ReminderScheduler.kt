@@ -5,8 +5,12 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.TimetableEntry
 import com.viteacher.toolkit.data.SchoolPeriod
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 object ReminderScheduler {
@@ -91,13 +95,21 @@ object ReminderScheduler {
     }
 
     private fun buildMessage(entry: TimetableEntry, language: String): String {
-        return if (language == "ml") {
-            "അടുത്ത പിരീഡിൽ ${entry.subject} ക്ലാസ് ${entry.className} ${entry.division}"
-        } else {
-            if (entry.reminderMinutesBefore == 0) {
-                "Your class ${entry.subject} for class ${entry.className} ${entry.division} is starting now"
-            } else {
-                "In ${entry.reminderMinutesBefore} minutes you have ${entry.subject} for class ${entry.className} ${entry.division}"
+        return when (language) {
+            "ml" -> "അടുത്ത പിരീഡിൽ ${entry.subject} ക്ലാസ് ${entry.className} ${entry.division}"
+            "hi" -> {
+                if (entry.reminderMinutesBefore == 0) {
+                    "कक्षा ${entry.className} ${entry.division} के लिए ${entry.subject} क्लास अभी शुरू हो रही है"
+                } else {
+                    "${entry.reminderMinutesBefore} मिनट में, कक्षा ${entry.className} ${entry.division} के लिए ${entry.subject} क्लास है"
+                }
+            }
+            else -> {
+                if (entry.reminderMinutesBefore == 0) {
+                    "Your class ${entry.subject} for class ${entry.className} ${entry.division} is starting now"
+                } else {
+                    "In ${entry.reminderMinutesBefore} minutes you have ${entry.subject} for class ${entry.className} ${entry.division}"
+                }
             }
         }
     }
@@ -290,6 +302,40 @@ object ReminderScheduler {
             "Friday" -> Calendar.FRIDAY
             "Saturday" -> Calendar.SATURDAY
             else -> Calendar.MONDAY
+        }
+    }
+
+    fun rescheduleAll(context: Context) {
+        val prefs = context.getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val language = prefs.getString("reminder_language", "en") ?: "en"
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val db = AppDatabase.getDatabase(context.applicationContext)
+                val entries = db.timetableDao().getAllEntriesOnce()
+                val periods = db.timetableDao().getAllPeriodsOnce()
+
+                // Cancel and reschedule timetable reminders
+                entries.forEach { entry ->
+                    cancelReminder(context, entry.id)
+                    if (entry.reminderMinutesBefore >= 0) {
+                        val matchingPeriod = periods.find { it.periodNumber == entry.periodNumber }
+                        if (matchingPeriod != null) {
+                            scheduleReminder(context, entry, matchingPeriod, language)
+                        }
+                    }
+                }
+
+                // Reschedule break reminders
+                periods.forEach { period ->
+                    if (period.periodNumber in listOf(99, 100, 101)) {
+                        cancelBreakReminder(context, period.periodNumber)
+                        scheduleBreakReminder(context, period)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

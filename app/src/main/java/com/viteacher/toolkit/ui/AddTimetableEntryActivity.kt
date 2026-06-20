@@ -127,7 +127,14 @@ class AddTimetableEntryActivity : AppCompatActivity() {
             listOf("No periods set for $selectedDay")
         } else {
             displayedPeriods.map {
-                "Period ${it.periodNumber} (${it.startTime} - ${it.endTime})"
+                val label = if (isCollege) "Hour" else "Period"
+                val name = when (it.periodNumber) {
+                    99 -> "Forenoon Interval"
+                    100 -> "Lunch Break"
+                    101 -> "Afternoon Interval"
+                    else -> "$label ${it.periodNumber}"
+                }
+                "$name (${it.startTime} - ${it.endTime})"
             }
         }
         val adapter = ArrayAdapter(
@@ -172,15 +179,10 @@ class AddTimetableEntryActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerDay.adapter = adapter
-        binding.spinnerDay.setAccessibleSelection("Day")
-
-        binding.spinnerDay.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                if (loadedPeriods.isNotEmpty()) {
-                    updatePeriodSpinnerForDay(days[position])
-                }
+        binding.spinnerDay.setAccessibleSelection("Day") { position ->
+            if (loadedPeriods.isNotEmpty()) {
+                updatePeriodSpinnerForDay(days[position])
             }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
     }
 

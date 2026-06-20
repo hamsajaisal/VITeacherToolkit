@@ -49,45 +49,16 @@
             android:contentDescription="Set up your school period timings"
             android:layout_marginBottom="24dp" />
 
-        <!-- Existing Heading: Reminder Announcement Language -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Reminder Announcement Language"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"
-            android:importantForAccessibility="no" />
-
-        <!-- Existing Label: Description -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Choose the language for TTS class reminders"
-            android:textColor="#CCCCCC"
-            android:layout_marginBottom="8dp"
-            android:importantForAccessibility="no" />
-
-        <!-- Existing Spinner: Language Select -->
-        <Spinner
-            android:id="@+id/spinnerLanguage"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:contentDescription="Reminder Announcement Language: Choose the language for TTS class reminders. Select reminder language, English or Malayalam."
-            android:layout_marginBottom="16dp"
-            android:importantForAccessibility="yes" />
-
-        <!-- Existing Button: Save Language Setting -->
+        <!-- Button: TTS Settings -->
         <Button
-            android:id="@+id/btnSaveLanguage"
+            android:id="@+id/btnTtsSettings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
-            android:text="Save Language Setting"
+            android:text="TTS Settings"
             android:textColor="#000000"
             android:backgroundTint="@color/lavender"
-            android:contentDescription="Save the selected reminder language"
+            android:contentDescription="Text to speech settings button. Configure language, engine, speed, and volume of speech announcements."
             android:layout_marginBottom="24dp" />
 
         <!-- Visual Divider -->

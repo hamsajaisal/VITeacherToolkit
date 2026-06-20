@@ -164,6 +164,10 @@ class PinLoginActivity : AppCompatActivity() {
         val intent = when {
             targetScreen == "password_saver" ->
                 Intent(this@PinLoginActivity, PasswordSaverActivity::class.java)
+            targetScreen == "edit_profile" ->
+                Intent(this@PinLoginActivity, SetupProfileActivity::class.java).apply {
+                    putExtra("EXTRA_EDIT_MODE", true)
+                }
             !setupDone ->
                 Intent(this@PinLoginActivity, SetupGuideActivity::class.java)
             else ->

@@ -368,8 +368,6 @@ class TimetableActivity : AppCompatActivity() {
             val tvSubject: TextView = itemView.findViewById(R.id.tvEntrySubject)
             val tvClass: TextView = itemView.findViewById(R.id.tvEntryClass)
             val tvTime: TextView = itemView.findViewById(R.id.tvEntryTime)
-            val btnEdit: Button = itemView.findViewById(R.id.btnEditEntry)
-            val btnDelete: Button = itemView.findViewById(R.id.btnDeleteEntry)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -386,16 +384,29 @@ class TimetableActivity : AppCompatActivity() {
             if (isCollege) {
                 holder.tvClass.text = "${entry.className} ${entry.division}"
                 holder.itemView.contentDescription =
-                    "${entry.subject}, Program ${entry.className} ${entry.division}, ${entry.dayOfWeek}, Hour ${entry.periodNumber}"
+                    "${entry.subject}, Program ${entry.className} ${entry.division}, ${entry.dayOfWeek}, Hour ${entry.periodNumber}. Double tap and hold for options."
                 holder.tvTime.text = "${entry.dayOfWeek}, Hour ${entry.periodNumber}"
             } else {
                 holder.tvClass.text = "Class ${entry.className} ${entry.division}"
                 holder.itemView.contentDescription =
-                    "${entry.subject}, Class ${entry.className} ${entry.division}, ${entry.dayOfWeek}, Period ${entry.periodNumber}"
+                    "${entry.subject}, Class ${entry.className} ${entry.division}, ${entry.dayOfWeek}, Period ${entry.periodNumber}. Double tap and hold for options."
                 holder.tvTime.text = "${entry.dayOfWeek}, Period ${entry.periodNumber}"
             }
-            holder.btnEdit.setOnClickListener { onEdit(entry) }
-            holder.btnDelete.setOnClickListener { onDelete(entry) }
+            holder.itemView.setOnLongClickListener {
+                val options = arrayOf("Edit Details", "Delete")
+                AlertDialog.Builder(holder.itemView.context)
+                    .setTitle("Options for ${entry.subject}")
+                    .setItems(options) { _, which ->
+                        when (which) {
+                            0 -> onEdit(entry)
+                            1 -> onDelete(entry)
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .create()
+                    .show()
+                true
+            }
         }
 
         override fun getItemCount() = entries.size

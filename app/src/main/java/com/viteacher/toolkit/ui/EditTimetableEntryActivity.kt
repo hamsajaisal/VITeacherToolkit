@@ -74,7 +74,6 @@ class EditTimetableEntryActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerDay.adapter = adapter
-        binding.spinnerDay.setAccessibleSelection("Day")
     }
 
     private fun setupReminderSpinner() {
@@ -93,21 +92,18 @@ class EditTimetableEntryActivity : AppCompatActivity() {
             loadedPeriods = periods
 
             runOnUiThread {
-                binding.spinnerDay.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                        val selectedDay = days[position]
-                        updatePeriodSpinnerForDay(selectedDay)
-                        if (entry != null && restoredEntryId != entry.id) {
-                            val periodIndex = displayedPeriods.indexOfFirst {
-                                it.periodNumber == entry.periodNumber
-                            }
-                            if (periodIndex >= 0) {
-                                binding.spinnerPeriod.setSelection(periodIndex)
-                                restoredEntryId = entry.id
-                            }
+                binding.spinnerDay.setAccessibleSelection("Day") { position ->
+                    val selectedDay = days[position]
+                    updatePeriodSpinnerForDay(selectedDay)
+                    if (entry != null && restoredEntryId != entry.id) {
+                        val periodIndex = displayedPeriods.indexOfFirst {
+                            it.periodNumber == entry.periodNumber
+                        }
+                        if (periodIndex >= 0) {
+                            binding.spinnerPeriod.setSelection(periodIndex)
+                            restoredEntryId = entry.id
                         }
                     }
-                    override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
                 }
 
                 if (entry != null) {
@@ -142,7 +138,16 @@ class EditTimetableEntryActivity : AppCompatActivity() {
         val periodLabels = if (displayedPeriods.isEmpty()) {
             listOf("No periods set for $selectedDay")
         } else {
-            displayedPeriods.map { "Period ${it.periodNumber} (${it.startTime} - ${it.endTime})" }
+            displayedPeriods.map {
+                val label = if (isCollege) "Hour" else "Period"
+                val name = when (it.periodNumber) {
+                    99 -> "Forenoon Interval"
+                    100 -> "Lunch Break"
+                    101 -> "Afternoon Interval"
+                    else -> "$label ${it.periodNumber}"
+                }
+                "$name (${it.startTime} - ${it.endTime})"
+            }
         }
 
         val periodAdapter = ArrayAdapter(

@@ -11,6 +11,7 @@ import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.Binder
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -171,7 +172,13 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
 
     override fun onCreate() {
         super.onCreate()
-        tts = TextToSpeech(this, this)
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val selectedEngine = prefs.getString("tts_engine", null)
+        tts = if (!selectedEngine.isNullOrEmpty()) {
+            TextToSpeech(this, this, selectedEngine)
+        } else {
+            TextToSpeech(this, this)
+        }
         createNotificationChannel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
@@ -203,8 +210,10 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
+            val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val speed = prefs.getFloat("tts_speed", 0.9f)
             tts?.language = Locale.ENGLISH
-            tts?.setSpeechRate(0.9f)
+            tts?.setSpeechRate(speed)
             ttsInitialized = true
         }
     }
@@ -245,7 +254,12 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
 
     private fun speakText(text: String) {
         if (ttsInitialized && tts != null) {
-            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "classroom_timer_utterance")
+            val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val volume = prefs.getFloat("tts_volume", 1.0f)
+            val params = Bundle().apply {
+                putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume)
+            }
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, params, "classroom_timer_utterance")
         }
     }
 

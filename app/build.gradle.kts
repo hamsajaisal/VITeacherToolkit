@@ -30,7 +30,7 @@ android {
         applicationId = "com.viteacher.toolkit"
         minSdk = 26
         targetSdk = 35
-        versionCode = 18
+        versionCode = 21
         versionName = "2.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

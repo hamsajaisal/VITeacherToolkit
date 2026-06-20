@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:isScrollContainer="true"
+    android:importantForAccessibility="yes"
+    android:background="#000000">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TTS Settings"
+            android:textColor="#FFFFFF"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+        <!-- Language Heading -->
+        <TextView
+            android:id="@+id/tvLanguageLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Announcement Language"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose the language for TTS reminders"
+            android:textColor="#CCCCCC"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="no" />
+
+        <!-- Spinner: Language Select -->
+        <Spinner
+            android:id="@+id/spinnerLanguage"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:contentDescription="Announcement Language: English or Malayalam or Hindi"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Engine Heading -->
+        <TextView
+            android:id="@+id/tvEngineLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="TTS Engine"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choose the Text-To-Speech engine"
+            android:textColor="#CCCCCC"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="no" />
+
+        <!-- Spinner: Engine Select -->
+        <Spinner
+            android:id="@+id/spinnerEngine"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:contentDescription="TTS Engine"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Speed Heading & Value -->
+        <TextView
+            android:id="@+id/tvSpeedLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Speech Rate (Speed)"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <TextView
+            android:id="@+id/tvSpeedValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Speech Speed: 1.0x"
+            android:textColor="#CCCCCC"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- SeekBar: Speed -->
+        <SeekBar
+            android:id="@+id/sbSpeed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:max="20"
+            android:progress="5"
+            android:layout_marginBottom="24dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Volume Heading & Value -->
+        <TextView
+            android:id="@+id/tvVolumeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Speech Volume"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <TextView
+            android:id="@+id/tvVolumeValue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Speech Volume: 100%"
+            android:textColor="#CCCCCC"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- SeekBar: Volume -->
+        <SeekBar
+            android:id="@+id/sbVolume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:max="100"
+            android:progress="100"
+            android:layout_marginBottom="32dp"
+            android:importantForAccessibility="yes" />
+
+        <!-- Test Announcement Button -->
+        <Button
+            android:id="@+id/btnTestTtsSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Test Announcement"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#333333"
+            android:contentDescription="Play a test announcement using current settings"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btnSaveTtsSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Save Settings"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Save all text to speech and language settings"
+            android:layout_marginBottom="24dp" />
+
+    </LinearLayout>
+</ScrollView>
