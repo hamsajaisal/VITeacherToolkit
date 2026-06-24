@@ -33,6 +33,7 @@
         android:contentDescription="Enter your 4-digit PIN"
         android:inputType="numberPassword"
         android:maxLength="4"
+        android:imeOptions="actionDone"
         android:gravity="center"
         android:textSize="24sp"
         android:layout_marginBottom="16dp"/>

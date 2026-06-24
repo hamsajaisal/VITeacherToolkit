@@ -5,7 +5,7 @@
     android:fillViewport="true"
     android:isScrollContainer="true"
     android:importantForAccessibility="yes"
-    android:background="#000000">
+    android:background="?android:attr/windowBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Settings"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="26sp"
             android:textStyle="bold"
             android:layout_marginBottom="24dp"
@@ -61,6 +61,18 @@
             android:contentDescription="Text to speech settings button. Configure language, engine, speed, and volume of speech announcements."
             android:layout_marginBottom="24dp" />
 
+        <!-- Button: Theme Settings -->
+        <Button
+            android:id="@+id/btnThemeSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="App Theme"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="App theme settings button. Choose System Default, Light Theme, or Dark Theme."
+            android:layout_marginBottom="24dp" />
+
         <!-- Visual Divider -->
         <View
             android:layout_width="match_parent"
@@ -98,7 +110,7 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:text="Restore Application Data"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:backgroundTint="#FF444444"
             android:contentDescription="Restore application data button. Imports database file to overwrite current app settings. Warning: This cannot be undone."
             android:layout_marginBottom="16dp" />

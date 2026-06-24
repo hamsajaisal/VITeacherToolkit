@@ -9,7 +9,7 @@
     android:paddingVertical="10dp"
     android:focusable="true"
     android:clickable="true"
-    android:background="#000000"
+    android:background="?android:attr/windowBackground"
     android:layout_marginBottom="8dp">
 
     <!-- Roll Number Column -->
@@ -17,7 +17,7 @@
         android:id="@+id/tvRollNumber"
         android:layout_width="60dp"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="18sp"
         android:textStyle="bold"
         android:importantForAccessibility="no" />
@@ -28,7 +28,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="18sp"
         android:importantForAccessibility="no" />
 
@@ -37,7 +37,7 @@
         android:id="@+id/tvAttendanceStatus"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:textColor="#CCCCCC"
+        android:textColor="?android:attr/textColorSecondary"
         android:textSize="16sp"
         android:textStyle="bold"
         android:gravity="end"

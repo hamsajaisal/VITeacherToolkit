@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Add Phase"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Phase Name"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="16sp"
         android:layout_marginBottom="4dp" />
 
@@ -29,7 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:hint="e.g. Introduction"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textColorHint="#666666"
         android:backgroundTint="#FFFFFF"
         android:inputType="text"
@@ -40,7 +40,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Duration (Minutes)"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="16sp"
         android:layout_marginBottom="4dp" />
 
@@ -49,7 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:hint="e.g. 5"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textColorHint="#666666"
         android:backgroundTint="#FFFFFF"
         android:inputType="number"
@@ -68,7 +68,7 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:text="Cancel"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:backgroundTint="#FF444444"
             android:layout_marginEnd="12dp" />
 

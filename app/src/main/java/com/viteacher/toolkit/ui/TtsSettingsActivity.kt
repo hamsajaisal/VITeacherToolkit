@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.viteacher.toolkit.databinding.ActivityTtsSettingsBinding
 import com.viteacher.toolkit.util.ReminderScheduler
 import com.viteacher.toolkit.util.setAccessibleSelection
+import android.speech.tts.UtteranceProgressListener
+import com.viteacher.toolkit.util.TtsVolumeHelper
 import java.util.Locale
 
 class TtsSettingsActivity : AppCompatActivity() {
@@ -25,11 +27,14 @@ class TtsSettingsActivity : AppCompatActivity() {
 
     private var engineList = listOf<TtsEngineItem>()
     private var previewTts: TextToSpeech? = null
+    private var volumeHelper: TtsVolumeHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTtsSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        volumeHelper = TtsVolumeHelper(this)
 
         binding.btnTestTtsSettings.setOnClickListener {
             playTestAnnouncement()
@@ -217,6 +222,27 @@ class TtsSettingsActivity : AppCompatActivity() {
         }
         ttsEngine.setSpeechRate(speed)
         
+        val audioAttributes = android.media.AudioAttributes.Builder()
+            .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+            .build()
+        ttsEngine.setAudioAttributes(audioAttributes)
+
+        ttsEngine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onDone(utteranceId: String?) {
+                volumeHelper?.restoreVolume()
+            }
+            override fun onError(utteranceId: String?) {
+                volumeHelper?.restoreVolume()
+            }
+            override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                volumeHelper?.restoreVolume()
+            }
+            override fun onStart(utteranceId: String?) {}
+        })
+
+        volumeHelper?.setVolume(volume)
+
         val params = Bundle().apply {
             putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume)
         }
@@ -231,6 +257,7 @@ class TtsSettingsActivity : AppCompatActivity() {
             e.printStackTrace()
         }
         previewTts = null
+        volumeHelper?.restoreVolume()
     }
 
     override fun onDestroy() {

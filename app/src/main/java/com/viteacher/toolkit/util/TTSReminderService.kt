@@ -19,6 +19,7 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
     private var message: String = ""
     private var language: String = "en"
+    private var volumeHelper: TtsVolumeHelper? = null
 
     companion object {
         const val CHANNEL_ID = "tts_reminder_channel"
@@ -40,6 +41,8 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
             return START_NOT_STICKY
         }
 
+        volumeHelper = TtsVolumeHelper(this)
+
         val notification = buildNotification(message)
         startForeground(1, notification)
 
@@ -56,6 +59,12 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS && tts != null) {
+            val audioAttributes = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            tts!!.setAudioAttributes(audioAttributes)
+
             val locale = when (language) {
                 "ml" -> Locale("ml", "IN")
                 "hi" -> Locale("hi", "IN")
@@ -75,13 +84,21 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
             tts!!.setSpeechRate(speed)
             tts!!.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onDone(utteranceId: String?) {
+                    volumeHelper?.restoreVolume()
                     stopSelfCleanly()
                 }
                 override fun onError(utteranceId: String?) {
+                    volumeHelper?.restoreVolume()
+                    stopSelfCleanly()
+                }
+                override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                    volumeHelper?.restoreVolume()
                     stopSelfCleanly()
                 }
                 override fun onStart(utteranceId: String?) {}
             })
+
+            volumeHelper?.setVolume(volume)
 
             val params = Bundle().apply {
                 putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume)
@@ -96,6 +113,7 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
         tts?.stop()
         tts?.shutdown()
         tts = null
+        volumeHelper?.restoreVolume()
         stopForeground(true)
         stopSelf()
     }
@@ -128,6 +146,7 @@ class TTSReminderService : Service(), TextToSpeech.OnInitListener {
         tts?.stop()
         tts?.shutdown()
         tts = null
+        volumeHelper?.restoreVolume()
         super.onDestroy()
     }
 }

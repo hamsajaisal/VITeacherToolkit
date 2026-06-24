@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#000000">
+    android:background="?android:attr/windowBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Period Workflow Timer"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:gravity="center"
@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"
                 android:text="Auto-monitor Timetable"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="18sp"
                 android:layout_marginBottom="12dp"
                 android:importantForAccessibility="yes" />
@@ -86,7 +86,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Synchronize with Timetable Period"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?android:attr/textColorPrimary"
                     android:textSize="16sp"
                     android:layout_marginBottom="4dp" />
 
@@ -102,7 +102,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Total Period Duration (Minutes)"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?android:attr/textColorPrimary"
                     android:textSize="16sp"
                     android:layout_marginBottom="4dp" />
 
@@ -111,7 +111,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:hint="e.g. 45 (Optional)"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?android:attr/textColorPrimary"
                     android:textColorHint="#666666"
                     android:backgroundTint="#FFFFFF"
                     android:inputType="number"
@@ -124,7 +124,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Default Period End Reminder"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="16sp"
                 android:layout_marginBottom="4dp" />
 
@@ -141,7 +141,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Custom Warning (Minutes before end)"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="16sp"
                 android:layout_marginBottom="4dp"
                 android:visibility="gone" />
@@ -151,7 +151,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:hint="e.g. 5 or 10"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textColorHint="#666666"
                 android:backgroundTint="#FFFFFF"
                 android:inputType="number"
@@ -164,7 +164,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Phases"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp" />
@@ -173,7 +173,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Load Phase Template"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="16sp"
                 android:layout_marginBottom="4dp" />
 
@@ -229,7 +229,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Total assigned: 0 minutes"
-                android:textColor="#CCCCCC"
+                android:textColor="?android:attr/textColorSecondary"
                 android:textSize="16sp"
                 android:layout_marginBottom="32dp"
                 android:importantForAccessibility="yes" />
@@ -261,7 +261,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Current Phase: Introduction"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:gravity="center"
@@ -274,7 +274,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="05:00 remaining"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="48sp"
                 android:textStyle="bold"
                 android:gravity="center"
@@ -327,7 +327,7 @@
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
                     android:text="Stop and Reset"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?android:attr/textColorPrimary"
                     android:backgroundTint="#FF444444" />
 
             </LinearLayout>

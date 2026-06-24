@@ -5,7 +5,7 @@
     android:fillViewport="true"
     android:isScrollContainer="true"
     android:importantForAccessibility="yes"
-    android:background="#000000">
+    android:background="?android:attr/windowBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="TTS Settings"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="26sp"
             android:textStyle="bold"
             android:layout_marginBottom="24dp"
@@ -31,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Announcement Language"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"
@@ -41,7 +41,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Choose the language for TTS reminders"
-            android:textColor="#CCCCCC"
+            android:textColor="?android:attr/textColorSecondary"
             android:layout_marginBottom="8dp"
             android:importantForAccessibility="no" />
 
@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="TTS Engine"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"
@@ -70,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Choose the Text-To-Speech engine"
-            android:textColor="#CCCCCC"
+            android:textColor="?android:attr/textColorSecondary"
             android:layout_marginBottom="8dp"
             android:importantForAccessibility="no" />
 
@@ -89,7 +89,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Speech Rate (Speed)"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"
@@ -100,7 +100,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Speech Speed: 1.0x"
-            android:textColor="#CCCCCC"
+            android:textColor="?android:attr/textColorSecondary"
             android:layout_marginBottom="8dp"
             android:importantForAccessibility="yes" />
 
@@ -121,7 +121,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Speech Volume"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp"
@@ -132,7 +132,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Speech Volume: 100%"
-            android:textColor="#CCCCCC"
+            android:textColor="?android:attr/textColorSecondary"
             android:layout_marginBottom="8dp"
             android:importantForAccessibility="yes" />
 
@@ -154,7 +154,7 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:text="Test Announcement"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:backgroundTint="#333333"
             android:contentDescription="Play a test announcement using current settings"
             android:layout_marginBottom="16dp" />

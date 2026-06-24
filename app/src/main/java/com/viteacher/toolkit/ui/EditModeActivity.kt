@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.text.Layout
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.text.style.AbsoluteSizeSpan
 import android.text.style.AlignmentSpan
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
@@ -209,6 +210,14 @@ class EditModeActivity : AppCompatActivity() {
 
         binding.btnBlockAllCaps.setOnClickListener {
             showChangeCaseMenuForChecked()
+        }
+
+        binding.btnBlockIncreaseFontSize.setOnClickListener {
+            changeFontSizeForChecked(1)
+        }
+
+        binding.btnBlockDecreaseFontSize.setOnClickListener {
+            changeFontSizeForChecked(-1)
         }
 
         binding.btnBlockPageBreak.setOnClickListener {
@@ -518,6 +527,37 @@ class EditModeActivity : AppCompatActivity() {
         }
 
         rebuildChecklist()
+        binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+    }
+
+    private fun changeFontSizeForChecked(delta: Int) {
+        val checked = adapter.getCheckedSegments()
+        if (checked.isEmpty()) {
+            binding.root.announceForAccessibility("No items selected")
+            return
+        }
+
+        val firstSeg = checked.first()
+        val spans = masterText.getSpans(firstSeg.start, firstSeg.end, AbsoluteSizeSpan::class.java)
+        val currentSize = if (spans.isNotEmpty()) {
+            val span = spans.first()
+            if (span.dip) span.size else (span.size / resources.displayMetrics.density).toInt()
+        } else {
+            intent.getIntExtra("font_size", 18)
+        }
+
+        val newSize = (currentSize + delta).coerceIn(12, 48)
+
+        for (seg in checked) {
+            val segSpans = masterText.getSpans(seg.start, seg.end, AbsoluteSizeSpan::class.java)
+            segSpans.forEach { masterText.removeSpan(it) }
+            masterText.setSpan(AbsoluteSizeSpan(newSize, true), seg.start, seg.end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+        rebuildChecklist()
+
+        val text = if (delta > 0) "increased to $newSize" else "decreased to $newSize"
+        binding.root.announceForAccessibility("Font size $text")
         binding.root.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
     }
 }

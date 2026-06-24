@@ -123,6 +123,24 @@
                 android:importantForAccessibility="yes"/>
 
             <Button
+                android:id="@+id/btnBlockIncreaseFontSize"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="A+"
+                android:contentDescription="Increase font size"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
+                android:id="@+id/btnBlockDecreaseFontSize"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="A-"
+                android:contentDescription="Decrease font size"
+                android:layout_marginEnd="4dp"
+                android:importantForAccessibility="yes"/>
+
+            <Button
                 android:id="@+id/btnBlockBulletList"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"

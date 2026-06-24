@@ -72,6 +72,52 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnRestoreData.setOnClickListener {
             triggerRestore()
         }
+
+        binding.btnThemeSettings.setOnClickListener {
+            showThemeSelectorDialog()
+        }
+    }
+
+    private fun showThemeSelectorDialog() {
+        val themePrefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val currentTheme = themePrefs.getString("app_theme", "system") ?: "system"
+        
+        val options = arrayOf("System Default", "Light Theme", "Dark Theme")
+        val checkedItem = when (currentTheme) {
+            "light" -> 1
+            "dark" -> 2
+            else -> 0
+        }
+        
+        AlertDialog.Builder(this)
+            .setTitle("Choose App Theme")
+            .setSingleChoiceItems(options, checkedItem) { dialog, which ->
+                val selectedTheme = when (which) {
+                    1 -> "light"
+                    2 -> "dark"
+                    else -> "system"
+                }
+                themePrefs.edit().putString("app_theme", selectedTheme).apply()
+                
+                val nightMode = when (selectedTheme) {
+                    "light" -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+                    "dark" -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+                    else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
+                androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(nightMode)
+                
+                val themeName = options[which]
+                val announcement = "Theme changed to $themeName"
+                Toast.makeText(this, announcement, Toast.LENGTH_SHORT).show()
+                binding.root.announceForAccessibility(announcement)
+                dialog.dismiss()
+                recreate()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
     }
 
     override fun onResume() {

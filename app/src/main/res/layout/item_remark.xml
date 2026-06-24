@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="15 May 2026"
-            android:textColor="#CCCCCC"
+            android:textColor="?android:attr/textColorSecondary"
             android:textSize="13sp"
             android:importantForAccessibility="no" />
 
@@ -48,7 +48,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Student showed excellent improvement in reading."
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="16sp"
         android:importantForAccessibility="no" />
 

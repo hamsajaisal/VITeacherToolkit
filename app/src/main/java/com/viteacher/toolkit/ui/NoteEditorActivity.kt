@@ -546,6 +546,7 @@ class NoteEditorActivity : AppCompatActivity() {
         val html = HtmlCompat.toHtml(binding.etNoteContent.text, HtmlCompat.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE)
         val intent = Intent(this, EditModeActivity::class.java).apply {
             putExtra("content_html", html)
+            putExtra("font_size", currentFontSize)
         }
         advancedEditLauncher.launch(intent)
     }

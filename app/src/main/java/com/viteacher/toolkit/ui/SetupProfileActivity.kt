@@ -28,6 +28,15 @@ class SetupProfileActivity : AppCompatActivity() {
     private var initialInstitutionTypePosition = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val themePrefs = getSharedPreferences("vi_teacher_prefs", MODE_PRIVATE)
+        val savedTheme = themePrefs.getString("app_theme", "system") ?: "system"
+        val nightMode = when (savedTheme) {
+            "light" -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+            "dark" -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+            else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(nightMode)
+
         super.onCreate(savedInstanceState)
         binding = ActivitySetupProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)

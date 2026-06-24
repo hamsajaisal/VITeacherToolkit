@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#000000">
+    android:background="?android:attr/windowBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Activity Countdown"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:gravity="center"
@@ -58,7 +58,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Set Timer Duration"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="24dp" />
@@ -93,7 +93,7 @@
                         android:layout_width="80dp"
                         android:layout_height="48dp"
                         android:text="0"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?android:attr/textColorPrimary"
                         android:backgroundTint="#FFFFFF"
                         android:gravity="center"
                         android:textSize="20sp"
@@ -116,7 +116,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=":"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?android:attr/textColorPrimary"
                     android:textSize="32sp"
                     android:textStyle="bold"
                     android:layout_gravity="center_vertical"
@@ -144,7 +144,7 @@
                         android:layout_width="80dp"
                         android:layout_height="48dp"
                         android:text="00"
-                        android:textColor="#FFFFFF"
+                        android:textColor="?android:attr/textColorPrimary"
                         android:backgroundTint="#FFFFFF"
                         android:gravity="center"
                         android:textSize="20sp"
@@ -190,7 +190,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="05:00"
-                android:textColor="#FFFFFF"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="60sp"
                 android:textStyle="bold"
                 android:gravity="center"
@@ -240,7 +240,7 @@
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
                     android:text="Stop"
-                    android:textColor="#FFFFFF"
+                    android:textColor="?android:attr/textColorPrimary"
                     android:backgroundTint="#FF444444" />
 
             </LinearLayout>

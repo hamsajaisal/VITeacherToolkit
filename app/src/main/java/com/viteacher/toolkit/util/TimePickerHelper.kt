@@ -35,6 +35,20 @@ object TimePickerHelper {
         var currentMinute = 0
         var isAm = true
 
+        try {
+            val parts = initialTime.trim().split(" ")
+            if (parts.size == 2) {
+                isAm = parts[1].equals("AM", ignoreCase = true)
+                val timeParts = parts[0].split(":")
+                if (timeParts.size == 2) {
+                    currentHour = timeParts[0].toIntOrNull() ?: 9
+                    currentMinute = timeParts[1].toIntOrNull() ?: 0
+                }
+            }
+        } catch (e: Exception) {
+            // fallback
+        }
+
         fun updateDisplay() {
             val hourStr = currentHour.toString().padStart(2, '0')
             val minuteStr = currentMinute.toString().padStart(2, '0')

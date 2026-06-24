@@ -22,7 +22,7 @@
             android:id="@+id/tvHistoryDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             android:importantForAccessibility="no" />
@@ -31,7 +31,7 @@
             android:id="@+id/tvHistorySessions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#CCCCCC"
+            android:textColor="?android:attr/textColorSecondary"
             android:textSize="14sp"
             android:layout_marginTop="4dp"
             android:importantForAccessibility="no" />

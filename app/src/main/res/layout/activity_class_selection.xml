@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="#000000">
+    android:background="?android:attr/windowBackground">
 
     <!-- Header Bar -->
     <LinearLayout
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Select Class"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="22sp"
             android:textStyle="bold"
             android:background="@drawable/border_green"
@@ -44,7 +44,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Please select a classroom from your registers list:"
-        android:textColor="#CCCCCC"
+        android:textColor="?android:attr/textColorSecondary"
         android:textSize="14sp"
         android:layout_marginBottom="20dp"
         android:importantForAccessibility="yes" />

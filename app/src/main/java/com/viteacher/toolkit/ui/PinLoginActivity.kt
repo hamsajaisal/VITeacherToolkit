@@ -20,6 +20,15 @@ class PinLoginActivity : AppCompatActivity() {
     var targetScreen: String = "home"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val themePrefs = getSharedPreferences("vi_teacher_prefs", MODE_PRIVATE)
+        val savedTheme = themePrefs.getString("app_theme", "system") ?: "system"
+        val nightMode = when (savedTheme) {
+            "light" -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+            "dark" -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+            else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+        androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(nightMode)
+
         super.onCreate(savedInstanceState)
         binding = ActivityPinLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -69,12 +78,24 @@ class PinLoginActivity : AppCompatActivity() {
                     } else {
                         binding.etPin.announceForAccessibility("bullet")
                     }
+                    if (currentLength == 4) {
+                        checkAndAutoLoginIfCorrect()
+                    }
                 } else if (currentLength < lastLength) {
                     binding.etPin.announceForAccessibility("deleted")
                 }
                 lastLength = currentLength
             }
         })
+
+        binding.etPin.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                verifyPin()
+                true
+            } else {
+                false
+            }
+        }
 
         binding.btnLogin.setOnClickListener {
             verifyPin()
@@ -152,6 +173,22 @@ class PinLoginActivity : AppCompatActivity() {
                     binding.etPin.requestFocus()
                     Toast.makeText(this@PinLoginActivity, message, Toast.LENGTH_SHORT).show()
                     binding.root.announceForAccessibility("Incorrect PIN. PIN cleared. Please try again.")
+                }
+            }
+        }
+    }
+
+    private fun checkAndAutoLoginIfCorrect() {
+        val enteredPin = binding.etPin.text.toString().trim()
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            val profile = db.userProfileDao().getProfile()
+            runOnUiThread {
+                if (profile != null && enteredPin == profile.pin) {
+                    val message = "Login successful"
+                    Toast.makeText(this@PinLoginActivity, message, Toast.LENGTH_SHORT).show()
+                    binding.root.announceForAccessibility(message)
+                    navigateToTarget()
                 }
             }
         }

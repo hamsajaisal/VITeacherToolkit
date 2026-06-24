@@ -19,6 +19,7 @@ import android.os.PowerManager
 import android.os.Vibrator
 import android.os.VibrationEffect
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import androidx.core.app.NotificationCompat
 import com.viteacher.toolkit.R
 import com.viteacher.toolkit.data.AppDatabase
@@ -54,6 +55,7 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
     private val binder = TimerBinder()
     private var tts: TextToSpeech? = null
     private var ttsInitialized = false
+    private var volumeHelper: TtsVolumeHelper? = null
 
     var alertMode: AlertMode = AlertMode.AUDIO_ONLY
 
@@ -172,6 +174,7 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
 
     override fun onCreate() {
         super.onCreate()
+        volumeHelper = TtsVolumeHelper(this)
         val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
         val selectedEngine = prefs.getString("tts_engine", null)
         tts = if (!selectedEngine.isNullOrEmpty()) {
@@ -210,6 +213,25 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
+            val audioAttributes = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            tts?.setAudioAttributes(audioAttributes)
+
+            tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onDone(utteranceId: String?) {
+                    volumeHelper?.restoreVolume()
+                }
+                override fun onError(utteranceId: String?) {
+                    volumeHelper?.restoreVolume()
+                }
+                override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                    volumeHelper?.restoreVolume()
+                }
+                override fun onStart(utteranceId: String?) {}
+            })
+
             val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
             val speed = prefs.getFloat("tts_speed", 0.9f)
             tts?.language = Locale.ENGLISH
@@ -256,6 +278,7 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
         if (ttsInitialized && tts != null) {
             val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
             val volume = prefs.getFloat("tts_volume", 1.0f)
+            volumeHelper?.setVolume(volume)
             val params = Bundle().apply {
                 putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume)
             }
@@ -817,6 +840,7 @@ class ClassroomTimerService : Service(), TextToSpeech.OnInitListener {
         releaseWakeLock()
         tts?.stop()
         tts?.shutdown()
+        volumeHelper?.restoreVolume()
         super.onDestroy()
     }
 }

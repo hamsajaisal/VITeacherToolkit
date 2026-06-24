@@ -24,6 +24,7 @@ import com.viteacher.toolkit.util.TimePickerHelper
 import com.viteacher.toolkit.util.setAccessibleSelection
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.google.android.material.tabs.TabLayout
 
 class SchoolHoursActivity : AppCompatActivity() {
 
@@ -31,6 +32,7 @@ class SchoolHoursActivity : AppCompatActivity() {
     private lateinit var adapter: PeriodAdapter
     private val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
     private lateinit var periodNumbers: List<String>
+    private var allPeriodsList: List<SchoolPeriod> = emptyList()
 
     private fun addMinutesToTime(timeStr: String, minutesToAdd: Int): String {
         return try {
@@ -87,6 +89,14 @@ class SchoolHoursActivity : AppCompatActivity() {
         binding.btnAddPeriod.setOnClickListener {
             showAddPeriodDialog()
         }
+
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                updatePeriodsFilter()
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
     }
 
     private fun loadPeriods() {
@@ -95,8 +105,31 @@ class SchoolHoursActivity : AppCompatActivity() {
                 .timetableDao()
                 .getAllPeriods()
                 .collectLatest { periods ->
-                    adapter.updateList(periods)
+                    allPeriodsList = periods
+                    updatePeriodsFilter()
                 }
+        }
+    }
+
+    private fun updatePeriodsFilter() {
+        val hasExceptions = allPeriodsList.any { it.isException }
+        if (hasExceptions) {
+            binding.tabLayout.visibility = View.VISIBLE
+            if (binding.tabLayout.tabCount == 0) {
+                binding.tabLayout.addTab(binding.tabLayout.newTab().setText("Whole Days"))
+                binding.tabLayout.addTab(binding.tabLayout.newTab().setText("Exceptional Days"))
+            }
+            val selectedTab = binding.tabLayout.selectedTabPosition
+            val filtered = if (selectedTab == 1) {
+                allPeriodsList.filter { it.isException }
+            } else {
+                allPeriodsList.filter { !it.isException }
+            }
+            adapter.updateList(filtered)
+        } else {
+            binding.tabLayout.visibility = View.GONE
+            binding.tabLayout.removeAllTabs()
+            adapter.updateList(allPeriodsList)
         }
     }
 
@@ -127,15 +160,17 @@ class SchoolHoursActivity : AppCompatActivity() {
             }
         }
 
-        var selectedStartTime = editingPeriod?.startTime ?: "09:00 AM"
-        var selectedEndTime = editingPeriod?.endTime ?: "10:00 AM"
+        val lastRegularPeriod = allPeriodsList.filter { !it.isException }.maxByOrNull { it.periodNumber }
+        val defaultStartTimeCalculated = lastRegularPeriod?.endTime ?: "09:00 AM"
+        val defaultEndTimeCalculated = lastRegularPeriod?.let { addMinutesToTime(it.endTime, if (isCollege) 60 else 45) } ?: "10:00 AM"
 
-        if (editingPeriod != null) {
-            dialogBinding.btnSelectStartTime.text = "Select Start Time: $selectedStartTime"
-            dialogBinding.btnSelectStartTime.contentDescription = "Select start time, currently $selectedStartTime"
-            dialogBinding.btnSelectEndTime.text = "Select End Time: $selectedEndTime"
-            dialogBinding.btnSelectEndTime.contentDescription = "Select end time, currently $selectedEndTime"
-        }
+        var selectedStartTime = editingPeriod?.startTime ?: defaultStartTimeCalculated
+        var selectedEndTime = editingPeriod?.endTime ?: defaultEndTimeCalculated
+
+        dialogBinding.btnSelectStartTime.text = "Select Start Time: $selectedStartTime"
+        dialogBinding.btnSelectStartTime.contentDescription = "Select start time, currently $selectedStartTime"
+        dialogBinding.btnSelectEndTime.text = "Select End Time: $selectedEndTime"
+        dialogBinding.btnSelectEndTime.contentDescription = "Select end time, currently $selectedEndTime"
 
         val periodAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, periodNumbers)
         periodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

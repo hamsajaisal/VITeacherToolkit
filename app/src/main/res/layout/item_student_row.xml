@@ -38,7 +38,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Student Full Name"
-            android:textColor="#FFFFFF"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="18sp"
             android:textStyle="bold"
             android:importantForAccessibility="no" />
@@ -49,7 +49,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Admission Number: 12418"
-            android:textColor="#CCCCCC"
+            android:textColor="?android:attr/textColorSecondary"
             android:textSize="14sp"
             android:importantForAccessibility="no" />
 

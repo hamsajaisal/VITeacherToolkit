@@ -26,6 +26,13 @@
             android:contentDescription="Add a new school period"
             android:layout_marginBottom="16dp"/>
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"/>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvPeriods"
             android:layout_width="match_parent"

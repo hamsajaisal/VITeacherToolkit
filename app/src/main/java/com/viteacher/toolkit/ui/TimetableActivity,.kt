@@ -210,6 +210,51 @@ class TimetableActivity : AppCompatActivity() {
         }
     }
 
+    private fun formatSilencedDates(silentDates: Set<String>): String {
+        if (silentDates.isEmpty()) return "None"
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val dates = silentDates.mapNotNull {
+            try { sdf.parse(it) } catch (e: Exception) { null }
+        }.sorted()
+        if (dates.isEmpty()) return "None"
+
+        val ranges = mutableListOf<String>()
+        val cal = Calendar.getInstance()
+        
+        var rangeStart = dates[0]
+        var prevDate = dates[0]
+        
+        val displaySdf = SimpleDateFormat("MMM d", Locale.US)
+        
+        for (i in 1 until dates.size) {
+            val currentDate = dates[i]
+            cal.time = prevDate
+            cal.add(Calendar.DAY_OF_YEAR, 1)
+            val expectedNext = cal.time
+            
+            val isConsecutive = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(currentDate) ==
+                               SimpleDateFormat("yyyy-MM-dd", Locale.US).format(expectedNext)
+            
+            if (!isConsecutive) {
+                if (rangeStart == prevDate) {
+                    ranges.add(displaySdf.format(rangeStart))
+                } else {
+                    ranges.add("${displaySdf.format(rangeStart)} to ${displaySdf.format(prevDate)}")
+                }
+                rangeStart = currentDate
+            }
+            prevDate = currentDate
+        }
+        
+        if (rangeStart == prevDate) {
+            ranges.add(displaySdf.format(rangeStart))
+        } else {
+            ranges.add("${displaySdf.format(rangeStart)} to ${displaySdf.format(prevDate)}")
+        }
+        
+        return ranges.joinToString(", ")
+    }
+
     private fun showSilenceAnnouncementsDialog() {
         val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
         val silentDates = prefs.getStringSet("silent_dates", emptySet())?.toMutableSet() ?: mutableSetOf()
@@ -227,8 +272,11 @@ class TimetableActivity : AppCompatActivity() {
             "Clear All Silenced Dates"
         )
 
+        val silencedSummary = formatSilencedDates(silentDates)
+        val dialogTitle = "Silence Timetable Announcements\n(Silenced: $silencedSummary)"
+
         AlertDialog.Builder(this)
-            .setTitle("Silence Timetable Announcements")
+            .setTitle(dialogTitle)
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> {
@@ -244,6 +292,7 @@ class TimetableActivity : AppCompatActivity() {
                         prefs.edit().putStringSet("silent_dates", activeSet).apply()
                         Toast.makeText(this, announceMsg, Toast.LENGTH_SHORT).show()
                         binding.root.announceForAccessibility(announceMsg)
+                        showSilenceAnnouncementsDialog()
                     }
                     1 -> {
                         val activeSet = prefs.getStringSet("silent_dates", emptySet())?.toMutableSet() ?: mutableSetOf()
@@ -258,6 +307,7 @@ class TimetableActivity : AppCompatActivity() {
                         prefs.edit().putStringSet("silent_dates", activeSet).apply()
                         Toast.makeText(this, announceMsg, Toast.LENGTH_SHORT).show()
                         binding.root.announceForAccessibility(announceMsg)
+                        showSilenceAnnouncementsDialog()
                     }
                     2 -> {
                         showSilenceDatePicker()
@@ -270,6 +320,7 @@ class TimetableActivity : AppCompatActivity() {
                         val msg = "All silenced dates cleared. Announcements are active for all days."
                         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
                         binding.root.announceForAccessibility(msg)
+                        showSilenceAnnouncementsDialog()
                     }
                 }
             }
@@ -277,7 +328,7 @@ class TimetableActivity : AppCompatActivity() {
             .create()
             .show()
         
-        binding.root.announceForAccessibility("Silence Timetable Announcements dialog opened. Select Silence Today, Silence Tomorrow, Silence Specific Date, Silence Date Range, or Clear All Silenced Dates.")
+        binding.root.announceForAccessibility("Silence Timetable Announcements dialog opened. Current silenced dates: $silencedSummary. Select Silence Today, Silence Tomorrow, Silence Specific Date, Silence Date Range, or Clear All Silenced Dates.")
     }
 
     private fun showSilenceDatePicker() {
@@ -298,6 +349,7 @@ class TimetableActivity : AppCompatActivity() {
                 val msg = "Announcements silenced for $formattedDateReadable"
                 Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
                 binding.root.announceForAccessibility(msg)
+                showSilenceAnnouncementsDialog()
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -340,6 +392,7 @@ class TimetableActivity : AppCompatActivity() {
                         val msg = "Announcements silenced for $count days (from $startStr to $endStr)"
                         Toast.makeText(this@TimetableActivity, msg, Toast.LENGTH_LONG).show()
                         binding.root.announceForAccessibility(msg)
+                        showSilenceAnnouncementsDialog()
                     },
                     sYear, sMonth, sDay
                 )
