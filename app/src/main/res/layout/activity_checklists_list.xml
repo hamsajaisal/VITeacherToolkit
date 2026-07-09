@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/windowBackground"
+    android:padding="24dp"
+    android:fitsSystemWindows="true">
+
+    <!-- Header bar with back button and green border title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="?android:attr/actionModeCloseDrawable"
+            android:background="?android:attr/selectableItemBackground"
+            android:tint="#FFFFFF"
+            android:contentDescription="Go back"
+            android:importantForAccessibility="yes" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Submission Registers"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:background="@drawable/border_green"
+            android:layout_marginStart="8dp"
+            android:accessibilityHeading="true"
+            android:importantForAccessibility="yes" />
+
+    </LinearLayout>
+
+    <!-- Create Button -->
+    <Button
+        android:id="@+id/btnCreateChecklist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Create New Register"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="Create a new submission register"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Export CCE Button -->
+    <Button
+        android:id="@+id/btnExportCCE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Export Consolidated CCE Sheet"
+        android:textColor="?android:attr/textColorPrimary"
+        android:backgroundTint="#FF444444"
+        android:contentDescription="Export consolidated evaluation sheet to Excel"
+        android:layout_marginBottom="16dp" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvChecklists"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Saved submission registers" />
+
+        <!-- Empty State -->
+        <TextView
+            android:id="@+id/tvEmptyState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="No registers found.\nTap 'Create New Register' to start."
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="16sp"
+            android:visibility="gone"
+            android:importantForAccessibility="yes" />
+
+    </FrameLayout>
+
+</LinearLayout>

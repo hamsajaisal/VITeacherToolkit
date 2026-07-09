@@ -51,6 +51,22 @@ class SchoolHoursActivity : AppCompatActivity() {
         }
     }
 
+    private fun parseTimeToMinutes(timeStr: String): Int {
+        return try {
+            val sdf = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US)
+            val date = sdf.parse(timeStr)
+            if (date != null) {
+                val calendar = java.util.Calendar.getInstance()
+                calendar.time = date
+                calendar.get(java.util.Calendar.HOUR_OF_DAY) * 60 + calendar.get(java.util.Calendar.MINUTE)
+            } else {
+                0
+            }
+        } catch (e: Exception) {
+            0
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySchoolHoursBinding.inflate(layoutInflater)
@@ -113,24 +129,35 @@ class SchoolHoursActivity : AppCompatActivity() {
 
     private fun updatePeriodsFilter() {
         val hasExceptions = allPeriodsList.any { it.isException }
-        if (hasExceptions) {
+        val filtered = if (hasExceptions) {
             binding.tabLayout.visibility = View.VISIBLE
             if (binding.tabLayout.tabCount == 0) {
                 binding.tabLayout.addTab(binding.tabLayout.newTab().setText("Whole Days"))
                 binding.tabLayout.addTab(binding.tabLayout.newTab().setText("Exceptional Days"))
             }
             val selectedTab = binding.tabLayout.selectedTabPosition
-            val filtered = if (selectedTab == 1) {
+            if (selectedTab == 1) {
                 allPeriodsList.filter { it.isException }
             } else {
                 allPeriodsList.filter { !it.isException }
             }
-            adapter.updateList(filtered)
         } else {
             binding.tabLayout.visibility = View.GONE
             binding.tabLayout.removeAllTabs()
-            adapter.updateList(allPeriodsList)
+            allPeriodsList
         }
+        adapter.updateList(filtered)
+
+        // Disable button if capacity (11 slots: 8 periods + 3 intervals/breaks) is reached
+        val selectedTabPos = if (binding.tabLayout.visibility == View.VISIBLE) binding.tabLayout.selectedTabPosition else 0
+        val activeCount = if (selectedTabPos == 1) {
+            allPeriodsList.count { it.isException }
+        } else {
+            allPeriodsList.count { !it.isException }
+        }
+        val isFull = activeCount >= 11
+        binding.btnAddPeriod.isEnabled = !isFull
+        binding.btnAddPeriod.alpha = if (isFull) 0.5f else 1.0f
     }
 
     private fun showAddPeriodDialog(editingPeriod: SchoolPeriod? = null) {
@@ -160,7 +187,9 @@ class SchoolHoursActivity : AppCompatActivity() {
             }
         }
 
-        val lastRegularPeriod = allPeriodsList.filter { !it.isException }.maxByOrNull { it.periodNumber }
+        val isExceptionTab = binding.tabLayout.visibility == View.VISIBLE && binding.tabLayout.selectedTabPosition == 1
+        val currentTabPeriods = allPeriodsList.filter { it.isException == isExceptionTab }
+        val lastRegularPeriod = currentTabPeriods.maxByOrNull { parseTimeToMinutes(it.endTime) }
         val defaultStartTimeCalculated = lastRegularPeriod?.endTime ?: "09:00 AM"
         val defaultEndTimeCalculated = lastRegularPeriod?.let { addMinutesToTime(it.endTime, if (isCollege) 60 else 45) } ?: "10:00 AM"
 
@@ -275,7 +304,7 @@ class SchoolHoursActivity : AppCompatActivity() {
             }
         }
 
-        // Set initial spinner/exception values if editing
+        // Set initial spinner/exception values if editing or pre-select next period
         if (editingPeriod != null) {
             val spinnerPosition = when (editingPeriod.periodNumber) {
                 99 -> 8
@@ -290,6 +319,43 @@ class SchoolHoursActivity : AppCompatActivity() {
                 val dayIndex = days.indexOf(editingPeriod.exceptionDay).coerceAtLeast(0)
                 dialogBinding.spinnerExceptionDay.setSelection(dayIndex)
             }
+        } else {
+            // Pre-select next logical period
+            val isExceptionTab = binding.tabLayout.visibility == View.VISIBLE && binding.tabLayout.selectedTabPosition == 1
+            dialogBinding.cbIsException.isChecked = isExceptionTab
+            if (isExceptionTab) {
+                dialogBinding.layoutExceptionDay.visibility = View.VISIBLE
+            }
+
+            val existing = allPeriodsList.filter { it.isException == isExceptionTab }
+            val existingNumbers = existing.map { it.periodNumber }
+            
+            var nextPeriod = 1
+            for (p in 1..8) {
+                if (!existingNumbers.contains(p)) {
+                    nextPeriod = p
+                    break
+                }
+            }
+            if (existingNumbers.containsAll((1..8).toList())) {
+                if (!existingNumbers.contains(99)) {
+                    nextPeriod = 99
+                } else if (!existingNumbers.contains(100)) {
+                    nextPeriod = 100
+                } else if (!existingNumbers.contains(101)) {
+                    nextPeriod = 101
+                } else {
+                    nextPeriod = 8
+                }
+            }
+
+            val spinnerPosition = when (nextPeriod) {
+                99 -> 8
+                100 -> 9
+                101 -> 10
+                else -> nextPeriod - 1
+            }
+            dialogBinding.spinnerPeriodNumber.setSelection(spinnerPosition)
         }
 
         dialogBinding.btnSavePeriod.setOnClickListener {
@@ -306,6 +372,30 @@ class SchoolHoursActivity : AppCompatActivity() {
             else ""
 
             val isBreak = periodNumber in listOf(99, 100, 101)
+            
+            // Check duplicate period number in this mode
+            val isDuplicate = allPeriodsList.any { 
+                it.isException == isException && 
+                it.periodNumber == periodNumber && 
+                it.id != (editingPeriod?.id ?: 0) &&
+                (!isException || it.exceptionDay == exceptionDay)
+            }
+            if (isDuplicate) {
+                val label = when (periodNumber) {
+                    99 -> "Forenoon Interval"
+                    100 -> "Lunch Break"
+                    101 -> "Afternoon Interval"
+                    else -> if (isCollege) "Hour $periodNumber" else "Period $periodNumber"
+                }
+                val errorMsg = if (isException) {
+                    "$label is already configured for $exceptionDay."
+                } else {
+                    "$label is already configured for all days."
+                }
+                Toast.makeText(this@SchoolHoursActivity, errorMsg, Toast.LENGTH_SHORT).show()
+                dialogBinding.root.announceForAccessibility(errorMsg)
+                return@setOnClickListener
+            }
             if (isBreak) {
                 val isAlertEnabled = dialogBinding.cbEnableAlert.isChecked
                 val selectedAlertIndex = dialogBinding.spinnerAlertMinutes.selectedItemPosition

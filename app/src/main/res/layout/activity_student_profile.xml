@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -45,6 +45,17 @@
                 android:layout_marginStart="8dp"
                 android:accessibilityHeading="true"
                 android:importantForAccessibility="yes" />
+
+            <ImageButton
+                android:id="@+id/btnMore"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_menu_more"
+                android:background="?android:attr/selectableItemBackground"
+                android:tint="#FFFFFF"
+                android:contentDescription="More options"
+                android:importantForAccessibility="yes"
+                android:layout_marginStart="8dp" />
 
         </LinearLayout>
 
@@ -152,6 +163,19 @@
             android:textColor="#000000"
             android:backgroundTint="@color/lavender"
             android:contentDescription="Add new remark"
+            android:importantForAccessibility="yes"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Delete Profile Action Button -->
+        <Button
+            android:id="@+id/btnDeleteProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Delete Student Profile"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/red_dark"
+            android:contentDescription="Delete student profile"
             android:importantForAccessibility="yes" />
 
     </LinearLayout>

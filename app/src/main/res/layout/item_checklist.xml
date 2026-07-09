@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="60dp"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="12dp"
+    android:focusable="true"
+    android:clickable="true"
+    android:background="?android:attr/windowBackground"
+    android:layout_marginBottom="8dp">
+
+    <TextView
+        android:id="@+id/tvChecklistName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:id="@+id/tvChecklistDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="14sp"
+            android:importantForAccessibility="no" />
+
+        <TextView
+            android:id="@+id/tvChecklistSummary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/lavender_dark"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:importantForAccessibility="no" />
+
+    </LinearLayout>
+
+</LinearLayout>

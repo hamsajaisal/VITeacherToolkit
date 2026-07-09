@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     android:background="?android:attr/windowBackground"
     android:padding="24dp">
 
@@ -25,75 +26,13 @@
         android:text=""
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="16sp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="24dp"
         android:importantForAccessibility="yes" />
 
-    <Button
-        android:id="@+id/btnTimetable"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvHomeFeatures"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="Timetable"
-        android:textColor="#000000"
-        android:backgroundTint="@color/lavender"
-        android:contentDescription="Timetable"
-        android:layout_marginBottom="16dp" />
-
-    <Button
-        android:id="@+id/btnPasswordSaver"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="Password Saver"
-        android:textColor="#000000"
-        android:backgroundTint="@color/lavender"
-        android:contentDescription="Password Saver"
-        android:layout_marginBottom="16dp" />
-
-    <Button
-        android:id="@+id/btnMyNotes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="My Notes"
-        android:textColor="#000000"
-        android:backgroundTint="@color/lavender"
-        android:contentDescription="My Notes"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Conditionally Visible: My Class Button -->
-    <Button
-        android:id="@+id/btnMyClass"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="My Class"
-        android:textColor="#000000"
-        android:backgroundTint="@color/lavender"
-        android:contentDescription="My Class"
-        android:layout_marginBottom="16dp"
-        android:visibility="gone" />
-
-
-    <Button
-        android:id="@+id/btnClassroomTimer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="Classroom Timer"
-        android:textColor="#000000"
-        android:backgroundTint="@color/lavender"
-        android:layout_marginBottom="16dp" />
-
-    <Button
-        android:id="@+id/btnSettings"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="Settings"
-        android:textColor="#000000"
-        android:backgroundTint="@color/lavender"
-        android:contentDescription="Settings"
-        android:layout_marginBottom="16dp" />
-
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none" />
 </LinearLayout>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:fitsSystemWindows="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -77,6 +77,19 @@
         android:textColor="#000000"
         android:backgroundTint="@color/lavender"
         android:contentDescription="Class Profile"
+        android:importantForAccessibility="yes"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Custom Checklists Option -->
+    <Button
+        android:id="@+id/btnCustomChecklists"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="Custom Checklists"
+        android:textColor="#000000"
+        android:backgroundTint="@color/lavender"
+        android:contentDescription="Custom Checklists"
         android:importantForAccessibility="yes"
         android:layout_marginBottom="16dp" />
 

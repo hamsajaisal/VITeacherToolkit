@@ -159,6 +159,25 @@ object ExcelParser {
                                 if (headerName.lowercase().contains("pincode") && fieldValue.endsWith(".0")) {
                                     fieldValue = fieldValue.substring(0, fieldValue.length - 2)
                                 }
+
+                                // APL/BPL True/False conversion
+                                val lowerHeader = headerName.lowercase()
+                                if (lowerHeader == "apl") {
+                                    val lowerVal = fieldValue.lowercase()
+                                    if (lowerVal == "true" || lowerVal == "1" || lowerVal == "yes") {
+                                        fieldValue = "APL"
+                                    } else if (lowerVal == "false" || lowerVal == "0" || lowerVal == "no") {
+                                        fieldValue = "BPL"
+                                    }
+                                } else if (lowerHeader == "bpl") {
+                                    val lowerVal = fieldValue.lowercase()
+                                    if (lowerVal == "true" || lowerVal == "1" || lowerVal == "yes") {
+                                        fieldValue = "BPL"
+                                    } else if (lowerVal == "false" || lowerVal == "0" || lowerVal == "no") {
+                                        fieldValue = "APL"
+                                    }
+                                }
+
                                 profileFields.add(StudentProfileField(classId, admNo, headerName, fieldValue))
                             }
                         }

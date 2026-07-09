@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="48dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="10dp"
+    android:focusable="true"
+    android:clickable="true"
+    android:background="?android:attr/windowBackground"
+    android:layout_marginBottom="8dp">
+
+    <!-- Roll Number Column -->
+    <TextView
+        android:id="@+id/tvRollNumber"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:importantForAccessibility="no" />
+
+    <!-- Student Name Column -->
+    <TextView
+        android:id="@+id/tvStudentName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="18sp"
+        android:importantForAccessibility="no" />
+
+    <!-- Explicit Status Label -->
+    <TextView
+        android:id="@+id/tvChecklistStatus"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:gravity="end"
+        android:text="Completed"
+        android:importantForAccessibility="no" />
+
+</LinearLayout>

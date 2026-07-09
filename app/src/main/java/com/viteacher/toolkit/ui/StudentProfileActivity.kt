@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
@@ -26,6 +27,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.room.withTransaction
 import com.viteacher.toolkit.R
 import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.StudentProfile
@@ -101,14 +103,101 @@ class StudentProfileActivity : AppCompatActivity() {
         binding.btnAddRemark.setOnClickListener {
             showAddRemarkDialog()
         }
+
+        binding.btnDeleteProfile.setOnClickListener {
+            showDeleteProfileConfirmationDialog()
+        }
+
+        binding.btnMore.setOnClickListener {
+            showMoreOptions()
+        }
+    }
+
+    private fun showMoreOptions() {
+        val popup = androidx.appcompat.widget.PopupMenu(this, binding.btnMore)
+        popup.menu.add(0, 1, 0, "Add Custom Info")
+        popup.menu.add(0, 2, 1, "Delete Profile")
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                1 -> {
+                    showAddCustomInfoDialog()
+                    true
+                }
+                2 -> {
+                    showDeleteProfileConfirmationDialog()
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
+    private fun showAddCustomInfoDialog() {
+        val context = this
+        val layout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            val pad = (24 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+        }
+
+        val inputHeader = EditText(context).apply {
+            hint = "e.g., APL/BPL, Blood Group"
+            contentDescription = "Type information heading"
+            setSingleLine(true)
+        }
+        layout.addView(inputHeader)
+
+        val inputVal = EditText(context).apply {
+            hint = "Value"
+            contentDescription = "Type value here"
+            setSingleLine(true)
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = (16 * resources.displayMetrics.density).toInt()
+            }
+            layoutParams = lp
+        }
+        layout.addView(inputVal)
+
+        val container = FrameLayout(context)
+        container.addView(layout)
+        container.setupCursorEndForEditTexts()
+
+        AlertDialog.Builder(context)
+            .setTitle("Add Custom Info")
+            .setView(container)
+            .setPositiveButton("Save") { _, _ ->
+                val heading = inputHeader.text.toString().trim()
+                val value = inputVal.text.toString().trim()
+                if (heading.isNotEmpty()) {
+                    saveProfileValue(heading, value)
+                } else {
+                    Toast.makeText(context, "Heading cannot be empty.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun loadStudentDetails() {
         lifecycleScope.launch {
             val db = AppDatabase.getDatabase(applicationContext)
             student = db.studentProfileDao().getStudentProfile(classId, admissionNumber)
-            fields = db.studentProfileFieldDao().getFieldsForStudent(classId, admissionNumber)
             remarks = db.studentRemarkDao().getRemarksForStudent(classId, admissionNumber)
+
+            val studentFields = db.studentProfileFieldDao().getFieldsForStudent(classId, admissionNumber)
+            val studentFieldMap = studentFields.associate { it.fieldName to it.fieldValue }
+
+            val classFields = db.studentProfileFieldDao().getFieldsForClass(classId)
+            val uniqueFieldNames = classFields.map { it.fieldName }.distinct().sorted()
+
+            fields = uniqueFieldNames.map { fieldName ->
+                val valStr = studentFieldMap[fieldName] ?: ""
+                StudentProfileField(classId, admissionNumber, fieldName, valStr)
+            }
 
             runOnUiThread {
                 if (student == null) {
@@ -162,32 +251,31 @@ class StudentProfileActivity : AppCompatActivity() {
     private fun renderDynamicDetails() {
         binding.layoutDetails.removeAllViews()
 
-        // 1. Find standard values for specific display/copy items
         var street = ""
         var postoffice = ""
         var pincode = ""
+
+        addDetailRow("Name", student?.name ?: "")
+        addDetailRow("Admission Number", student?.admissionNumber ?: "")
 
         fields.forEach { field ->
             val fieldName = field.fieldName.lowercase()
             val value = field.fieldValue
 
             if (value.isNotEmpty()) {
-                // Track address fields for combined copy
                 if (fieldName.contains("street")) street = value
                 if (fieldName.contains("post")) postoffice = value
                 if (fieldName.contains("pincode") || fieldName.contains("pin code")) pincode = value
                 
-                // Track phone number
                 if (fieldName.contains("phone") || fieldName.contains("mobile")) {
                     parentPhoneNumber = value
                 }
-
-                // Render standard details row
-                addDetailRow(field.fieldName, value)
             }
+
+            val displayValue = if (value.isEmpty()) "Not Specified" else value
+            addDetailRow(field.fieldName, displayValue)
         }
 
-        // 2. Render combined Full Address row if available
         if (street.isNotEmpty() || postoffice.isNotEmpty() || pincode.isNotEmpty()) {
             val combinedAddress = listOf(street, postoffice, pincode).filter { it.isNotEmpty() }.joinToString(", ")
             addDetailRow("Full Address", combinedAddress, isCombinedAddress = true)
@@ -245,26 +333,90 @@ class StudentProfileActivity : AppCompatActivity() {
         row.addView(tvLabel)
         row.addView(tvValue)
 
-        // Determine if this field can be long pressed to copy
-        val isCopyable = isCombinedAddress || when (label.lowercase()) {
-            "admission no", "admission number", "phone number", "mobile number", "phone number/mobile number",
-            "account no", "account number", "ifsc", "ifsc code", "father name", "father full name",
-            "mother name", "mother full name" -> true
-            else -> false
-        }
+        val cleanVal = if (value == "Not Specified") "" else value
 
-        if (isCopyable) {
-            row.contentDescription = "$label column: $value value. Double tap to focus, long press to copy to clipboard."
-            
-            row.setOnLongClickListener {
-                copyToClipboard(label, value)
-                true
-            }
-        } else {
-            row.contentDescription = "$label column: $value value."
+        row.contentDescription = "$label column: $value value. Double tap to focus, long press for options."
+        row.setOnLongClickListener {
+            showRowActionDialog(label, cleanVal)
+            true
         }
 
         binding.layoutDetails.addView(row)
+    }
+
+    private fun showRowActionDialog(label: String, value: String) {
+        val options = if (label.equals("Admission Number", ignoreCase = true) || label.equals("Full Address", ignoreCase = true)) {
+            arrayOf("Copy to Clipboard")
+        } else {
+            arrayOf("Copy to Clipboard", "Edit Info")
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("$label Options")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> copyToClipboard(label, value)
+                    1 -> showEditRowDialog(label, value)
+                }
+            }
+            .show()
+    }
+
+    private fun showEditRowDialog(label: String, currentValue: String) {
+        val input = EditText(this).apply {
+            setText(currentValue)
+            hint = "Value for '$label'"
+            contentDescription = "Enter new value for $label"
+            setSingleLine(true)
+        }
+        val container = FrameLayout(this)
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            val pad = (24 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+            addView(input)
+        }
+        container.addView(layout)
+        container.setupCursorEndForEditTexts()
+
+        AlertDialog.Builder(this)
+            .setTitle("Edit $label")
+            .setView(container)
+            .setPositiveButton("Save") { _, _ ->
+                val newValue = input.text.toString().trim()
+                saveProfileValue(label, newValue)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun saveProfileValue(label: String, newValue: String) {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            if (label.equals("Name", ignoreCase = true)) {
+                val oldName = student?.name ?: ""
+                db.studentProfileDao().insertStudentProfiles(listOf(
+                    StudentProfile(classId, admissionNumber, newValue)
+                ))
+                if (oldName.isNotEmpty() && newValue.isNotEmpty()) {
+                    val rosterStudent = db.studentDao().getAllStudentsOnce(classId)
+                        .firstOrNull { it.name.lowercase() == oldName.lowercase() }
+                    if (rosterStudent != null) {
+                        db.studentDao().insertStudents(listOf(
+                            com.viteacher.toolkit.data.Student(classId, rosterStudent.rollNumber, newValue)
+                        ))
+                    }
+                }
+            } else {
+                db.studentProfileFieldDao().insertStudentProfileFields(listOf(
+                    StudentProfileField(classId, admissionNumber, label, newValue)
+                ))
+            }
+            runOnUiThread {
+                Toast.makeText(this@StudentProfileActivity, "Updated successfully", Toast.LENGTH_SHORT).show()
+                loadStudentDetails()
+            }
+        }
     }
 
     private fun copyToClipboard(label: String, value: String) {
@@ -533,6 +685,98 @@ class StudentProfileActivity : AppCompatActivity() {
         } else {
             @Suppress("DEPRECATION")
             vibrator.vibrate(ms)
+        }
+    }
+
+    private fun showDeleteProfileConfirmationDialog() {
+        val studentName = student?.name ?: "this student"
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Delete Student Profile")
+            .setMessage("Are you sure you want to delete '$studentName'? This will also remove them from the attendance register and update other students' roll numbers. This action cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                deleteProfileFromDb()
+            }
+            .setNegativeButton("Cancel") { d, _ ->
+                d.dismiss()
+                binding.root.announceForAccessibility("Deletion cancelled.")
+            }
+            .create()
+
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Delete"
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel"
+        binding.root.announceForAccessibility("Warning dialog. Delete student profile '$studentName'? Select Delete or Cancel.")
+    }
+
+    private fun deleteProfileFromDb() {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            
+            // Try to find matching student roll number in roster
+            var matchedRollNumber: Int? = null
+            
+            // Check dynamic roll number field first
+            val rollFieldName = fields.find {
+                val lower = it.fieldName.lowercase()
+                lower.contains("roll") || lower == "sl. no" || lower == "sl no" || lower == "sl.no" || lower.contains("serial")
+            }
+            if (rollFieldName != null) {
+                matchedRollNumber = rollFieldName.fieldValue.toDoubleOrNull()?.toInt() ?: rollFieldName.fieldValue.toIntOrNull()
+            }
+            
+            // Fallback: Try via name match
+            if (matchedRollNumber == null) {
+                val rosterStudents = db.studentDao().getAllStudentsOnce(classId)
+                val match = rosterStudents.find { it.name.trim().equals(student?.name?.trim(), ignoreCase = true) }
+                if (match != null) {
+                    matchedRollNumber = match.rollNumber
+                }
+            }
+
+            // Perform deletion in database transaction
+            db.withTransaction {
+                // 1. Delete student profile tables
+                db.studentProfileDao().deleteStudentProfile(classId, admissionNumber)
+                db.studentProfileFieldDao().deleteStudentProfileFields(classId, admissionNumber)
+                db.studentRemarkDao().deleteRemarksForStudent(classId, admissionNumber)
+                
+                // 2. Delete roster student and shift roll numbers if matched
+                if (matchedRollNumber != null) {
+                    db.studentDao().deleteStudent(classId, matchedRollNumber)
+                    db.studentDao().shiftRollNumbers(classId, matchedRollNumber)
+                    
+                    db.attendanceDao().deleteAttendanceForStudent(classId, matchedRollNumber)
+                    db.attendanceDao().shiftAttendanceRollNumbers(classId, matchedRollNumber)
+                    
+                    db.checklistDao().deleteChecklistRecordsForStudent(classId, matchedRollNumber)
+                    db.checklistDao().shiftChecklistRollNumbers(classId, matchedRollNumber)
+
+                    // Shift any dynamic roll number fields in student_profile_fields as well
+                    val allClassFields = db.studentProfileFieldDao().getFieldsForClass(classId)
+                    val rollFieldsToShift = allClassFields.filter { f ->
+                        val lower = f.fieldName.lowercase()
+                        (lower.contains("roll") || lower == "sl. no" || lower == "sl no" || lower == "sl.no" || lower.contains("serial"))
+                    }
+                    val updatedFields = mutableListOf<StudentProfileField>()
+                    rollFieldsToShift.forEach { f ->
+                        val rollVal = f.fieldValue.toDoubleOrNull()?.toInt() ?: f.fieldValue.toIntOrNull()
+                        if (rollVal != null && rollVal > matchedRollNumber) {
+                            updatedFields.add(f.copy(fieldValue = (rollVal - 1).toString()))
+                        }
+                    }
+                    if (updatedFields.isNotEmpty()) {
+                        db.studentProfileFieldDao().insertStudentProfileFields(updatedFields)
+                    }
+                }
+            }
+
+            runOnUiThread {
+                val successAnnouncement = "Student profile deleted successfully"
+                Toast.makeText(this@StudentProfileActivity, successAnnouncement, Toast.LENGTH_SHORT).show()
+                binding.root.announceForAccessibility(successAnnouncement)
+                triggerHapticFeedback(true)
+                finish()
+            }
         }
     }
 }

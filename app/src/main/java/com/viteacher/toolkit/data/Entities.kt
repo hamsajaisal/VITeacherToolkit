@@ -122,3 +122,31 @@ data class StudentRemark(
     val remarkText: String,
     val timestamp: Long
 )
+
+@Entity(
+    tableName = "checklist_records",
+    primaryKeys = ["classId", "checklistName", "rollNumber"]
+)
+data class ChecklistRecord(
+    val classId: Int,
+    val checklistName: String,
+    val rollNumber: Int,
+    val name: String,
+    val isChecked: Boolean,
+    val date: String
+)
+
+@Entity(tableName = "link_folders")
+data class LinkFolder(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val name: String
+)
+
+@Entity(tableName = "link_items")
+data class LinkItem(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val folderId: Int,
+    val title: String,
+    val url: String,
+    val isPinned: Boolean = false
+)

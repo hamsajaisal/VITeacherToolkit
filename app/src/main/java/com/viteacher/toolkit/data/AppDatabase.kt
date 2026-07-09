@@ -20,9 +20,12 @@ import android.content.Context
         AttendanceRecord::class,
         StudentProfile::class,
         StudentProfileField::class,
-        StudentRemark::class
+        StudentRemark::class,
+        ChecklistRecord::class,
+        LinkFolder::class,
+        LinkItem::class
     ],
-    version = 5,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -38,6 +41,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun studentProfileDao(): StudentProfileDao
     abstract fun studentProfileFieldDao(): StudentProfileFieldDao
     abstract fun studentRemarkDao(): StudentRemarkDao
+    abstract fun checklistDao(): ChecklistDao
+    abstract fun linkFolderDao(): LinkFolderDao
+    abstract fun linkItemDao(): LinkItemDao
 
     companion object {
         @Volatile
@@ -87,6 +93,25 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `checklist_records` (`classId` INTEGER NOT NULL, `checklistName` TEXT NOT NULL, `rollNumber` INTEGER NOT NULL, `name` TEXT NOT NULL, `isChecked` INTEGER NOT NULL, `date` TEXT NOT NULL, PRIMARY KEY(`classId`, `checklistName`, `rollNumber`))")
+            }
+        }
+
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `link_folders` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS `link_items` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `folderId` INTEGER NOT NULL, `title` TEXT NOT NULL, `url` TEXT NOT NULL)")
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `link_items` ADD COLUMN `isPinned` INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -94,7 +119,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "vi_teacher_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

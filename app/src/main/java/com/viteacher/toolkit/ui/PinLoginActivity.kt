@@ -198,6 +198,19 @@ class PinLoginActivity : AppCompatActivity() {
         val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
         val setupDone = prefs.getBoolean("setup_guide_shown", false)
 
+        if (targetScreen == "shortcut") {
+            val shortcutIntent = intent.getParcelableExtra<Intent>("shortcut_target_intent")
+            val mainIntent = Intent(this@PinLoginActivity, HomeActivity::class.java)
+            val intents = if (shortcutIntent != null) {
+                arrayOf(mainIntent, shortcutIntent)
+            } else {
+                arrayOf(mainIntent)
+            }
+            startActivities(intents)
+            finish()
+            return
+        }
+
         val intent = when {
             targetScreen == "password_saver" ->
                 Intent(this@PinLoginActivity, PasswordSaverActivity::class.java)

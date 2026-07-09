@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:fitsSystemWindows="true"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="?android:attr/windowBackground"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:fitsSystemWindows="true">
 
     <!-- Header bar with back button and green border title -->
     <LinearLayout
@@ -12,7 +13,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="24dp">
+        android:layout_marginBottom="20dp">
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -29,9 +30,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Attendance History"
+            android:text="Register Editor"
             android:textColor="?android:attr/textColorPrimary"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             android:gravity="center"
             android:background="@drawable/border_green"
@@ -41,25 +42,45 @@
 
     </LinearLayout>
 
-    <!-- Empty State Message -->
-    <TextView
-        android:id="@+id/tvEmptyState"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="18sp"
-        android:text="No attendance history saved yet. Go back and save some sessions."
-        android:visibility="gone" />
-
-    <!-- Recycler View for History List -->
+    <!-- Student RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvHistory"
+        android:id="@+id/rvStudents"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:contentDescription="List of attendance history records"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="List of students"
         android:importantForAccessibility="yes" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btnSaveChecklist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Save Register"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Save register"
+            android:layout_marginBottom="8dp"
+            android:importantForAccessibility="yes" />
+
+        <Button
+            android:id="@+id/btnSharePending"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="Share Pending List"
+            android:textColor="#000000"
+            android:backgroundTint="@color/lavender"
+            android:contentDescription="Share pending list"
+            android:importantForAccessibility="yes" />
+
+    </LinearLayout>
 
 </LinearLayout>

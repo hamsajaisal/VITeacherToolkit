@@ -27,7 +27,12 @@ import com.viteacher.toolkit.data.Classroom
 import com.viteacher.toolkit.data.StudentProfile
 import com.viteacher.toolkit.data.StudentProfileField
 import com.viteacher.toolkit.databinding.ActivityClassProfileBinding
+import android.widget.Spinner
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.FrameLayout
 import com.viteacher.toolkit.util.ExcelParser
+import com.viteacher.toolkit.util.setupCursorEndForEditTexts
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -211,6 +216,8 @@ class ClassProfileActivity : AppCompatActivity() {
         val popup = PopupMenu(this, binding.btnMore)
         popup.menu.add(0, 1, 0, "Import Student Data")
         popup.menu.add(0, 2, 1, "Sort or Filter Students")
+        popup.menu.add(0, 3, 2, "Add New Info")
+        popup.menu.add(0, 4, 3, "Add Shortcut to Home Screen")
         
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -226,6 +233,28 @@ class ClassProfileActivity : AppCompatActivity() {
                     } else {
                         showFilterSortOptionsDialog()
                     }
+                    true
+                }
+                3 -> {
+                    if (allStudents.isEmpty()) {
+                        val msg = "Please import student data first"
+                        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                        binding.root.announceForAccessibility(msg)
+                    } else {
+                        showAddClassroomInfoDialog()
+                    }
+                    true
+                }
+                4 -> {
+                    val className = classroom?.let {
+                        val prefix = if (getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE).getString("institution_type", "school") == "college") "" else "Class "
+                        val classText = if (prefix.isEmpty()) "${it.standard} ${it.division}" else "${it.standard}${it.division}"
+                        "$prefix$classText Profile"
+                    } ?: "Class Profile"
+                    val targetIntent = Intent(this, ClassProfileActivity::class.java).apply {
+                        putExtra("class_id", classId)
+                    }
+                    com.viteacher.toolkit.util.ShortcutHelper.pinShortcut(this, "class_profile_$classId", className, targetIntent)
                     true
                 }
                 else -> false
@@ -505,7 +534,7 @@ class ClassProfileActivity : AppCompatActivity() {
         dialog.show()
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Share"
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel"
-        binding.root.announceForAccessibility("Share checklist dialog opened. Use Select All or Deselect All, check options, then choose Share or Cancel.")
+        binding.root.announceForAccessibility("Share student list details dialog opened. Use Select All or Deselect All, check options, then choose Share or Cancel.")
     }
 
     private fun dispatchShare(fields: List<String>, onlyBasic: Boolean) {
@@ -610,5 +639,134 @@ class ClassProfileActivity : AppCompatActivity() {
         }
 
         override fun getItemCount(): Int = list.size
+    }
+
+    data class StudentSpinnerItem(
+        val admissionNumber: String,
+        val name: String,
+        val rollNumber: Int
+    ) {
+        override fun toString(): String = "$rollNumber - $name"
+    }
+
+    private fun showAddClassroomInfoDialog() {
+        val input = EditText(this).apply {
+            hint = "e.g., APL/BPL, Blood Group"
+            contentDescription = "Type new information heading here"
+            setSingleLine(true)
+        }
+        val container = FrameLayout(this)
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            val pad = (24 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+            addView(input)
+        }
+        container.addView(layout)
+        container.setupCursorEndForEditTexts()
+
+        AlertDialog.Builder(this)
+            .setTitle("Add New Info Heading")
+            .setView(container)
+            .setPositiveButton("Next") { _, _ ->
+                val heading = input.text.toString().trim()
+                if (heading.isNotEmpty()) {
+                    lifecycleScope.launch {
+                        val db = AppDatabase.getDatabase(applicationContext)
+                        val roster = db.studentDao().getAllStudentsOnce(classId)
+                        val rosterMap = roster.associateBy { it.name.lowercase() }
+                        
+                        val spinnerItems = allStudents.sortedBy { it.name }.mapIndexed { index, profile ->
+                            val roll = rosterMap[profile.name.lowercase()]?.rollNumber ?: (index + 1)
+                            StudentSpinnerItem(profile.admissionNumber, profile.name, roll)
+                        }.sortedBy { it.rollNumber }
+                        
+                        runOnUiThread {
+                            showBulkDataEntryDialog(heading, spinnerItems)
+                        }
+                    }
+                } else {
+                    Toast.makeText(this, "Heading cannot be empty.", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showBulkDataEntryDialog(heading: String, spinnerItems: List<StudentSpinnerItem>) {
+        val context = this
+        val layout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            val pad = (24 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+        }
+
+        val tvInstructions = TextView(context).apply {
+            text = "Select a student and enter the value for '$heading'."
+            textSize = 16f
+            setPadding(0, 0, 0, (8 * resources.displayMetrics.density).toInt())
+        }
+        layout.addView(tvInstructions)
+
+        val spinner = Spinner(context).apply {
+            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, spinnerItems)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            this.adapter = adapter
+        }
+        layout.addView(spinner)
+
+        val inputVal = EditText(context).apply {
+            hint = "Value for '$heading'"
+            contentDescription = "Type value here"
+            setSingleLine(true)
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = (16 * resources.displayMetrics.density).toInt()
+            }
+            layoutParams = lp
+        }
+        layout.addView(inputVal)
+
+        val container = FrameLayout(context)
+        container.addView(layout)
+        container.setupCursorEndForEditTexts()
+
+        val dialog = AlertDialog.Builder(context)
+            .setTitle("Add Info: $heading")
+            .setView(container)
+            .setPositiveButton("Save & Next", null) // Handled manually to prevent automatic dismiss
+            .setNegativeButton("Close", null)
+            .create()
+
+        dialog.show()
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val currentPos = spinner.selectedItemPosition
+            if (currentPos != Spinner.INVALID_POSITION) {
+                val studentItem = spinnerItems[currentPos]
+                val value = inputVal.text.toString().trim()
+
+                lifecycleScope.launch {
+                    val db = AppDatabase.getDatabase(applicationContext)
+                    db.studentProfileFieldDao().insertStudentProfileFields(listOf(
+                        StudentProfileField(classId, studentItem.admissionNumber, heading, value)
+                    ))
+                    runOnUiThread {
+                        Toast.makeText(context, "Saved for ${studentItem.name}", Toast.LENGTH_SHORT).show()
+                        if (currentPos < spinnerItems.size - 1) {
+                            spinner.setSelection(currentPos + 1)
+                            inputVal.setText("")
+                            inputVal.requestFocus()
+                        } else {
+                            Toast.makeText(context, "Completed all students!", Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                            loadStudentData() // Refresh class profile list details if visible
+                        }
+                    }
+                }
+            }
+        }
     }
 }

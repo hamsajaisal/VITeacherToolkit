@@ -133,6 +133,12 @@ interface StudentDao {
 
     @Query("DELETE FROM students WHERE classId = :classId")
     suspend fun deleteAllStudents(classId: Int)
+
+    @Query("DELETE FROM students WHERE classId = :classId AND rollNumber = :rollNumber")
+    suspend fun deleteStudent(classId: Int, rollNumber: Int)
+
+    @Query("UPDATE students SET rollNumber = rollNumber - 1 WHERE classId = :classId AND rollNumber > :deletedRoll")
+    suspend fun shiftRollNumbers(classId: Int, deletedRoll: Int)
 }
 
 @Dao
@@ -157,6 +163,12 @@ interface AttendanceDao {
 
     @Query("SELECT * FROM attendance_records WHERE classId = :classId")
     suspend fun getAllAttendanceRecordsForClassOnce(classId: Int): List<AttendanceRecord>
+
+    @Query("DELETE FROM attendance_records WHERE classId = :classId AND rollNumber = :rollNumber")
+    suspend fun deleteAttendanceForStudent(classId: Int, rollNumber: Int)
+
+    @Query("UPDATE attendance_records SET rollNumber = rollNumber - 1 WHERE classId = :classId AND rollNumber > :deletedRoll")
+    suspend fun shiftAttendanceRollNumbers(classId: Int, deletedRoll: Int)
 }
 
 data class DateSessionDto(
@@ -180,6 +192,9 @@ interface StudentProfileDao {
 
     @Query("DELETE FROM student_profiles WHERE classId = :classId")
     suspend fun deleteStudentProfilesForClass(classId: Int)
+
+    @Query("DELETE FROM student_profiles WHERE classId = :classId AND admissionNumber = :admissionNumber")
+    suspend fun deleteStudentProfile(classId: Int, admissionNumber: String)
 }
 
 @Dao
@@ -195,6 +210,9 @@ interface StudentProfileFieldDao {
 
     @Query("DELETE FROM student_profile_fields WHERE classId = :classId")
     suspend fun deleteStudentProfileFieldsForClass(classId: Int)
+
+    @Query("DELETE FROM student_profile_fields WHERE classId = :classId AND admissionNumber = :admissionNumber")
+    suspend fun deleteStudentProfileFields(classId: Int, admissionNumber: String)
 }
 
 @Dao
@@ -216,4 +234,81 @@ interface StudentRemarkDao {
 
     @Query("DELETE FROM student_remarks WHERE classId = :classId")
     suspend fun deleteRemarksForClass(classId: Int)
+
+    @Query("DELETE FROM student_remarks WHERE classId = :classId AND admissionNumber = :admissionNumber")
+    suspend fun deleteRemarksForStudent(classId: Int, admissionNumber: String)
 }
+
+@Dao
+interface ChecklistDao {
+    @Query("SELECT * FROM checklist_records WHERE classId = :classId AND checklistName = :checklistName ORDER BY rollNumber ASC")
+    suspend fun getChecklist(classId: Int, checklistName: String): List<ChecklistRecord>
+
+    @Query("SELECT DISTINCT checklistName, date FROM checklist_records WHERE classId = :classId ORDER BY date DESC")
+    fun getSavedChecklistsFlow(classId: Int): Flow<List<ChecklistSummaryDto>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertChecklistRecords(records: List<ChecklistRecord>)
+
+    @Query("DELETE FROM checklist_records WHERE classId = :classId AND checklistName = :checklistName")
+    suspend fun deleteChecklist(classId: Int, checklistName: String)
+
+    @Query("SELECT * FROM checklist_records WHERE classId = :classId")
+    suspend fun getAllChecklistsForClassOnce(classId: Int): List<ChecklistRecord>
+
+    @Query("DELETE FROM checklist_records WHERE classId = :classId AND rollNumber = :rollNumber")
+    suspend fun deleteChecklistRecordsForStudent(classId: Int, rollNumber: Int)
+
+    @Query("UPDATE checklist_records SET rollNumber = rollNumber - 1 WHERE classId = :classId AND rollNumber > :deletedRoll")
+    suspend fun shiftChecklistRollNumbers(classId: Int, deletedRoll: Int)
+}
+
+@Dao
+interface LinkFolderDao {
+    @Query("SELECT * FROM link_folders ORDER BY name ASC")
+    fun getAllFoldersFlow(): Flow<List<LinkFolder>>
+
+    @Query("SELECT * FROM link_folders ORDER BY name ASC")
+    suspend fun getAllFoldersOnce(): List<LinkFolder>
+
+    @Query("SELECT * FROM link_folders WHERE name = :name LIMIT 1")
+    suspend fun getFolderByName(name: String): LinkFolder?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertFolder(folder: LinkFolder): Long
+
+    @Update
+    suspend fun updateFolder(folder: LinkFolder)
+
+    @Delete
+    suspend fun deleteFolder(folder: LinkFolder)
+}
+
+@Dao
+interface LinkItemDao {
+    @Query("SELECT * FROM link_items WHERE folderId = :folderId ORDER BY isPinned DESC, title ASC")
+    fun getLinksForFolderFlow(folderId: Int): Flow<List<LinkItem>>
+
+    @Query("SELECT * FROM link_items WHERE folderId = :folderId ORDER BY isPinned DESC, title ASC")
+    suspend fun getLinksForFolderOnce(folderId: Int): List<LinkItem>
+
+    @Query("SELECT * FROM link_items ORDER BY isPinned DESC, title ASC")
+    suspend fun getAllLinksOnce(): List<LinkItem>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertLink(link: LinkItem): Long
+
+    @Update
+    suspend fun updateLink(link: LinkItem)
+
+    @Delete
+    suspend fun deleteLink(link: LinkItem)
+
+    @Query("DELETE FROM link_items WHERE folderId = :folderId")
+    suspend fun deleteLinksForFolder(folderId: Int)
+}
+
+data class ChecklistSummaryDto(
+    val checklistName: String,
+    val date: String
+)

@@ -10,6 +10,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.viteacher.toolkit.R
 import com.viteacher.toolkit.data.AppDatabase
 import com.viteacher.toolkit.data.StudentProfile
 import com.viteacher.toolkit.databinding.ActivityHomeBinding
@@ -20,11 +21,18 @@ import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
+    private var activeFeatures: List<HomeFeature> = emptyList()
+    private lateinit var adapter: HomeFeaturesAdapter
+    private var hasClassrooms: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,46 +50,7 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
-        binding.btnTimetable.setOnClickListener {
-            startActivity(Intent(this, TimetableActivity::class.java))
-        }
-
-        binding.btnPasswordSaver.setOnClickListener {
-            val intent = Intent(this, PinLoginActivity::class.java)
-            intent.putExtra("target", "password_saver")
-            startActivity(intent)
-        }
-
-        binding.btnMyNotes.setOnClickListener {
-            startActivity(Intent(this, MyNotesActivity::class.java))
-        }
-
-        binding.btnMyClass.setOnClickListener {
-            lifecycleScope.launch {
-                val db = AppDatabase.getDatabase(applicationContext)
-                val list = db.classroomDao().getAllClassroomsOnce()
-                runOnUiThread {
-                    if (list.size == 1) {
-                        val intent = Intent(this@HomeActivity, MyClassActivity::class.java).apply {
-                            putExtra("class_id", list[0].id)
-                        }
-                        startActivity(intent)
-                    } else if (list.size > 1) {
-                        startActivity(Intent(this@HomeActivity, ClassSelectionActivity::class.java))
-                    }
-                }
-            }
-        }
-
-
-        binding.btnClassroomTimer.contentDescription = "Classroom Timer"
-        binding.btnClassroomTimer.setOnClickListener {
-            startActivity(Intent(this, ClassroomTimerActivity::class.java))
-        }
-
-        binding.btnSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
-        }
+        setupRecyclerView()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -102,6 +71,174 @@ class HomeActivity : AppCompatActivity() {
                 )
             }
         })
+    }
+
+    private fun setupRecyclerView() {
+        adapter = HomeFeaturesAdapter(
+            activeFeatures,
+            onItemClick = { featureId ->
+                when (featureId) {
+                    "timetable" -> startActivity(Intent(this, TimetableActivity::class.java))
+                    "password_saver" -> {
+                        val intent = Intent(this, PinLoginActivity::class.java)
+                        intent.putExtra("target", "password_saver")
+                        startActivity(intent)
+                    }
+                    "my_notes" -> startActivity(Intent(this, MyNotesActivity::class.java))
+                    "my_class" -> {
+                        lifecycleScope.launch {
+                            val db = AppDatabase.getDatabase(applicationContext)
+                            val list = db.classroomDao().getAllClassroomsOnce()
+                            runOnUiThread {
+                                if (list.size == 1) {
+                                    val intent = Intent(this@HomeActivity, MyClassActivity::class.java).apply {
+                                        putExtra("class_id", list[0].id)
+                                    }
+                                    startActivity(intent)
+                                } else if (list.size > 1) {
+                                    startActivity(Intent(this@HomeActivity, ClassSelectionActivity::class.java))
+                                }
+                            }
+                        }
+                    }
+                    "classroom_timer" -> startActivity(Intent(this, ClassroomTimerActivity::class.java))
+                    "link_manager" -> startActivity(Intent(this, LinkManagerActivity::class.java))
+                    "settings" -> startActivity(Intent(this, SettingsActivity::class.java))
+                }
+            },
+            onItemLongClick = { feature ->
+                showFeatureShortcutOptions(feature)
+            }
+        )
+        binding.rvHomeFeatures.layoutManager = LinearLayoutManager(this)
+        binding.rvHomeFeatures.adapter = adapter
+
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPos = viewHolder.adapterPosition
+                val toPos = target.adapterPosition
+                
+                val list = activeFeatures.toMutableList()
+                val movedItem = list.removeAt(fromPos)
+                list.add(toPos, movedItem)
+                activeFeatures = list
+                
+                adapter.moveItem(fromPos, toPos)
+                return true
+            }
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                saveFeaturesOrder()
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+        })
+        itemTouchHelper.attachToRecyclerView(binding.rvHomeFeatures)
+    }
+
+    private fun showFeatureShortcutOptions(feature: HomeFeature) {
+        val options = arrayOf("Add to Phone Home Screen")
+        AlertDialog.Builder(this)
+            .setTitle(feature.title)
+            .setItems(options) { _, which ->
+                if (which == 0) {
+                    lifecycleScope.launch {
+                        val db = AppDatabase.getDatabase(applicationContext)
+                        val list = db.classroomDao().getAllClassroomsOnce()
+                        
+                        val targetIntent = when (feature.id) {
+                            "timetable" -> Intent(this@HomeActivity, TimetableActivity::class.java)
+                            "password_saver" -> Intent(this@HomeActivity, PasswordSaverActivity::class.java)
+                            "my_notes" -> Intent(this@HomeActivity, MyNotesActivity::class.java)
+                            "my_class" -> {
+                                if (list.size == 1) {
+                                    Intent(this@HomeActivity, MyClassActivity::class.java).apply {
+                                        putExtra("class_id", list[0].id)
+                                    }
+                                } else {
+                                    Intent(this@HomeActivity, ClassSelectionActivity::class.java)
+                                }
+                            }
+                            "classroom_timer" -> Intent(this@HomeActivity, ClassroomTimerActivity::class.java)
+                            "link_manager" -> Intent(this@HomeActivity, LinkManagerActivity::class.java)
+                            "settings" -> Intent(this@HomeActivity, SettingsActivity::class.java)
+                            else -> null
+                        }
+                        
+                        runOnUiThread {
+                            if (targetIntent != null) {
+                                com.viteacher.toolkit.util.ShortcutHelper.pinShortcut(
+                                    this@HomeActivity,
+                                    feature.id,
+                                    feature.title,
+                                    targetIntent
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun loadFeaturesOrder(): List<String> {
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        val defaultOrder = "timetable,password_saver,my_notes,my_class,classroom_timer,link_manager,settings"
+        val orderString = prefs.getString("home_features_order", defaultOrder) ?: defaultOrder
+        return orderString.split(",")
+    }
+
+    private fun saveFeaturesOrder() {
+        val orderList = activeFeatures.map { it.id }.toMutableList()
+        if (!orderList.contains("my_class")) {
+            val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+            val defaultOrder = "timetable,password_saver,my_notes,my_class,classroom_timer,link_manager,settings"
+            val oldOrder = (prefs.getString("home_features_order", defaultOrder) ?: defaultOrder).split(",")
+            val index = oldOrder.indexOf("my_class")
+            if (index != -1 && index <= orderList.size) {
+                orderList.add(index, "my_class")
+            } else {
+                orderList.add("my_class")
+            }
+        }
+        val orderString = orderList.joinToString(",")
+        val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("home_features_order", orderString).apply()
+    }
+
+    private fun updateActiveFeaturesList() {
+        val order = loadFeaturesOrder()
+        val list = mutableListOf<HomeFeature>()
+        
+        val featuresMap = mapOf(
+            "timetable" to HomeFeature("timetable", "Timetable", "Timetable"),
+            "password_saver" to HomeFeature("password_saver", "Password Saver", "Password Saver"),
+            "my_notes" to HomeFeature("my_notes", "My Notes", "My Notes"),
+            "my_class" to HomeFeature("my_class", "My Class", "My Class"),
+            "classroom_timer" to HomeFeature("classroom_timer", "Classroom Timer", "Classroom Timer"),
+            "link_manager" to HomeFeature("link_manager", "Link Manager", "Link Manager"),
+            "settings" to HomeFeature("settings", "Settings", "Settings")
+        )
+
+        order.forEach { id ->
+            if (id == "my_class") {
+                if (hasClassrooms) {
+                    featuresMap[id]?.let { list.add(it) }
+                }
+            } else {
+                featuresMap[id]?.let { list.add(it) }
+            }
+        }
+
+        activeFeatures = list
+        adapter.updateItems(list)
     }
 
     override fun onResume() {
@@ -146,11 +283,8 @@ class HomeActivity : AppCompatActivity() {
             val db = AppDatabase.getDatabase(applicationContext)
             val list = db.classroomDao().getAllClassroomsOnce()
             runOnUiThread {
-                if (list.isNotEmpty()) {
-                    binding.btnMyClass.visibility = android.view.View.VISIBLE
-                } else {
-                    binding.btnMyClass.visibility = android.view.View.GONE
-                }
+                hasClassrooms = list.isNotEmpty()
+                updateActiveFeaturesList()
             }
         }
     }
@@ -330,4 +464,52 @@ class HomeActivity : AppCompatActivity() {
         binding.root.announceForAccessibility("Birthday Alert dialog. Today is ${student.name}'s birthday. Would you like to send a wish? Select Send Wish, Remind Me Later, or Dismiss.")
     }
 
+}
+
+data class HomeFeature(
+    val id: String,
+    val title: String,
+    val contentDescription: String
+)
+
+class HomeFeaturesAdapter(
+    private var items: List<HomeFeature>,
+    private val onItemClick: (String) -> Unit,
+    private val onItemLongClick: (HomeFeature) -> Unit
+) : RecyclerView.Adapter<HomeFeaturesAdapter.ViewHolder>() {
+
+    class ViewHolder(val button: android.widget.Button) : RecyclerView.ViewHolder(button)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val button = LayoutInflater.from(parent.context).inflate(R.layout.item_home_feature, parent, false) as android.widget.Button
+        return ViewHolder(button)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = items[position]
+        holder.button.text = item.title
+        holder.button.contentDescription = "${item.contentDescription}. Double tap to open, long press for options."
+        holder.button.setOnClickListener {
+            onItemClick(item.id)
+        }
+        holder.button.setOnLongClickListener {
+            onItemLongClick(item)
+            true
+        }
+    }
+
+    override fun getItemCount(): Int = items.size
+
+    fun updateItems(newItems: List<HomeFeature>) {
+        items = newItems
+        notifyDataSetChanged()
+    }
+
+    fun moveItem(fromPos: Int, toPos: Int) {
+        val list = items.toMutableList()
+        val movedItem = list.removeAt(fromPos)
+        list.add(toPos, movedItem)
+        items = list
+        notifyItemMoved(fromPos, toPos)
+    }
 }

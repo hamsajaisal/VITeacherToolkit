@@ -30,12 +30,16 @@ android {
         applicationId = "com.viteacher.toolkit"
         minSdk = 26
         targetSdk = 35
-        versionCode = 24
-        versionName = "2.6"
+        versionCode = 31
+        versionName = "2.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
             isMinifyEnabled = false
             val isSigningConfigured = keystorePropertiesFile.exists() && 

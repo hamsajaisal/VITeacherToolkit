@@ -9,8 +9,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
 
     <queries>
         <intent>
@@ -183,6 +184,18 @@
             android:exported="false"
             android:label="Stopwatch"/>
 
+        <!-- Custom Checklists Feature -->
+        <activity
+            android:name=".ui.ChecklistsListActivity"
+            android:exported="false"
+            android:label="Custom Checklists"/>
+
+        <activity
+            android:name=".ui.ChecklistEditorActivity"
+            android:exported="false"
+            android:label="Checklist Editor"
+            android:windowSoftInputMode="adjustResize"/>
+
         <service
             android:name=".util.TTSReminderService"
             android:exported="false"
@@ -204,6 +217,26 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
+
+        <activity
+            android:name=".ui.MegaphoneActivity"
+            android:exported="false"
+            android:label="Bluetooth Megaphone"/>
+
+        <service
+            android:name=".util.MegaphoneService"
+            android:exported="false"
+            android:foregroundServiceType="microphone"/>
+
+        <activity
+            android:name=".ui.LinkManagerActivity"
+            android:exported="false"
+            android:label="Link Manager"/>
+
+        <activity
+            android:name=".ui.LinkFolderActivity"
+            android:exported="false"
+            android:label="Link Details"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

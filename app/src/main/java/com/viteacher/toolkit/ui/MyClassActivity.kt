@@ -56,6 +56,13 @@ class MyClassActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        binding.btnCustomChecklists.setOnClickListener {
+            val intent = Intent(this, ChecklistsListActivity::class.java).apply {
+                putExtra("class_id", classId)
+            }
+            startActivity(intent)
+        }
+
         binding.btnManageStudents.setOnClickListener {
             showStudentsCountDialog()
         }

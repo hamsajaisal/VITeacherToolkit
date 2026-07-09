@@ -33,6 +33,7 @@ import com.viteacher.toolkit.data.StudentProfile
 import com.viteacher.toolkit.data.StudentProfileField
 import com.viteacher.toolkit.databinding.ActivityAttendanceRegisterBinding
 import kotlinx.coroutines.launch
+import androidx.room.withTransaction
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
@@ -757,7 +758,9 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                         .setTitle("Overwrite Attendance")
                         .setMessage("$selectedSession attendance for today is already saved. Do you want to overwrite it?")
                         .setPositiveButton("Yes") { _, _ ->
-                            performSaveAttendance()
+                            showAbsenteesPreviewAndSave {
+                                performSaveAttendance()
+                            }
                         }
                         .setNegativeButton("No") { d, _ ->
                             d.dismiss()
@@ -770,10 +773,72 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                     dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "No"
                     binding.root.announceForAccessibility("Warning dialog. $selectedSession attendance for today is already saved. Do you want to overwrite it? Select Yes or No.")
                 } else {
-                    performSaveAttendance()
+                    showAbsenteesPreviewAndSave {
+                        performSaveAttendance()
+                    }
                 }
             }
         }
+    }
+
+    private fun showAbsenteesPreviewAndSave(onConfirmSave: () -> Unit) {
+        val absentees = studentList.filter { !it.isPresent }
+        if (absentees.isEmpty()) {
+            val dialog = AlertDialog.Builder(this)
+                .setTitle("Confirm Attendance")
+                .setMessage("All students are marked Present. Do you want to save?")
+                .setPositiveButton("Save") { _, _ ->
+                    onConfirmSave()
+                }
+                .setNegativeButton("Cancel") { d, _ ->
+                    d.dismiss()
+                    binding.root.announceForAccessibility("Save cancelled.")
+                }
+                .create()
+            dialog.show()
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Save"
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel"
+            binding.root.announceForAccessibility("All students are marked Present. Do you want to save? Select Save or Cancel.")
+            return
+        }
+
+        val names = absentees.map { "${it.student.rollNumber}. ${it.student.name}" }.toTypedArray()
+        val checkedStates = BooleanArray(absentees.size) { true } // checked = absent
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Confirm Absentees")
+            .setMultiChoiceItems(names, checkedStates) { _, which, isChecked ->
+                checkedStates[which] = isChecked
+            }
+            .setPositiveButton("Save Attendance") { _, _ ->
+                var correctedCount = 0
+                for (i in checkedStates.indices) {
+                    if (!checkedStates[i]) {
+                        val studentItem = absentees[i]
+                        studentItem.isPresent = true
+                        sessionAttendanceCache[selectedSession]?.put(studentItem.student.rollNumber, true)
+                        correctedCount++
+                    }
+                }
+                if (correctedCount > 0) {
+                    studentAdapter.notifyDataSetChanged()
+                    binding.root.announceForAccessibility("Corrected $correctedCount students to Present.")
+                }
+                onConfirmSave()
+            }
+            .setNegativeButton("Cancel") { d, _ ->
+                d.dismiss()
+                binding.root.announceForAccessibility("Save cancelled.")
+            }
+            .create()
+
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).contentDescription = "Save Attendance"
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).contentDescription = "Cancel"
+        
+        binding.root.announceForAccessibility(
+            "Confirm Absentees dialog. Listed students are marked absent. Uncheck any student to mark them present, then select Save Attendance or Cancel."
+        )
     }
 
     private fun performSaveAttendance() {
@@ -864,7 +929,8 @@ class AttendanceRegisterActivity : AppCompatActivity() {
         val options = arrayOf(
             "Go to Student Profile",
             "Attendance Statistics",
-            "Share Late Comer Info via WhatsApp"
+            "Share Late Comer Info via WhatsApp",
+            "Delete Student"
         )
         
         val dialog = AlertDialog.Builder(this)
@@ -874,11 +940,81 @@ class AttendanceRegisterActivity : AppCompatActivity() {
                     0 -> navigateToStudentProfileOption(item)
                     1 -> showAttendanceStatisticsOption(item)
                     2 -> shareLateInfoOption(item)
+                    3 -> confirmDeleteStudentFromRoster(item)
                 }
             }
             .create()
         dialog.show()
-        binding.root.announceForAccessibility("Options dialog opened for ${item.student.name}. Select Go to Student Profile, Attendance Statistics, or Share Late Comer Info via WhatsApp.")
+        binding.root.announceForAccessibility("Options dialog opened for ${item.student.name}. Select Go to Student Profile, Attendance Statistics, Share Late Comer Info via WhatsApp, or Delete Student.")
+    }
+
+    private fun confirmDeleteStudentFromRoster(item: StudentAttendanceItem) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Student")
+            .setMessage("Are you sure you want to delete '${item.student.name}'? This will remove them from the register roster, all saved attendance/checklist history, and delete their student profile. This action cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                deleteStudentFromRoster(item)
+            }
+            .setNegativeButton("Cancel") { d, _ ->
+                d.dismiss()
+                binding.root.announceForAccessibility("Deletion cancelled.")
+            }
+            .create()
+            .show()
+        binding.root.announceForAccessibility("Warning dialog. Delete student '${item.student.name}'? Select Delete or Cancel.")
+    }
+
+    private fun deleteStudentFromRoster(item: StudentAttendanceItem) {
+        lifecycleScope.launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            val deletedRoll = item.student.rollNumber
+            
+            // Try to find matching profile
+            val profile = findStudentProfile(item.student.name, deletedRoll)
+            
+            db.withTransaction {
+                // 1. Delete student profile if found
+                if (profile != null) {
+                    db.studentProfileDao().deleteStudentProfile(classId, profile.admissionNumber)
+                    db.studentProfileFieldDao().deleteStudentProfileFields(classId, profile.admissionNumber)
+                    db.studentRemarkDao().deleteRemarksForStudent(classId, profile.admissionNumber)
+                }
+                
+                // 2. Delete roster student and shift roll numbers
+                db.studentDao().deleteStudent(classId, deletedRoll)
+                db.studentDao().shiftRollNumbers(classId, deletedRoll)
+                
+                db.attendanceDao().deleteAttendanceForStudent(classId, deletedRoll)
+                db.attendanceDao().shiftAttendanceRollNumbers(classId, deletedRoll)
+                
+                db.checklistDao().deleteChecklistRecordsForStudent(classId, deletedRoll)
+                db.checklistDao().shiftChecklistRollNumbers(classId, deletedRoll)
+
+                // Shift any dynamic roll number fields in student_profile_fields as well
+                val allClassFields = db.studentProfileFieldDao().getFieldsForClass(classId)
+                val rollFieldsToShift = allClassFields.filter { f ->
+                    val lower = f.fieldName.lowercase()
+                    (lower.contains("roll") || lower == "sl. no" || lower == "sl no" || lower == "sl.no" || lower.contains("serial"))
+                }
+                val updatedFields = mutableListOf<StudentProfileField>()
+                rollFieldsToShift.forEach { f ->
+                    val rollVal = f.fieldValue.toDoubleOrNull()?.toInt() ?: f.fieldValue.toIntOrNull()
+                    if (rollVal != null && rollVal > deletedRoll) {
+                        updatedFields.add(f.copy(fieldValue = (rollVal - 1).toString()))
+                    }
+                }
+                if (updatedFields.isNotEmpty()) {
+                    db.studentProfileFieldDao().insertStudentProfileFields(updatedFields)
+                }
+            }
+
+            runOnUiThread {
+                val msg = "Student '${item.student.name}' deleted successfully"
+                Toast.makeText(this@AttendanceRegisterActivity, msg, Toast.LENGTH_SHORT).show()
+                binding.root.announceForAccessibility(msg)
+                loadStudentList()
+            }
+        }
     }
 
     private fun navigateToStudentProfileOption(item: StudentAttendanceItem) {
