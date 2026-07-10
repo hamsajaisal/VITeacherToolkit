@@ -45,6 +45,14 @@
         android:contentDescription="Silence timetable announcements"
         android:layout_marginBottom="16dp"/>
 
+    <Button
+        android:id="@+id/btnShareTimetable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Share Timetable"
+        android:contentDescription="Share today's, tomorrow's, or custom day's timetable"
+        android:layout_marginBottom="16dp"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTimetable"
         android:layout_width="match_parent"

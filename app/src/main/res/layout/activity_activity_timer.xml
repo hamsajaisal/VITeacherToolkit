@@ -236,12 +236,11 @@
 
                 <Button
                     android:id="@+id/btnStop"
+                    style="@style/Widget.VITeacherToolkit.Button.Secondary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
-                    android:text="Stop"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:backgroundTint="#FF444444" />
+                    android:text="Stop" />
 
             </LinearLayout>
 

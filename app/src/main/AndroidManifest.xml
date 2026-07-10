@@ -10,8 +10,6 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.CALL_PHONE"/>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
 
     <queries>
         <intent>
@@ -218,15 +216,7 @@
             </intent-filter>
         </receiver>
 
-        <activity
-            android:name=".ui.MegaphoneActivity"
-            android:exported="false"
-            android:label="Bluetooth Megaphone"/>
 
-        <service
-            android:name=".util.MegaphoneService"
-            android:exported="false"
-            android:foregroundServiceType="microphone"/>
 
         <activity
             android:name=".ui.LinkManagerActivity"

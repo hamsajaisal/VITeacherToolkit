@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="history_item_bg">#FF1A1A1A</color> <!-- Very dark grey for Dark mode -->
+    <color name="profile_value_color">#FFFFFFFF</color> <!-- White for Dark Mode -->
+    <color name="remark_subject_color">#FFE1BEE7</color> <!-- Light lavender for Dark Mode -->
+    <color name="edit_text_bg">#FF2A2A2A</color> <!-- Dark grey for Dark Mode -->
+    <color name="history_item_stroke">#FF333333</color> <!-- Dark grey border for Dark Mode -->
+</resources>

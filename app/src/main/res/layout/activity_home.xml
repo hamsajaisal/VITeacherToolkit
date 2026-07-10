@@ -29,6 +29,66 @@
         android:layout_marginBottom="24dp"
         android:importantForAccessibility="yes" />
 
+    <!-- Current/Next Class Schedule Banner -->
+    <LinearLayout
+        android:id="@+id/layoutScheduleBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_schedule_banner"
+        android:elevation="4dp"
+        android:focusable="true"
+        android:importantForAccessibility="yes">
+
+        <TextView
+            android:id="@+id/tvCurrentClassLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CURRENT STATUS"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#FFB080FF"
+            android:letterSpacing="0.1" />
+
+        <TextView
+            android:id="@+id/tvCurrentClass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Leisure Time"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+            android:layout_marginTop="4dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/dividerHorizontal"
+            android:layout_marginVertical="8dp" />
+
+        <TextView
+            android:id="@+id/tvNextClassLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="NEXT CLASS"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorSecondary"
+            android:letterSpacing="0.1" />
+
+        <TextView
+            android:id="@+id/tvNextClass"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="None"
+            android:textSize="15sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:layout_marginTop="2dp" />
+
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvHomeFeatures"
         android:layout_width="match_parent"

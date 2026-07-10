@@ -451,15 +451,19 @@ class StudentChecklistAdapter(
     private fun updateViewHolderUI(holder: ViewHolder, item: StudentChecklistItem) {
         if (item.isChecked) {
             holder.tvStatus.text = "Completed"
-            holder.tvStatus.setTextColor(Color.parseColor("#FFCCCCCC")) // light grey
-            holder.view.setBackgroundColor(Color.BLACK)
             holder.view.contentDescription = "Roll number ${item.rollNumber}, ${item.name}, Completed. Double tap to mark pending."
         } else {
             holder.tvStatus.text = "Pending"
-            holder.tvStatus.setTextColor(Color.RED)
-            holder.view.setBackgroundColor(Color.parseColor("#FF5C0000")) // dark red background
             holder.view.contentDescription = "Roll number ${item.rollNumber}, ${item.name}, Pending. Double tap to mark completed."
         }
+        com.viteacher.toolkit.util.ThemeUtils.styleRosterRow(
+            holder.view.context,
+            holder.view,
+            holder.tvRoll,
+            holder.tvName,
+            holder.tvStatus,
+            item.isChecked
+        )
     }
 
     override fun getItemCount(): Int = list.size

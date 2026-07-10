@@ -75,7 +75,6 @@
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:layout_marginBottom="24dp"
-            android:backgroundTint="#FFFFFF"
             android:contentDescription="Select roll number dropdown"
             android:spinnerMode="dropdown"
             android:importantForAccessibility="yes" />
@@ -112,12 +111,11 @@
         <!-- Button: Add Extra Roll Number -->
         <Button
             android:id="@+id/btnAddExtraRoll"
+            style="@style/Widget.VITeacherToolkit.Button.Secondary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:text="Add Extra Roll Number"
-            android:textColor="?android:attr/textColorPrimary"
-            android:backgroundTint="#FF444444"
             android:contentDescription="Add Extra Roll Number. Creates a new roll number slot and selects it."
             android:layout_marginBottom="32dp" />
 
@@ -135,12 +133,11 @@
 
         <Button
             android:id="@+id/btnCancel"
+            style="@style/Widget.VITeacherToolkit.Button.Secondary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:text="Cancel"
-            android:textColor="?android:attr/textColorPrimary"
-            android:backgroundTint="#FF222222"
             android:contentDescription="Cancel manual setup"
             android:layout_marginBottom="24dp" />
 

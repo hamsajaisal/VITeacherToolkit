@@ -14,10 +14,10 @@ interface UserProfileDao {
 
 @Dao
 interface TimetableDao {
-    @Query("SELECT * FROM timetable_entries ORDER BY dayOfWeek, periodNumber")
+    @Query("SELECT * FROM timetable_entries ORDER BY CASE dayOfWeek WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 WHEN 'Sunday' THEN 7 ELSE 8 END, periodNumber")
     fun getAllEntries(): Flow<List<TimetableEntry>>
 
-    @Query("SELECT * FROM timetable_entries ORDER BY dayOfWeek, periodNumber")
+    @Query("SELECT * FROM timetable_entries ORDER BY CASE dayOfWeek WHEN 'Monday' THEN 1 WHEN 'Tuesday' THEN 2 WHEN 'Wednesday' THEN 3 WHEN 'Thursday' THEN 4 WHEN 'Friday' THEN 5 WHEN 'Saturday' THEN 6 WHEN 'Sunday' THEN 7 ELSE 8 END, periodNumber")
     suspend fun getAllEntriesOnce(): List<TimetableEntry>
 
     @Query("SELECT * FROM timetable_entries WHERE id = :id LIMIT 1")

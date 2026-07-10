@@ -59,6 +59,10 @@ class TimetableActivity : AppCompatActivity() {
         binding.btnSilenceAnnouncements.setOnClickListener {
             showSilenceAnnouncementsDialog()
         }
+
+        binding.btnShareTimetable.setOnClickListener {
+            showShareOptionsDialog()
+        }
     }
 
     override fun onResume() {
@@ -410,6 +414,150 @@ class TimetableActivity : AppCompatActivity() {
         startPickerDialog.show()
         binding.root.announceForAccessibility("Start Date Picker opened. Select the first day to silence announcements, then select OK.")
     }
+
+    private fun showShareOptionsDialog() {
+        val options = arrayOf("Today's Timetable", "Tomorrow's Timetable", "Select Date...")
+        AlertDialog.Builder(this)
+            .setTitle("Share Timetable")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        val calendar = Calendar.getInstance()
+                        generateAndShareTimetable(calendar)
+                    }
+                    1 -> {
+                        val calendar = Calendar.getInstance()
+                        calendar.add(Calendar.DAY_OF_YEAR, 1)
+                        generateAndShareTimetable(calendar)
+                    }
+                    2 -> {
+                        showShareDatePicker()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .create()
+            .show()
+        binding.root.announceForAccessibility("Share Timetable dialog opened. Select Today's Timetable, Tomorrow's Timetable, or Select Date.")
+    }
+
+    private fun showShareDatePicker() {
+        val calendar = Calendar.getInstance()
+        val datePickerDialog = android.app.DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                val selectedCalendar = Calendar.getInstance()
+                selectedCalendar.set(year, month, dayOfMonth)
+                generateAndShareTimetable(selectedCalendar)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+        datePickerDialog.setTitle("Select Date to Share")
+        datePickerDialog.show()
+        binding.root.announceForAccessibility("Date Picker opened. Select the date of the timetable you want to share, then select OK.")
+    }
+
+    private fun generateAndShareTimetable(date: Calendar) {
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val db = AppDatabase.getDatabase(applicationContext)
+                val periods = db.timetableDao().getAllPeriodsOnce()
+                val entries = db.timetableDao().getAllEntriesOnce()
+
+                val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                val isCollege = prefs.getString("institution_type", "school") == "college"
+                val label = if (isCollege) "Hour" else "Period"
+
+                val dayName = SimpleDateFormat("EEEE", Locale.US).format(date.time)
+                val hasExceptions = periods.any { it.isException && it.exceptionDay == dayName }
+                val activePeriods = if (hasExceptions) {
+                    periods.filter { it.isException && it.exceptionDay == dayName }
+                } else {
+                    periods.filter { !it.isException }
+                }
+
+                val sortedPeriods = activePeriods.sortedBy { parseTimeToMinutes(it.startTime) }
+
+                val dateStr = SimpleDateFormat("EEEE, d MMMM yyyy", Locale.US).format(date.time)
+                val sb = java.lang.StringBuilder()
+                sb.append("Timetable: ").append(dateStr).append("\n\n")
+
+                if (sortedPeriods.isEmpty()) {
+                    sb.append("No school periods set for this day.\n")
+                } else {
+                    sortedPeriods.forEach { p ->
+                        val pNum = p.periodNumber
+                        val isBreak = pNum in listOf(99, 100, 101)
+                        val timeSpan = "(${p.startTime} - ${p.endTime})"
+
+                        if (isBreak) {
+                            val breakName = when (pNum) {
+                                99 -> "Forenoon Interval"
+                                100 -> "Lunch Break"
+                                101 -> "Afternoon Interval"
+                                else -> "Break"
+                            }
+                            sb.append("- ").append(breakName).append(" ").append(timeSpan).append(": Break\n")
+                        } else {
+                            val entry = entries.find { it.dayOfWeek == dayName && it.periodNumber == pNum }
+                            val ordinalLabel = "$pNum${getOrdinalSuffix(pNum)} $label"
+
+                            if (entry != null) {
+                                val classLabel = if (isCollege) "" else "Class "
+                                sb.append("- ").append(ordinalLabel).append(" ").append(timeSpan).append(": ")
+                                    .append(classLabel).append(entry.className).append(" ").append(entry.division)
+                                    .append(" - ").append(entry.subject).append("\n")
+                            } else {
+                                sb.append("- ").append(ordinalLabel).append(" ").append(timeSpan).append(": Leisure Time\n")
+                            }
+                        }
+                    }
+                }
+
+                val messageText = sb.toString()
+
+                runOnUiThread {
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, "Timetable")
+                        putExtra(Intent.EXTRA_TEXT, messageText)
+                    }
+                    startActivity(Intent.createChooser(shareIntent, "Share Timetable via"))
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun parseTimeToMinutes(timeStr: String): Int {
+        return try {
+            val sdf = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US)
+            val date = sdf.parse(timeStr)
+            if (date != null) {
+                val calendar = java.util.Calendar.getInstance()
+                calendar.time = date
+                calendar.get(java.util.Calendar.HOUR_OF_DAY) * 60 + calendar.get(java.util.Calendar.MINUTE)
+            } else {
+                0
+            }
+        } catch (e: Exception) {
+            0
+        }
+    }
+
+    private fun getOrdinalSuffix(number: Int): String {
+        if (number in 11..13) return "th"
+        return when (number % 10) {
+            1 -> "st"
+            2 -> "nd"
+            3 -> "rd"
+            else -> "th"
+        }
+    }
+
 
     inner class TimetableAdapter(
         private var entries: List<TimetableEntry>,

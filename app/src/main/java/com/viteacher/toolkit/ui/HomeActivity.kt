@@ -246,6 +246,7 @@ class HomeActivity : AppCompatActivity() {
         checkClassSettings()
         checkStudentBirthdays()
         rescheduleTimetableReminders()
+        updateScheduleBanner()
     }
 
     private fun rescheduleTimetableReminders() {
@@ -464,6 +465,134 @@ class HomeActivity : AppCompatActivity() {
         binding.root.announceForAccessibility("Birthday Alert dialog. Today is ${student.name}'s birthday. Would you like to send a wish? Select Send Wish, Remind Me Later, or Dismiss.")
     }
 
+    private fun updateScheduleBanner() {
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val db = AppDatabase.getDatabase(applicationContext)
+                val periods = db.timetableDao().getAllPeriodsOnce()
+                val entries = db.timetableDao().getAllEntriesOnce()
+
+                val calendar = java.util.Calendar.getInstance()
+                val currentDay = calendar.getDisplayName(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.LONG, java.util.Locale.US) ?: "Monday"
+                val currentMinutes = calendar.get(java.util.Calendar.HOUR_OF_DAY) * 60 + calendar.get(java.util.Calendar.MINUTE)
+
+                val prefs = getSharedPreferences("vi_teacher_prefs", Context.MODE_PRIVATE)
+                val isCollege = prefs.getString("institution_type", "school") == "college"
+                val label = if (isCollege) "Hour" else "Period"
+
+                // 1. Filter active periods for today
+                val hasExceptions = periods.any { it.isException && it.exceptionDay == currentDay }
+                val activePeriods = if (hasExceptions) {
+                    periods.filter { it.isException && it.exceptionDay == currentDay }
+                } else {
+                    periods.filter { !it.isException }
+                }
+
+                if (activePeriods.isEmpty()) {
+                    runOnUiThread {
+                        binding.tvCurrentClass.text = "Weekend / No School Hours Set"
+                        binding.tvNextClass.text = "None"
+                        binding.layoutScheduleBanner.contentDescription = "Current status: Weekend or No School Hours Set. Next class: None."
+                    }
+                    return@launch
+                }
+
+                // Sort periods chronologically by start time
+                val sortedPeriods = activePeriods.sortedBy { parseTimeToMinutes(it.startTime) }
+
+                var currentText = "Leisure Time"
+                var nextText = "None"
+
+                // Find current period
+                val currentPeriod = sortedPeriods.find { p ->
+                    val start = parseTimeToMinutes(p.startTime)
+                    val end = parseTimeToMinutes(p.endTime)
+                    currentMinutes in start..end
+                }
+
+                if (currentPeriod != null) {
+                    val pNum = currentPeriod.periodNumber
+                    val isBreak = pNum in listOf(99, 100, 101)
+                    if (isBreak) {
+                        currentText = when (pNum) {
+                            99 -> "Forenoon Interval (${currentPeriod.startTime} - ${currentPeriod.endTime})"
+                            100 -> "Lunch Break (${currentPeriod.startTime} - ${currentPeriod.endTime})"
+                            101 -> "Afternoon Interval (${currentPeriod.startTime} - ${currentPeriod.endTime})"
+                            else -> "Break"
+                        }
+                    } else {
+                        val entry = entries.find { it.dayOfWeek == currentDay && it.periodNumber == pNum }
+                        currentText = if (entry != null) {
+                            if (isCollege) {
+                                "${entry.subject} in ${entry.className} ${entry.division} ($label $pNum)"
+                            } else {
+                                "${entry.subject} in Class ${entry.className} ${entry.division} ($label $pNum)"
+                            }
+                        } else {
+                            "Leisure Time (Free $label $pNum)"
+                        }
+                    }
+                } else {
+                    // Check if school day hasn't started yet or is already over
+                    val firstPeriodStart = parseTimeToMinutes(sortedPeriods.first().startTime)
+                    val lastPeriodEnd = parseTimeToMinutes(sortedPeriods.last().endTime)
+
+                    if (currentMinutes < firstPeriodStart) {
+                        currentText = "School hasn't started yet"
+                    } else if (currentMinutes > lastPeriodEnd) {
+                        currentText = "School day completed"
+                    } else {
+                        currentText = "Leisure Time"
+                    }
+                }
+
+                // Find next class (must be a class period, not a break, and must have a timetable entry)
+                val nextClassPeriod = sortedPeriods.firstOrNull { p ->
+                    val start = parseTimeToMinutes(p.startTime)
+                    val pNum = p.periodNumber
+                    val isBreak = pNum in listOf(99, 100, 101)
+                    
+                    start > currentMinutes && !isBreak && entries.any { it.dayOfWeek == currentDay && it.periodNumber == pNum }
+                }
+
+                if (nextClassPeriod != null) {
+                    val pNum = nextClassPeriod.periodNumber
+                    val entry = entries.find { it.dayOfWeek == currentDay && it.periodNumber == pNum }
+                    if (entry != null) {
+                        nextText = if (isCollege) {
+                            "${entry.subject} in ${entry.className} ${entry.division} ($label $pNum at ${nextClassPeriod.startTime})"
+                        } else {
+                            "${entry.subject} in Class ${entry.className} ${entry.division} ($label $pNum at ${nextClassPeriod.startTime})"
+                        }
+                    }
+                }
+
+                runOnUiThread {
+                    binding.tvCurrentClass.text = currentText
+                    binding.tvNextClass.text = nextText
+                    binding.layoutScheduleBanner.contentDescription = "Current status: $currentText. Next class: $nextText."
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun parseTimeToMinutes(timeStr: String): Int {
+        return try {
+            val sdf = java.text.SimpleDateFormat("hh:mm a", java.util.Locale.US)
+            val date = sdf.parse(timeStr)
+            if (date != null) {
+                val calendar = java.util.Calendar.getInstance()
+                calendar.time = date
+                calendar.get(java.util.Calendar.HOUR_OF_DAY) * 60 + calendar.get(java.util.Calendar.MINUTE)
+            } else {
+                0
+            }
+        } catch (e: Exception) {
+            0
+        }
+    }
 }
 
 data class HomeFeature(

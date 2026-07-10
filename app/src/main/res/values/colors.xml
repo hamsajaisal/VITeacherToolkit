@@ -8,4 +8,9 @@
     <color name="red_dark">#FF5C0000</color>
     <color name="grey_light">#FFCCCCCC</color>
     <color name="green_accessible">#FF4CAF50</color>
+    <color name="history_item_bg">#FFF0E6F7</color> <!-- Soft lavender-grey background -->
+    <color name="profile_value_color">#FF000000</color> <!-- Black for Light Mode -->
+    <color name="remark_subject_color">#FF6A1B9A</color> <!-- Deep purple for Light Mode -->
+    <color name="edit_text_bg">#FFF5F5F5</color> <!-- Light grey for Light Mode -->
+    <color name="history_item_stroke">#FFCCCCCC</color> <!-- Light grey border for Light Mode -->
 </resources>

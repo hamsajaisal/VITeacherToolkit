@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="#121212">
+    android:background="?android:attr/windowBackground">
 
     <TextView
         android:id="@+id/tvDialogTitle"
@@ -64,12 +64,11 @@
 
         <Button
             android:id="@+id/btnCancel"
+            style="@style/Widget.VITeacherToolkit.Button.Secondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
             android:text="Cancel"
-            android:textColor="?android:attr/textColorPrimary"
-            android:backgroundTint="#FF444444"
             android:layout_marginEnd="12dp" />
 
         <Button

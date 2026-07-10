@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:layout_marginBottom="8dp"
-    android:background="@color/white">
+    android:background="@color/history_item_bg">
 
     <TextView
         android:id="@+id/tvEntrySubject"

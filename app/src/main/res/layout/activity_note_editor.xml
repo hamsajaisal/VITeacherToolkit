@@ -11,7 +11,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="8dp"
-        android:background="#EEEEEE">
+        android:background="?attr/colorSurfaceVariant">
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -62,7 +62,7 @@
         android:padding="12dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:background="#F5F5F5">
+        android:background="?attr/colorSurfaceVariant">
 
         <Button
             android:id="@+id/btnDecreaseFontSize"
@@ -102,7 +102,7 @@
         android:layout_weight="1"
         android:gravity="top|start"
         android:padding="16dp"
-        android:background="@android:color/white"
+        android:background="?android:attr/windowBackground"
         android:hint="Start typing your note here..."
         android:textSize="18sp"
         android:inputType="textMultiLine"
@@ -114,7 +114,7 @@
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#EEEEEE"
+        android:background="?attr/colorSurfaceVariant"
         android:paddingVertical="4dp"
         android:scrollbars="horizontal">
 

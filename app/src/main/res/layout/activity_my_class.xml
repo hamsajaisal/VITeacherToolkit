@@ -96,12 +96,11 @@
     <!-- Manage Students Option -->
     <Button
         android:id="@+id/btnManageStudents"
+        style="@style/Widget.VITeacherToolkit.Button.Secondary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="Add or Edit Student Roster"
-        android:textColor="?android:attr/textColorPrimary"
-        android:backgroundTint="#FF444444"
         android:contentDescription="Add or edit student roster. Set up students manually or edit existing profiles."
         android:importantForAccessibility="yes" />
 

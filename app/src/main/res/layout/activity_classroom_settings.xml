@@ -209,7 +209,6 @@
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"
                 android:layout_marginBottom="20dp"
-                android:backgroundTint="#FFFFFF"
                 android:contentDescription="Select attendance system type. Double session, Daily session, or Hour-wise periods."
                 android:spinnerMode="dropdown"
                 android:importantForAccessibility="yes" />
@@ -294,12 +293,11 @@
             <!-- Button: Cancel Add/Edit (Initially Gone, Shown only if classes exist) -->
             <Button
                 android:id="@+id/btnCancelAddClass"
+                style="@style/Widget.VITeacherToolkit.Button.Secondary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:minHeight="48dp"
                 android:text="Cancel"
-                android:textColor="?android:attr/textColorPrimary"
-                android:backgroundTint="#FF444444"
                 android:contentDescription="Cancel adding class"
                 android:visibility="gone"
                 android:layout_marginBottom="24dp" />

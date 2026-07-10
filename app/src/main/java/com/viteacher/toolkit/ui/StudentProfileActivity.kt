@@ -317,14 +317,14 @@ class StudentProfileActivity : AppCompatActivity() {
 
         val tvLabel = TextView(context).apply {
             text = label
-            setTextColor(ContextCompat.getColor(context, R.color.lavender))
+            setTextColor(ContextCompat.getColor(context, R.color.remark_subject_color))
             textSize = 14f
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
         }
 
         val tvValue = TextView(context).apply {
             text = value
-            setTextColor(ContextCompat.getColor(context, R.color.white))
+            setTextColor(ContextCompat.getColor(context, R.color.profile_value_color))
             textSize = 17f
             setTypeface(null, android.graphics.Typeface.BOLD)
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO

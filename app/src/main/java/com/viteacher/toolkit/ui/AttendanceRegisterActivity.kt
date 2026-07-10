@@ -1320,19 +1320,21 @@ class StudentAttendanceAdapter(
     private fun updateViewHolderUI(holder: ViewHolder, item: StudentAttendanceItem) {
         if (item.isPresent) {
             holder.tvStatus.text = "Present"
-            holder.tvStatus.setTextColor(Color.parseColor("#FFCCCCCC")) // light grey
-            holder.view.setBackgroundColor(Color.BLACK)
-            
             // Set content description for TalkBack
             holder.view.contentDescription = "Roll number ${item.student.rollNumber}, ${item.student.name}, Present. Double tap to toggle, double tap and hold for options."
         } else {
             holder.tvStatus.text = "Absent"
-            holder.tvStatus.setTextColor(Color.RED)
-            holder.view.setBackgroundColor(Color.parseColor("#FF5C0000")) // dark red background
-            
             // Set content description for TalkBack
             holder.view.contentDescription = "Roll number ${item.student.rollNumber}, ${item.student.name}, Absent. Double tap to toggle, double tap and hold for options."
         }
+        com.viteacher.toolkit.util.ThemeUtils.styleRosterRow(
+            holder.view.context,
+            holder.view,
+            holder.tvRoll,
+            holder.tvName,
+            holder.tvStatus,
+            item.isPresent
+        )
     }
 
     override fun getItemCount(): Int = list.size

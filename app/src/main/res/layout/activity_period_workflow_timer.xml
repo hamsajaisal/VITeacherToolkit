@@ -94,7 +94,6 @@
                     android:id="@+id/spinnerTimetablePeriods"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:backgroundTint="#FFFFFF"
                     android:layout_marginBottom="16dp"
                     android:importantForAccessibility="yes" />
 
@@ -113,7 +112,6 @@
                     android:hint="e.g. 45 (Optional)"
                     android:textColor="?android:attr/textColorPrimary"
                     android:textColorHint="#666666"
-                    android:backgroundTint="#FFFFFF"
                     android:inputType="number"
                     android:layout_marginBottom="16dp"
                     android:importantForAccessibility="yes" />
@@ -132,7 +130,6 @@
                 android:id="@+id/spinnerReminderInterval"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:backgroundTint="#FFFFFF"
                 android:layout_marginBottom="16dp"
                 android:importantForAccessibility="yes" />
 
@@ -181,7 +178,6 @@
                 android:id="@+id/spinnerPhaseTemplates"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:backgroundTint="#FFFFFF"
                 android:layout_marginBottom="16dp"
                 android:importantForAccessibility="yes" />
 
@@ -323,12 +319,11 @@
 
                 <Button
                     android:id="@+id/btnStopReset"
+                    style="@style/Widget.VITeacherToolkit.Button.Secondary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:minHeight="48dp"
-                    android:text="Stop and Reset"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:backgroundTint="#FF444444" />
+                    android:text="Stop and Reset" />
 
             </LinearLayout>
 

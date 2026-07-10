@@ -57,12 +57,11 @@
     <!-- Export CCE Button -->
     <Button
         android:id="@+id/btnExportCCE"
+        style="@style/Widget.VITeacherToolkit.Button.Secondary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="Export Consolidated CCE Sheet"
-        android:textColor="?android:attr/textColorPrimary"
-        android:backgroundTint="#FF444444"
         android:contentDescription="Export consolidated evaluation sheet to Excel"
         android:layout_marginBottom="16dp" />
 

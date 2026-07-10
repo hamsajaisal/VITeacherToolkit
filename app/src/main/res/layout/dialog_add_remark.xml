@@ -45,7 +45,7 @@
         android:hint="Type the remark here..."
         android:textColor="?android:attr/textColorPrimary"
         android:textColorHint="#888888"
-        android:background="#111111"
+        android:background="@drawable/bg_edit_text"
         android:padding="12dp"
         android:inputType="textMultiLine"
         android:contentDescription="Enter remark text field"
