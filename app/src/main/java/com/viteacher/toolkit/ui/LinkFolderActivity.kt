@@ -373,9 +373,12 @@ class LinkFolderActivity : AppCompatActivity() {
                 } else {
                     ivIcon.setImageResource(android.R.drawable.ic_menu_compass)
                     
-                    val typedValue = android.util.TypedValue()
-                    itemView.context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-                    tvTitle.setTextColor(typedValue.data)
+                    val attrs = intArrayOf(android.R.attr.textColorPrimary)
+                    val typedArray = itemView.context.theme.obtainStyledAttributes(attrs)
+                    val primaryColor = typedArray.getColor(0, android.graphics.Color.BLACK)
+                    typedArray.recycle()
+                    
+                    tvTitle.setTextColor(primaryColor)
                     tvTitle.setTypeface(null, android.graphics.Typeface.NORMAL)
                     
                     itemView.contentDescription = "Link: ${link.title}. Double tap to open in default browser. Double tap and hold for options."
