@@ -3,7 +3,6 @@ package com.viteacher.toolkit.util
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
-import android.util.TypedValue
 import android.view.View
 import android.widget.TextView
 
@@ -32,12 +31,11 @@ object ThemeUtils {
                           Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
         if (isPositiveState) {
-            // Restore default theme-based colors and background
-            val typedValue = TypedValue()
-            context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
-            val primaryColor = typedValue.data
-            context.theme.resolveAttribute(android.R.attr.textColorSecondary, typedValue, true)
-            val secondaryColor = typedValue.data
+            val attrs = intArrayOf(android.R.attr.textColorPrimary, android.R.attr.textColorSecondary)
+            val typedArray = context.theme.obtainStyledAttributes(attrs)
+            val primaryColor = typedArray.getColor(0, Color.BLACK)
+            val secondaryColor = typedArray.getColor(1, Color.GRAY)
+            typedArray.recycle()
 
             rowView.setBackgroundColor(Color.TRANSPARENT)
             tvRoll.setTextColor(primaryColor)
